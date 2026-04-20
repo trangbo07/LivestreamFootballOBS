@@ -1,0 +1,96 @@
+TEMPLATE CONTROLLER OBS
+Ngay tao: 2026-04-20
+
+====================
+THONG TIN TRAN DAU
+====================
+Ten tran dau: 
+Giai dau: 
+San dau: 
+Ngay gio: 
+
+====================
+DOI A
+====================
+Ten doi A: 
+Logo doi A (duong dan): 
+Huan luyen vien A: 
+Ti so A: 0
+Doi hinh ra san A (moi dong 1 cau thu):
+1 
+2 
+3 
+4 
+5 
+6 
+7 
+8 
+9 
+10 
+11 
+
+====================
+DOI B
+====================
+Ten doi B: 
+Logo doi B (duong dan): 
+Huan luyen vien B: 
+Ti so B: 0
+Doi hinh ra san B (moi dong 1 cau thu):
+1 
+2 
+3 
+4 
+5 
+6 
+7 
+8 
+9 
+10 
+11 
+
+====================
+DONG HO TRAN
+====================
+Hiep hien tai (H1/HT/H2/FT/ET1/ET2/PEN): 
+Thoi gian hien tai (mm:ss): 00:00
+Phut bu gio: 0
+
+====================
+BANG THONG TIN GIUA HIEP
+====================
+Midbreak title: 
+Midbreak line: 
+
+====================
+TRONG TAI / BLV
+====================
+Trong tai: 
+BLV chinh: 
+BLV khach moi: 
+
+====================
+VAR
+====================
+VAR title: PENALTY
+VAR detail: 
+
+====================
+THONG KE
+====================
+Sut A: 0
+Sut B: 0
+The vang A: 0
+The vang B: 0
+The do A: 0
+The do B: 0
+
+====================
+SU KIEN NHANH
+====================
+Noi dung su kien: 
+
+====================
+GHI CHU
+====================
+

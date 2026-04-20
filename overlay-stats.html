@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overlay Stats</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #f5f8ff;
+      --bg: rgba(7, 12, 27, 0.72);
+      --line: rgba(255, 255, 255, 0.2);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      background: transparent;
+      overflow: hidden;
+      color: var(--ink);
+      font-family: "Rajdhani", "Segoe UI", Tahoma, sans-serif;
+    }
+
+    .wrap {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 126px 24px 0;
+      pointer-events: none;
+    }
+
+    .panel {
+      width: min(1120px, 96vw);
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      backdrop-filter: blur(6px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.36);
+      padding: 8px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .stat {
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 8px 10px;
+    }
+
+    .k {
+      font-family: "Bebas Neue", Impact, sans-serif;
+      letter-spacing: 0.08em;
+      font-size: 0.85rem;
+      opacity: 0.82;
+      text-align: center;
+    }
+
+    .v {
+      margin-top: 2px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: "Bebas Neue", Impact, sans-serif;
+      font-size: 1.45rem;
+      letter-spacing: 0.06em;
+      line-height: 1;
+    }
+
+    @media (max-width: 760px) {
+      .wrap {
+        padding: 12px;
+      }
+
+      .panel {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="panel">
+      <div class="stat">
+        <div class="k">Shots</div>
+        <div class="v"><span id="shotsA">0</span><span id="shotsB">0</span></div>
+      </div>
+      <div class="stat">
+        <div class="k">Yellow</div>
+        <div class="v"><span id="yellowA">0</span><span id="yellowB">0</span></div>
+      </div>
+      <div class="stat">
+        <div class="k">Red</div>
+        <div class="v"><span id="redA">0</span><span id="redB">0</span></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "scoreData.v2";
+    const API_PATH = "/api/score";
+    const STREAM_PATH = "/api/score/stream";
+    const CAN_USE_HTTP = location.protocol === "http:" || location.protocol === "https:";
+
+    const el = {
+      shotsA: document.getElementById("shotsA"),
+      shotsB: document.getElementById("shotsB"),
+      yellowA: document.getElementById("yellowA"),
+      yellowB: document.getElementById("yellowB"),
+      redA: document.getElementById("redA"),
+      redB: document.getElementById("redB")
+    };
+
+    let streamConnected = false;
+    let stream = null;
+    let reconnectTimer = null;
+
+    function toNumber(value, min, max) {
+      const n = Number.parseInt(value, 10);
+      if (Number.isNaN(n) || n < min) return min;
+      if (n > max) return max;
+      return n;
+    }
+
+    function render(data) {
+      el.shotsA.textContent = toNumber(data.shotsA, 0, 99);
+      el.shotsB.textContent = toNumber(data.shotsB, 0, 99);
+      el.yellowA.textContent = toNumber(data.yellowA, 0, 20);
+      el.yellowB.textContent = toNumber(data.yellowB, 0, 20);
+      el.redA.textContent = toNumber(data.redA, 0, 10);
+      el.redB.textContent = toNumber(data.redB, 0, 10);
+    }
+
+    function loadFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        render(JSON.parse(raw));
+      } catch {
+        // Silent in overlay.
+      }
+    }
+
+    async function loadFromServer() {
+      try {
+        const response = await fetch(API_PATH, { cache: "no-store" });
+        if (!response.ok) throw new Error("GET failed");
+        render(await response.json());
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function scheduleReconnect() {
+      if (reconnectTimer !== null) return;
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
+        connectStream();
+      }, 1000);
+    }
+
+    function connectStream() {
+      if (!CAN_USE_HTTP || typeof EventSource === "undefined") return;
+      if (stream) stream.close();
+      stream = new EventSource(STREAM_PATH);
+      stream.onopen = () => {
+        streamConnected = true;
+      };
+      stream.onmessage = (event) => {
+        try {
+          render(JSON.parse(event.data));
+        } catch {
+          // Ignore malformed payloads.
+        }
+      };
+      stream.onerror = () => {
+        streamConnected = false;
+        if (stream) {
+          stream.close();
+          stream = null;
+        }
+        scheduleReconnect();
+      };
+    }
+
+    if (CAN_USE_HTTP) {
+      connectStream();
+      loadFromServer();
+      setInterval(async () => {
+        if (streamConnected) return;
+        const ok = await loadFromServer();
+        if (!ok) loadFromStorage();
+      }, 1000);
+    } else {
+      loadFromStorage();
+      setInterval(loadFromStorage, 300);
+    }
+  </script>
+</body>
+</html>

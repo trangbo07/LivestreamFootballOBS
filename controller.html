@@ -1,0 +1,2187 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Điều khiển tỉ số OBS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-1: #fff1e8;
+      --bg-2: #e6f4ff;
+      --card: rgba(255, 255, 255, 0.82);
+      --line: rgba(17, 24, 39, 0.15);
+      --text: #0b1220;
+      --muted: #5d6472;
+      --a: #ff5e3a;
+      --b: #1685ff;
+      --ok: #12b76a;
+      --warn: #b42318;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Montserrat", "Segoe UI", Tahoma, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(900px 500px at -5% -10%, #ffd9c7 0%, transparent 55%),
+        radial-gradient(900px 500px at 110% 110%, #cce7ff 0%, transparent 55%),
+        linear-gradient(135deg, var(--bg-1), var(--bg-2));
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      padding-bottom: calc(24px + 200px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .panel {
+      width: min(980px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--card);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 20px 55px rgba(13, 29, 54, 0.18);
+      overflow: hidden;
+      animation: rise 500ms ease-out;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(90deg, rgba(255, 94, 58, 0.12), rgba(22, 133, 255, 0.12));
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: clamp(1.05rem, 2vw, 1.45rem);
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+
+    .header-left {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .header-hint {
+      margin: 8px 0 0;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      color: var(--muted);
+      max-width: 52ch;
+    }
+
+    .header-hint code {
+      font-size: 0.78em;
+    }
+
+    .status {
+      font-size: 0.9rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .content {
+      padding: 22px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .teams {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.74);
+      animation: rise 500ms ease-out;
+    }
+
+    .card.team-a {
+      border-left: 5px solid var(--a);
+    }
+
+    .card.team-b {
+      border-left: 5px solid var(--b);
+    }
+
+    .label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    .row {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 1rem;
+      background: #ffffff;
+      color: var(--text);
+      outline: none;
+      transition: border-color 180ms ease, box-shadow 180ms ease;
+      font-family: "Montserrat", "Segoe UI", Tahoma, sans-serif;
+    }
+
+    input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+    }
+
+    input[type="text"],
+    input:not([type]) {
+      text-transform: none;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 140px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.92rem;
+      background: #ffffff;
+      color: var(--text);
+      outline: none;
+      font-family: "Montserrat", "Segoe UI", Tahoma, sans-serif;
+      line-height: 1.45;
+    }
+
+    textarea:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 0.96rem;
+      font-weight: 700;
+      transition: transform 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
+      font-family: "Rajdhani", "Segoe UI", Tahoma, sans-serif;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .primary {
+      background: linear-gradient(110deg, #ff5e3a, #ff7e42);
+      color: #ffffff;
+      box-shadow: 0 8px 20px rgba(255, 94, 58, 0.35);
+    }
+
+    .secondary {
+      background: #e7eef8;
+      color: #12233f;
+    }
+
+    .danger {
+      background: #ffe2df;
+      color: var(--warn);
+    }
+
+    .spacer {
+      flex: 1;
+    }
+
+    .hint {
+      margin-top: 2px;
+      font-size: 0.86rem;
+      color: var(--muted);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      align-items: end;
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      background: #ffffff;
+      color: #13233f;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: "Rajdhani", "Segoe UI", Tahoma, sans-serif;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .chip.is-active {
+      background: linear-gradient(135deg, #1e4a8c, #2563eb);
+      color: #fff;
+      border-color: #1d4ed8;
+      box-shadow: 0 2px 10px rgba(37, 99, 235, 0.35);
+    }
+
+    .lineup-show-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .tab-switch {
+      display: inline-flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .tab-btn {
+      border: 1px solid var(--line);
+      background: #ffffff;
+      color: #13233f;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: "Rajdhani", "Segoe UI", Tahoma, sans-serif;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .tab-btn.is-active {
+      background: linear-gradient(135deg, #1e4a8c, #2563eb);
+      color: #fff;
+      border-color: #1d4ed8;
+      box-shadow: 0 2px 10px rgba(37, 99, 235, 0.35);
+    }
+
+    .info-tab-pane {
+      display: none;
+    }
+
+    .info-tab-pane.is-active {
+      display: block;
+    }
+
+    .lineup-show-bar .chip[data-lineup-show="off"] {
+      opacity: 0.92;
+    }
+
+    .clock-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .clock-value {
+      font-family: "Rajdhani", "Segoe UI", Tahoma, sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0.03em;
+      color: #0d203e;
+      background: #f3f7ff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+
+    .mono {
+      font-family: "Rajdhani", "Segoe UI", Tahoma, sans-serif;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .small {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .footer {
+      border-top: 1px solid var(--line);
+      padding: 14px 22px;
+      background: rgba(255, 255, 255, 0.65);
+    }
+
+    .fold {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 4px 12px 12px;
+      background: rgba(255, 255, 255, 0.45);
+    }
+
+    .fold > summary {
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: var(--muted);
+      padding: 10px 4px;
+      list-style: none;
+    }
+
+    .fold > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .fold[open] > summary {
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .action-dock {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 200;
+      padding: 10px 12px calc(12px + env(safe-area-inset-bottom, 0px));
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.97) 18%);
+      border-top: 1px solid var(--line);
+      box-shadow: 0 -8px 28px rgba(13, 29, 54, 0.12);
+    }
+
+    .action-dock-inner {
+      max-width: min(980px, 100%);
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .dock-clock {
+      font-family: "Rajdhani", ui-monospace, monospace;
+      font-size: 1.35rem;
+      font-weight: 700;
+      min-width: 4.2ch;
+      text-align: center;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: #0d203e;
+      color: #f3f7ff;
+      line-height: 1;
+    }
+
+    .icon-btn {
+      width: 52px;
+      height: 52px;
+      padding: 0;
+      border-radius: 14px;
+      display: inline-grid;
+      place-items: center;
+      font-size: 1.35rem;
+      line-height: 1;
+      cursor: pointer;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      box-shadow: 0 2px 8px rgba(13, 29, 54, 0.08);
+      transition: transform 120ms ease, box-shadow 120ms ease;
+    }
+
+    .icon-btn:active {
+      transform: scale(0.96);
+    }
+
+    .icon-btn .lbl {
+      font-size: 0.62rem;
+      font-weight: 800;
+      margin-top: 2px;
+      letter-spacing: 0.02em;
+      color: var(--muted);
+      font-family: "Montserrat", sans-serif;
+    }
+
+    .icon-btn.stack {
+      grid-template-rows: 1fr auto;
+      height: auto;
+      min-height: 52px;
+      padding: 6px 4px 4px;
+    }
+
+    .icon-btn.accent-a {
+      border-color: rgba(255, 94, 58, 0.45);
+      background: linear-gradient(180deg, #fff, #fff5f2);
+    }
+
+    .icon-btn.accent-b {
+      border-color: rgba(22, 133, 255, 0.45);
+      background: linear-gradient(180deg, #fff, #f0f7ff);
+    }
+
+    .icon-btn.warn {
+      background: linear-gradient(180deg, #fffef5, #fff8e6);
+    }
+
+    .icon-btn.danger-ico {
+      background: linear-gradient(180deg, #fff5f5, #ffecec);
+    }
+
+    .icon-btn.primary-ico {
+      background: linear-gradient(110deg, #ff5e3a, #ff7e42);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 6px 16px rgba(255, 94, 58, 0.35);
+    }
+
+    @keyframes rise {
+      from {
+        transform: translateY(8px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .lineup-actions {
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    .lineup-action-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      background: rgba(15, 23, 42, 0.04);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 0.82rem;
+    }
+
+    .lineup-action-row .pn {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .lineup-ico-group {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .lineup-ico-group button {
+      width: 32px;
+      height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #ffffff;
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lineup-ico-group button:hover {
+      border-color: #3b82f6;
+      background: #f0f7ff;
+    }
+
+    .lineup-hint {
+      margin: 0;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .template-row {
+      display: grid;
+      grid-template-columns: 1fr 220px;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .template-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 0.96rem;
+      background: #ffffff;
+      color: var(--text);
+      outline: none;
+      font-family: "Montserrat", "Segoe UI", Tahoma, sans-serif;
+    }
+
+    select:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+    }
+
+    @media (max-width: 760px) {
+      .teams {
+        grid-template-columns: 1fr;
+      }
+
+      .grid-2,
+      .stat-grid,
+      .quick-grid,
+      .clock-row {
+        grid-template-columns: 1fr;
+      }
+
+      .template-row {
+        grid-template-columns: 1fr;
+      }
+
+      .controls {
+        justify-content: stretch;
+      }
+
+      .controls button {
+        flex: 1;
+      }
+
+      .spacer {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="panel">
+    <div class="header">
+      <div class="header-left">
+        <h1>Điều khiển tỉ số OBS</h1>
+        <p class="header-hint">
+          Overlay tỉ số <code>http://localhost:8080/overlay.html</code>: dùng ô <strong>Giao diện overlay bảng tỉ số</strong> bên dưới (đủ bảng / chỉ đồng hồ / ẩn bảng); trên overlay có thể dùng <strong>F2</strong> hoặc <strong>Ctrl+Shift+B</strong> để ẩn/hiện nhanh (OBS: « Tương tác » để nhận phím).
+        </p>
+      </div>
+      <div class="status" id="statusText">Chưa cập nhật</div>
+    </div>
+
+    <section class="content">
+      <article class="card">
+        <div class="label">Giao diện overlay bảng tỉ số</div>
+        <p class="small" style="margin: 0 0 10px">
+          <strong>Chỉ đồng hồ</strong> ẩn tên đội và tỉ số trên stream, chỉ giữ hiệp + giờ (đồng hồ vẫn chạy từ thanh điều khiển). <strong>Ẩn bảng</strong> ẩn hẳn khối tỉ số. Trên overlay có thể dùng <strong>F2</strong> / <strong>Ctrl+Shift+B</strong> để ẩn/hiện nhanh toàn khối.
+        </p>
+        <div class="lineup-show-bar" id="scoreViewBar">
+          <button type="button" class="chip score-view-btn" data-score-view="full">Đủ bảng</button>
+          <button type="button" class="chip score-view-btn" data-score-view="clock">Chỉ đồng hồ</button>
+          <button type="button" class="chip score-view-btn" data-score-view="hidden">Ẩn bảng</button>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="label">Template (lưu mẫu để khỏi nhập lại)</div>
+        <p class="small" style="margin: 0 0 10px">
+          Lưu toàn bộ cấu hình hiện tại (đội, logo, đồng hồ, đội hình, HLV, bảng giữa hiệp…). Mở lại lần sau chỉ cần chọn và tải.
+        </p>
+        <div class="template-row">
+          <div class="row">
+            <div class="small">Chọn template đã lưu</div>
+            <select id="templateSelect"></select>
+          </div>
+          <div class="row">
+            <div class="small">Tên template</div>
+            <input id="templateName" maxlength="40" placeholder="VD: Chung kết - HAGL vs HN" />
+          </div>
+        </div>
+        <div class="template-actions">
+          <button type="button" class="secondary" id="btnTemplateSave">Lưu / ghi đè</button>
+          <button type="button" class="primary" id="btnTemplateLoad">Tải template</button>
+          <button type="button" class="danger" id="btnTemplateDelete">Xoá</button>
+          <button type="button" class="secondary" id="btnTemplateExport">Xuất file</button>
+          <button type="button" class="secondary" id="btnTemplateImport">Nhập file</button>
+          <input id="templateImportFile" type="file" accept=".json,application/json" hidden />
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="label">Bảng thông tin giữa giờ</div>
+        <p class="small" style="margin: 0 0 10px">
+          Dùng khi nghỉ giữa hiệp hoặc trước trận. Chọn tab nội dung, nhập thông tin rồi bấm nút hiển thị tương ứng.
+        </p>
+        <div class="tab-switch" id="infoTabs">
+          <button type="button" class="tab-btn info-tab-btn" data-info-tab="midbreak">Bảng giữa hiệp</button>
+          <button type="button" class="tab-btn info-tab-btn" data-info-tab="officials">Trọng tài / BLV</button>
+          <button type="button" class="tab-btn info-tab-btn" data-info-tab="var">VAR</button>
+        </div>
+
+        <div class="info-tab-pane" id="infoTabMidbreak">
+          <div class="row">
+            <div class="small">Tiêu đề thanh xanh</div>
+            <input id="midbreakTitle" maxlength="80" placeholder="VD: NGHỈ GIỮA HIỆP" value="NGHI GIUA HIEP" />
+          </div>
+          <div class="row">
+            <div class="small">Nội dung dòng chính (ví dụ đội hình / ghi chú)</div>
+            <input id="midbreakLine" maxlength="120" placeholder="VD: 10 LÊ THANH DUY" />
+          </div>
+        </div>
+
+        <div class="info-tab-pane" id="infoTabOfficials">
+          <div class="row">
+            <div class="small">Trọng tài</div>
+            <input id="refereeName" maxlength="120" placeholder="VD: NGÔ DUY LÂN" />
+          </div>
+          <div class="row">
+            <div class="small">Bình luận viên chính</div>
+            <input id="commentatorMain" maxlength="120" placeholder="VD: BLV 1" />
+          </div>
+          <div class="row">
+            <div class="small">Bình luận viên khách mời</div>
+            <input id="commentatorGuest" maxlength="120" placeholder="VD: BLV 2" />
+          </div>
+        </div>
+
+        <div class="info-tab-pane" id="infoTabVar">
+          <p class="small" style="margin: 0 0 10px">
+            Nền tím giống sóng truyền hình. Chọn mẫu nhanh hoặc gõ tiêu đề (Penalty, phạm lỗi…), rồi bấm <strong>Hiện VAR</strong>.
+          </p>
+          <div class="row" style="flex-wrap: wrap; gap: 8px">
+            <button type="button" class="secondary var-preset" data-var-title="PENALTY">Penalty</button>
+            <button type="button" class="secondary var-preset" data-var-title="PHẠM LỖI">Phạm lỗi</button>
+            <button type="button" class="secondary var-preset" data-var-title="KIỂM TRA BÀN THẮNG">Kiểm tra bàn thắng</button>
+            <button type="button" class="secondary var-preset" data-var-title="KIỂM TRA TÌNH HUỐNG">Kiểm tra tình huống</button>
+          </div>
+          <div class="row">
+            <div class="small">Tiêu đề tình huống (hiện dưới chữ VAR)</div>
+            <input id="varTitle" maxlength="80" placeholder="VD: PENALTY — ĐỘI A" value="PENALTY" />
+          </div>
+          <div class="row">
+            <div class="small">Dòng phụ (tuỳ chọn)</div>
+            <input id="varDetail" maxlength="120" placeholder="VD: Va chạm trong vòng cấm" />
+          </div>
+        </div>
+
+        <div class="lineup-show-bar" id="infoPanelBar">
+          <button type="button" class="chip info-panel-btn" data-info-panel="midbreak">Hiện bảng giữa hiệp</button>
+          <button type="button" class="chip info-panel-btn" data-info-panel="officials">Hiện trọng tài / BLV</button>
+          <button type="button" class="chip info-panel-btn" data-info-panel="var">Hiện VAR</button>
+          <button type="button" class="chip info-panel-btn" data-info-panel="off">Ẩn bảng thông tin</button>
+        </div>
+      </article>
+
+      <div class="teams">
+        <article class="card team-a">
+          <div class="label">Đội A</div>
+          <div class="row">
+            <input id="teamA" maxlength="24" placeholder="Tên đội A" value="Đội A" />
+          </div>
+          <div class="row">
+            <input id="scoreA" type="number" min="0" max="99" step="1" value="0" />
+          </div>
+          <div class="row">
+            <input id="logoA" placeholder="Đường dẫn logo A (tuỳ chọn)" />
+          </div>
+          <div class="row">
+            <div class="small">Huấn luyện viên (hiện trên overlay đội hình)</div>
+            <input id="coachA" maxlength="120" placeholder="VD: Văn Sỹ Hùng" />
+          </div>
+          <div class="row">
+            <div class="small">Đội hình ra sân — mỗi dòng 1 cầu thủ (tối đa 11); bấm icon để gửi sự kiện kèm tên</div>
+            <textarea id="lineupA" maxlength="2500" placeholder="VD:&#10;10 Nguyễn Công Phượng&#10;11 Văn Toàn"></textarea>
+          </div>
+          <div id="lineupActionsA" class="lineup-actions" aria-label="Sự kiện theo cầu thủ đội A"></div>
+        </article>
+
+        <article class="card team-b">
+          <div class="label">Đội B</div>
+          <div class="row">
+            <input id="teamB" maxlength="24" placeholder="Tên đội B" value="Đội B" />
+          </div>
+          <div class="row">
+            <input id="scoreB" type="number" min="0" max="99" step="1" value="0" />
+          </div>
+          <div class="row">
+            <input id="logoB" placeholder="Đường dẫn logo B (tuỳ chọn)" />
+          </div>
+          <div class="row">
+            <div class="small">Huấn luyện viên (hiện trên overlay đội hình)</div>
+            <input id="coachB" maxlength="120" placeholder="VD: Chủ tịch HLV" />
+          </div>
+          <div class="row">
+            <div class="small">Đội hình ra sân — mỗi dòng 1 cầu thủ (tối đa 11); bấm icon để gửi sự kiện kèm tên</div>
+            <textarea id="lineupB" maxlength="2500" placeholder="VD:&#10;9 Tiền đạo&#10;1 Thủ môn"></textarea>
+          </div>
+          <div id="lineupActionsB" class="lineup-actions" aria-label="Sự kiện theo cầu thủ đội B"></div>
+        </article>
+      </div>
+
+      <p class="hint" style="margin:0">Overlay đội hình (OBS): <span style="font-family:ui-monospace,Consolas,monospace;font-size:0.88em">http://localhost:8080/overlay-lineup.html</span></p>
+      <p class="hint" style="margin:6px 0 0">Overlay Trọng tài/BLV: <span style="font-family:ui-monospace,Consolas,monospace;font-size:0.88em">http://localhost:8080/overlay-officials.html</span> • Nghỉ giữa hiệp: <span style="font-family:ui-monospace,Consolas,monospace;font-size:0.88em">http://localhost:8080/overlay-midbreak.html</span> • VAR: <span style="font-family:ui-monospace,Consolas,monospace;font-size:0.88em">http://localhost:8080/overlay-var.html</span></p>
+
+      <article class="card" style="margin-top: 12px">
+        <div class="label">Hiển thị đội hình lên stream</div>
+        <p class="small" style="margin: 0 0 10px">Mặc định ẩn. Bấm <strong>Hiện đội A</strong> / <strong>B</strong> / <strong>Cả hai</strong> để gửi lên overlay; <strong>Ẩn</strong> để tắt. Cần chạy <code>server.js</code> và mở controller + overlay cùng <code>http://localhost:8080/...</code> (tránh mở file <code>file://</code> cho overlay).</p>
+        <div class="lineup-show-bar" id="lineupShowBar">
+          <button type="button" class="chip lineup-show-btn" data-lineup-show="A">Hiện đội A</button>
+          <button type="button" class="chip lineup-show-btn" data-lineup-show="B">Hiện đội B</button>
+          <button type="button" class="chip lineup-show-btn" data-lineup-show="both">Hiện cả hai</button>
+          <button type="button" class="chip lineup-show-btn" data-lineup-show="off">Ẩn đội hình</button>
+        </div>
+      </article>
+
+      <details class="fold">
+        <summary>⚙ Mở rộng — đồng hồ chi tiết, sự kiện đầy đủ, thống kê</summary>
+      <div class="grid-2">
+        <article class="card">
+          <div class="label">Đồng hồ trận</div>
+          <div class="clock-row">
+            <div>
+              <div class="clock-value" id="clockPreview">00:00</div>
+              <div class="hint">Dùng thanh icon bên dưới để bấm nhanh; chỉnh phút bù / hiệp tại đây.</div>
+            </div>
+            <div class="row">
+              <input id="addedMinutes" type="number" min="0" max="30" step="1" value="0" />
+              <div class="small">Phút bù giờ</div>
+            </div>
+          </div>
+          <div class="row">
+            <input id="clockSet" inputmode="numeric" maxlength="5" placeholder="Chỉnh giờ (mm:ss) — ví dụ 12:34" />
+            <div class="small">Nhập mm:ss rồi bấm “Đặt giờ”</div>
+            <div class="controls" style="margin-top:8px">
+              <button class="secondary" id="btnClockSet" type="button">Đặt giờ</button>
+            </div>
+          </div>
+          <div class="pill-row" id="periodButtons">
+            <button class="chip" data-period="H1">H1</button>
+            <button class="chip" data-period="HT">HT</button>
+            <button class="chip" data-period="H2">H2</button>
+            <button class="chip" data-period="FT">FT</button>
+            <button class="chip" data-period="ET1">ET1</button>
+            <button class="chip" data-period="ET2">ET2</button>
+            <button class="chip" data-period="PEN">PEN</button>
+          </div>
+          <div class="controls">
+            <button class="primary" id="btnClockStart">Bắt đầu</button>
+            <button class="secondary" id="btnClockPause">Tạm dừng</button>
+            <button class="secondary" id="btnClockPlus">+1:00</button>
+            <button class="secondary" id="btnClockMinus">−1:00</button>
+            <button class="danger" id="btnClockReset">Xoá đồng hồ</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="label">Sự kiện nhanh</div>
+          <div class="row">
+            <input id="eventText" maxlength="220" placeholder="Nội dung (ví dụ: BÀN THẮNG ĐỘI A)" />
+          </div>
+          <div class="quick-grid">
+            <button class="secondary" id="btnGoalA">Bàn A</button>
+            <button class="secondary" id="btnGoalB">Bàn B</button>
+            <button class="secondary" id="btnYellowA">Vàng A</button>
+            <button class="secondary" id="btnYellowB">Vàng B</button>
+            <button class="secondary" id="btnRedA">Đỏ A</button>
+            <button class="secondary" id="btnRedB">Đỏ B</button>
+          </div>
+          <div class="controls">
+            <button class="primary" id="btnShowEvent">Hiển thị</button>
+            <button class="danger" id="btnClearEvent">Xoá sự kiện</button>
+          </div>
+        </article>
+      </div>
+
+      <article class="card">
+        <div class="label">Thống kê trận</div>
+        <div class="stat-grid">
+          <div class="row">
+            <div class="small mono">Sút A</div>
+            <input id="shotsA" type="number" min="0" max="99" value="0" />
+          </div>
+          <div class="row">
+            <div class="small mono">Sút B</div>
+            <input id="shotsB" type="number" min="0" max="99" value="0" />
+          </div>
+          <div class="row">
+            <div class="small mono">Vàng A</div>
+            <input id="yellowA" type="number" min="0" max="20" value="0" />
+          </div>
+          <div class="row">
+            <div class="small mono">Vàng B</div>
+            <input id="yellowB" type="number" min="0" max="20" value="0" />
+          </div>
+          <div class="row">
+            <div class="small mono">Đỏ A</div>
+            <input id="redA" type="number" min="0" max="10" value="0" />
+          </div>
+          <div class="row">
+            <div class="small mono">Đỏ B</div>
+            <input id="redB" type="number" min="0" max="10" value="0" />
+          </div>
+        </div>
+      </article>
+
+      <div class="controls">
+        <button class="primary" id="btnUpdate">Cập nhật</button>
+        <button class="secondary" id="btnSwap">Đổi chỗ hai đội</button>
+        <button class="secondary" id="btnAPlus">A +1</button>
+        <button class="secondary" id="btnBPlus">B +1</button>
+        <button class="danger" id="btnReset">Xoá tỉ số</button>
+        <div class="spacer"></div>
+      </div>
+
+      </details>
+
+      <p class="hint">Thanh icon dưới cùng: bấm một phát là gửi ngay lên overlay. Phần mở rộng dùng khi cần chỉnh số tay.</p>
+    </section>
+
+    <div class="footer">
+      <p class="small">Dữ liệu lưu trong localStorage (khoá scoreData.v2) và đồng bộ qua API /api/score khi chạy server.js.</p>
+    </div>
+  </main>
+
+  <nav class="action-dock" aria-label="Điều khiển nhanh">
+    <div class="action-dock-inner">
+      <span class="dock-clock" id="dockClockDisplay" aria-live="polite">00:00</span>
+      <button type="button" class="icon-btn primary-ico" id="dockClockToggle" title="Bắt đầu / tạm dừng đồng hồ" aria-label="Bắt đầu hoặc tạm dừng đồng hồ"><span class="ico" id="dockPlayGlyph">▶</span></button>
+      <button type="button" class="icon-btn" id="dockClockMinus" title="Trừ 1 phút" aria-label="Trừ một phút">−</button>
+      <button type="button" class="icon-btn" id="dockClockPlus" title="Cộng 1 phút" aria-label="Cộng một phút">+</button>
+      <button type="button" class="icon-btn" id="dockClockReset" title="Xoá đồng hồ" aria-label="Xoá đồng hồ">⟲</button>
+      <button type="button" class="icon-btn accent-a stack" id="dockGoalA" title="Bàn thắng đội A"><span>⚽</span><span class="lbl">A</span></button>
+      <button type="button" class="icon-btn accent-b stack" id="dockGoalB" title="Bàn thắng đội B"><span>⚽</span><span class="lbl">B</span></button>
+      <button type="button" class="icon-btn warn stack" id="dockYellowA" title="Thẻ vàng A" aria-label="Thẻ vàng đội A"><span>🟨</span><span class="lbl">A</span></button>
+      <button type="button" class="icon-btn warn stack" id="dockYellowB" title="Thẻ vàng B" aria-label="Thẻ vàng đội B"><span>🟨</span><span class="lbl">B</span></button>
+      <button type="button" class="icon-btn danger-ico stack" id="dockRedA" title="Thẻ đỏ A" aria-label="Thẻ đỏ đội A"><span>🟥</span><span class="lbl">A</span></button>
+      <button type="button" class="icon-btn danger-ico stack" id="dockRedB" title="Thẻ đỏ B" aria-label="Thẻ đỏ đội B"><span>🟥</span><span class="lbl">B</span></button>
+      <button type="button" class="icon-btn accent-a stack" id="dockShotA" title="Sút +1 đội A" aria-label="Sút cộng một đội A"><span>🎯</span><span class="lbl">A</span></button>
+      <button type="button" class="icon-btn accent-b stack" id="dockShotB" title="Sút +1 đội B" aria-label="Sút cộng một đội B"><span>🎯</span><span class="lbl">B</span></button>
+      <button type="button" class="icon-btn" id="dockSwap" title="Đổi chỗ hai đội" aria-label="Đổi chỗ hai đội">⇄</button>
+      <button type="button" class="icon-btn" id="dockResetScore" title="Xoá tỉ số (0–0)" aria-label="Xoá tỉ số">∅</button>
+      <button type="button" class="icon-btn primary-ico" id="dockEventShow" title="Hiển thị sự kiện lên overlay" aria-label="Hiển thị sự kiện">📢</button>
+      <button type="button" class="icon-btn danger-ico" id="dockEventClear" title="Xoá sự kiện" aria-label="Xoá sự kiện">✕</button>
+    </div>
+  </nav>
+
+  <script>
+    const STORAGE_KEY = "scoreData.v2";
+    const TEMPLATE_KEY = "scoreTemplates.v1";
+    const TEMPLATE_LAST_KEY = "scoreTemplates.last";
+    const TEMPLATE_EXPORT_VERSION = 1;
+    const API_PATH = "/api/score";
+    const CAN_USE_HTTP = location.protocol === "http:" || location.protocol === "https:";
+    const AUTO_SYNC_DEBOUNCE_MS = 90;
+    const EVENT_DURATION_MS = 4000;
+    /** Thay người hiển thị 2 dòng OUT/IN — cho đọc lâu hơn một chút */
+    const SUB_EVENT_DURATION_MS = 6500;
+    const elements = {
+      teamA: document.getElementById("teamA"),
+      scoreA: document.getElementById("scoreA"),
+      logoA: document.getElementById("logoA"),
+      teamB: document.getElementById("teamB"),
+      scoreB: document.getElementById("scoreB"),
+      logoB: document.getElementById("logoB"),
+      lineupA: document.getElementById("lineupA"),
+      lineupB: document.getElementById("lineupB"),
+      coachA: document.getElementById("coachA"),
+      coachB: document.getElementById("coachB"),
+      periodButtons: document.getElementById("periodButtons"),
+      clockPreview: document.getElementById("clockPreview"),
+      clockSet: document.getElementById("clockSet"),
+      addedMinutes: document.getElementById("addedMinutes"),
+      eventText: document.getElementById("eventText"),
+      midbreakTitle: document.getElementById("midbreakTitle"),
+      midbreakLine: document.getElementById("midbreakLine"),
+      varTitle: document.getElementById("varTitle"),
+      varDetail: document.getElementById("varDetail"),
+      refereeName: document.getElementById("refereeName"),
+      commentatorMain: document.getElementById("commentatorMain"),
+      commentatorGuest: document.getElementById("commentatorGuest"),
+      shotsA: document.getElementById("shotsA"),
+      shotsB: document.getElementById("shotsB"),
+      yellowA: document.getElementById("yellowA"),
+      yellowB: document.getElementById("yellowB"),
+      redA: document.getElementById("redA"),
+      redB: document.getElementById("redB"),
+      templateSelect: document.getElementById("templateSelect"),
+      templateName: document.getElementById("templateName"),
+      templateImportFile: document.getElementById("templateImportFile"),
+      statusText: document.getElementById("statusText")
+    };
+    let syncTimer = null;
+    let clockTimer = null;
+    let state = {
+      period: "H1",
+      clockSeconds: 0,
+      clockRunning: false,
+      clockAnchorMs: null,
+      clockAnchorBaseSeconds: null,
+      addedMinutes: 0,
+      eventText: "",
+      eventUntil: 0,
+      eventType: "none",
+      eventSide: "",
+      subOut: "",
+      subIn: "",
+      scorersA: "",
+      scorersB: "",
+      lineupShow: "off",
+      scoreboardView: "full",
+      infoPanelMode: "off"
+    };
+
+    let activeInfoTab = "midbreak";
+
+    function clampNumber(value, min, max) {
+      const number = Number.parseInt(value, 10);
+      if (Number.isNaN(number)) return min;
+      if (number < min) return min;
+      if (number > max) return max;
+      return number;
+    }
+
+    function clampScore(value) {
+      return clampNumber(value, 0, 99);
+    }
+
+    function parseClockText(text) {
+      const raw = (text ?? "").toString().trim();
+      const m = raw.match(/^(\d{1,3})\s*:\s*(\d{1,2})$/);
+      if (!m) return null;
+      const mm = clampNumber(m[1], 0, 150);
+      const ss = clampNumber(m[2], 0, 59);
+      return clampNumber(mm * 60 + ss, 0, 9000);
+    }
+
+    function applyClockSet() {
+      const parsed = parseClockText(elements.clockSet?.value);
+      if (parsed == null) {
+        elements.statusText.textContent = "Giờ không hợp lệ. Nhập theo dạng mm:ss (ví dụ 12:34)";
+        return;
+      }
+      state.clockSeconds = parsed;
+      if (state.clockRunning) {
+        state.clockAnchorBaseSeconds = state.clockSeconds;
+        state.clockAnchorMs = Date.now();
+      } else {
+        state.clockAnchorMs = null;
+        state.clockAnchorBaseSeconds = null;
+      }
+      updateClockPreview();
+      flushAutoSync();
+    }
+
+    function normalizeLineupShow(value) {
+      const s = (value ?? "").toString().trim().toLowerCase();
+      if (s === "a") return "A";
+      if (s === "b") return "B";
+      if (s === "both" || s === "ab" || s === "all") return "both";
+      return "off";
+    }
+
+    function normalizeScoreboardView(value) {
+      const s = (value ?? "").toString().trim().toLowerCase();
+      if (s === "clock" || s === "time" || s === "clock_only" || s === "dongho") return "clock";
+      if (s === "hidden" || s === "hide" || s === "off" || s === "an") return "hidden";
+      return "full";
+    }
+
+    function normalizeInfoPanelMode(value) {
+      const s = (value ?? "").toString().trim().toLowerCase();
+      if (s === "midbreak" || s === "break" || s === "ht" || s === "half") return "midbreak";
+      if (s === "officials" || s === "ref" || s === "blv") return "officials";
+      if (s === "var" || s === "varreview" || s === "video") return "var";
+      return "off";
+    }
+
+    function updateScoreViewButtons() {
+      const bar = document.getElementById("scoreViewBar");
+      if (!bar) return;
+      const current = normalizeScoreboardView(state.scoreboardView);
+      bar.querySelectorAll(".score-view-btn").forEach((btn) => {
+        const m = normalizeScoreboardView(btn.dataset.scoreView);
+        btn.classList.toggle("is-active", m === current);
+      });
+    }
+
+    function setScoreboardView(mode) {
+      state.scoreboardView = normalizeScoreboardView(mode);
+      updateScoreViewButtons();
+      clearTimeout(syncTimer);
+      void updateScore();
+    }
+
+    function updateInfoPanelButtons() {
+      const bar = document.getElementById("infoPanelBar");
+      if (!bar) return;
+      const current = normalizeInfoPanelMode(state.infoPanelMode);
+      bar.querySelectorAll(".info-panel-btn").forEach((btn) => {
+        const m = normalizeInfoPanelMode(btn.dataset.infoPanel);
+        btn.classList.toggle("is-active", m === current);
+      });
+    }
+
+    function setInfoPanelMode(mode) {
+      state.infoPanelMode = normalizeInfoPanelMode(mode);
+      updateInfoPanelButtons();
+      clearTimeout(syncTimer);
+      void updateScore();
+    }
+
+    function switchInfoTab(mode) {
+      const tab =
+        mode === "officials" ? "officials" : mode === "var" ? "var" : "midbreak";
+      activeInfoTab = tab;
+      const tabs = document.getElementById("infoTabs");
+      if (tabs) {
+        tabs.querySelectorAll(".info-tab-btn").forEach((btn) => {
+          btn.classList.toggle("is-active", btn.dataset.infoTab === tab);
+        });
+      }
+      const paneMid = document.getElementById("infoTabMidbreak");
+      const paneOff = document.getElementById("infoTabOfficials");
+      const paneVar = document.getElementById("infoTabVar");
+      if (paneMid) paneMid.classList.toggle("is-active", tab === "midbreak");
+      if (paneOff) paneOff.classList.toggle("is-active", tab === "officials");
+      if (paneVar) paneVar.classList.toggle("is-active", tab === "var");
+    }
+
+    function updateLineupShowButtons() {
+      const bar = document.getElementById("lineupShowBar");
+      if (!bar) return;
+      const current = normalizeLineupShow(state.lineupShow);
+      bar.querySelectorAll(".lineup-show-btn").forEach((btn) => {
+        const m = normalizeLineupShow(btn.dataset.lineupShow);
+        btn.classList.toggle("is-active", m === current);
+      });
+    }
+
+    function setLineupShow(mode) {
+      state.lineupShow = normalizeLineupShow(mode);
+      updateLineupShowButtons();
+      clearTimeout(syncTimer);
+      void updateScore();
+    }
+
+    function formatClock(seconds) {
+      const safe = clampNumber(seconds, 0, 9000);
+      const mm = Math.floor(safe / 60).toString().padStart(2, "0");
+      const ss = (safe % 60).toString().padStart(2, "0");
+      return `${mm}:${ss}`;
+    }
+
+    /** Giây hiển thị thực — chạy theo mốc thời gian, không phụ thuộc tab đang mở (đồng bộ với server). */
+    function getEffectiveClockSeconds() {
+      if (!state.clockRunning) {
+        return clampNumber(state.clockSeconds, 0, 9000);
+      }
+      if (state.clockAnchorMs == null) {
+        return clampNumber(state.clockSeconds, 0, 9000);
+      }
+      const base =
+        state.clockAnchorBaseSeconds != null
+          ? clampNumber(state.clockAnchorBaseSeconds, 0, 9000)
+          : clampNumber(state.clockSeconds, 0, 9000);
+      const delta = Math.floor((Date.now() - Number(state.clockAnchorMs)) / 1000);
+      return clampNumber(base + delta, 0, 9000);
+    }
+
+    function updateClockPreview() {
+      const t = formatClock(getEffectiveClockSeconds());
+      elements.clockPreview.textContent = t;
+      if (elements.clockSet && document.activeElement !== elements.clockSet) {
+        elements.clockSet.value = t;
+      }
+      const dockClock = document.getElementById("dockClockDisplay");
+      if (dockClock) {
+        dockClock.textContent = t;
+      }
+      const playGlyph = document.getElementById("dockPlayGlyph");
+      if (playGlyph) {
+        playGlyph.textContent = state.clockRunning ? "⏸" : "▶";
+      }
+    }
+
+    function collectData() {
+      return {
+        teamA: elements.teamA.value.trim() || "Đội A",
+        scoreA: clampScore(elements.scoreA.value),
+        logoA: elements.logoA.value.trim(),
+        teamB: elements.teamB.value.trim() || "Đội B",
+        scoreB: clampScore(elements.scoreB.value),
+        logoB: elements.logoB.value.trim(),
+        period: state.period,
+        clockSeconds: getEffectiveClockSeconds(),
+        clockRunning: Boolean(state.clockRunning),
+        clockAnchorMs: state.clockAnchorMs,
+        clockAnchorBaseSeconds: state.clockAnchorBaseSeconds,
+        addedMinutes: clampNumber(elements.addedMinutes.value, 0, 30),
+        eventText: elements.eventText.value.trim(),
+        eventUntil: clampNumber(state.eventUntil, 0, 9999999999999),
+        eventType: state.eventType || "none",
+        eventSide: state.eventSide || "",
+        subOut: (state.subOut || "").toString().trim(),
+        subIn: (state.subIn || "").toString().trim(),
+        cornersA: 0,
+        cornersB: 0,
+        shotsA: clampNumber(elements.shotsA.value, 0, 99),
+        shotsB: clampNumber(elements.shotsB.value, 0, 99),
+        yellowA: clampNumber(elements.yellowA.value, 0, 20),
+        yellowB: clampNumber(elements.yellowB.value, 0, 20),
+        redA: clampNumber(elements.redA.value, 0, 10),
+        redB: clampNumber(elements.redB.value, 0, 10),
+        lineupA: elements.lineupA.value,
+        lineupB: elements.lineupB.value,
+        coachA: elements.coachA.value.trim(),
+        coachB: elements.coachB.value.trim(),
+        lineupShow: normalizeLineupShow(state.lineupShow),
+        scoreboardView: normalizeScoreboardView(state.scoreboardView),
+        infoPanelMode: normalizeInfoPanelMode(state.infoPanelMode),
+        midbreakTitle: elements.midbreakTitle.value.trim(),
+        midbreakLine: elements.midbreakLine.value.trim(),
+        varTitle: (elements.varTitle && elements.varTitle.value.trim()) || "PENALTY",
+        varDetail: (elements.varDetail && elements.varDetail.value.trim()) || "",
+        scorersA: (state.scorersA || "").toString(),
+        scorersB: (state.scorersB || "").toString(),
+        refereeName: elements.refereeName.value.trim(),
+        commentatorMain: elements.commentatorMain.value.trim(),
+        commentatorGuest: elements.commentatorGuest.value.trim(),
+        updatedAt: new Date().toISOString()
+      };
+    }
+
+    function fillForm(data) {
+      elements.teamA.value = data.teamA ?? "Đội A";
+      elements.scoreA.value = clampScore(data.scoreA ?? 0);
+      elements.logoA.value = data.logoA ?? "";
+      elements.teamB.value = data.teamB ?? "Đội B";
+      elements.scoreB.value = clampScore(data.scoreB ?? 0);
+      elements.logoB.value = data.logoB ?? "";
+      state.period = (data.period || "H1").toString().toUpperCase();
+      state.clockSeconds = clampNumber(data.clockSeconds ?? 0, 0, 9000);
+      state.clockRunning = Boolean(data.clockRunning);
+      state.clockAnchorMs = data.clockAnchorMs != null ? Number(data.clockAnchorMs) : null;
+      state.clockAnchorBaseSeconds =
+        data.clockAnchorBaseSeconds != null
+          ? clampNumber(data.clockAnchorBaseSeconds, 0, 9000)
+          : null;
+      state.eventUntil = clampNumber(data.eventUntil ?? 0, 0, 9999999999999);
+      state.eventType = (data.eventType ?? "none").toString();
+      state.eventSide = (data.eventSide ?? "").toString().toUpperCase();
+      state.subOut = (data.subOut ?? "").toString();
+      state.subIn = (data.subIn ?? "").toString();
+      elements.addedMinutes.value = clampNumber(data.addedMinutes ?? 0, 0, 30);
+      elements.eventText.value = data.eventText ?? "";
+      elements.midbreakTitle.value = data.midbreakTitle ?? "NGHI GIUA HIEP";
+      elements.midbreakLine.value = data.midbreakLine ?? "";
+      if (elements.varTitle) elements.varTitle.value = data.varTitle ?? "PENALTY";
+      if (elements.varDetail) elements.varDetail.value = data.varDetail ?? "";
+      state.scorersA = (data.scorersA ?? "").toString();
+      state.scorersB = (data.scorersB ?? "").toString();
+      elements.refereeName.value = data.refereeName ?? "";
+      elements.commentatorMain.value = data.commentatorMain ?? "";
+      elements.commentatorGuest.value = data.commentatorGuest ?? "";
+      elements.shotsA.value = clampNumber(data.shotsA ?? 0, 0, 99);
+      elements.shotsB.value = clampNumber(data.shotsB ?? 0, 0, 99);
+      elements.yellowA.value = clampNumber(data.yellowA ?? 0, 0, 20);
+      elements.yellowB.value = clampNumber(data.yellowB ?? 0, 0, 20);
+      elements.redA.value = clampNumber(data.redA ?? 0, 0, 10);
+      elements.redB.value = clampNumber(data.redB ?? 0, 0, 10);
+      elements.lineupA.value = data.lineupA ?? "";
+      elements.lineupB.value = data.lineupB ?? "";
+      elements.coachA.value = data.coachA ?? "";
+      elements.coachB.value = data.coachB ?? "";
+      if (Object.prototype.hasOwnProperty.call(data, "lineupShow")) {
+        state.lineupShow = normalizeLineupShow(data.lineupShow);
+      }
+      if (Object.prototype.hasOwnProperty.call(data, "scoreboardView")) {
+        state.scoreboardView = normalizeScoreboardView(data.scoreboardView);
+      }
+      if (Object.prototype.hasOwnProperty.call(data, "infoPanelMode")) {
+        state.infoPanelMode = normalizeInfoPanelMode(data.infoPanelMode);
+      }
+      updateClockPreview();
+      rebuildLineupActions("A");
+      rebuildLineupActions("B");
+      updateLineupShowButtons();
+      updateScoreViewButtons();
+      updateInfoPanelButtons();
+      switchInfoTab(
+        state.infoPanelMode === "officials"
+          ? "officials"
+          : state.infoPanelMode === "var"
+            ? "var"
+            : "midbreak"
+      );
+    }
+
+    function isTypingInTextControl() {
+      const el = document.activeElement;
+      if (!el) return false;
+      if (el.isContentEditable) return true;
+      if (el.tagName === "TEXTAREA") return true;
+      if (el.tagName !== "INPUT") return false;
+      const t = el.type;
+      return t === "text" || t === "search" || t === "url" || !t;
+    }
+
+    /** Sau khi collectData: cap nhat state + so + dong ho; khong ghi de o chu khi dang go (IME). */
+    function applySyncFromCollectedData(data) {
+      state.period = (data.period || "H1").toString().toUpperCase();
+      state.clockSeconds = clampNumber(data.clockSeconds ?? 0, 0, 9000);
+      state.clockRunning = Boolean(data.clockRunning);
+      if (Object.prototype.hasOwnProperty.call(data, "clockAnchorMs")) {
+        state.clockAnchorMs = data.clockAnchorMs != null ? Number(data.clockAnchorMs) : null;
+      }
+      if (Object.prototype.hasOwnProperty.call(data, "clockAnchorBaseSeconds")) {
+        state.clockAnchorBaseSeconds =
+          data.clockAnchorBaseSeconds != null
+            ? clampNumber(data.clockAnchorBaseSeconds, 0, 9000)
+            : null;
+      }
+      state.eventUntil = clampNumber(data.eventUntil ?? 0, 0, 9999999999999);
+      state.eventType = (data.eventType ?? "none").toString();
+      state.eventSide = (data.eventSide ?? "").toString().toUpperCase();
+      state.subOut = (data.subOut ?? "").toString();
+      state.subIn = (data.subIn ?? "").toString();
+      state.scorersA = (data.scorersA ?? "").toString();
+      state.scorersB = (data.scorersB ?? "").toString();
+      state.lineupShow = normalizeLineupShow(data.lineupShow);
+      state.scoreboardView = normalizeScoreboardView(data.scoreboardView);
+      state.infoPanelMode = normalizeInfoPanelMode(data.infoPanelMode);
+      updateLineupShowButtons();
+      updateScoreViewButtons();
+      updateInfoPanelButtons();
+      elements.scoreA.value = clampScore(data.scoreA ?? 0);
+      elements.scoreB.value = clampScore(data.scoreB ?? 0);
+      elements.addedMinutes.value = clampNumber(data.addedMinutes ?? 0, 0, 30);
+      elements.shotsA.value = clampNumber(data.shotsA ?? 0, 0, 99);
+      elements.shotsB.value = clampNumber(data.shotsB ?? 0, 0, 99);
+      elements.yellowA.value = clampNumber(data.yellowA ?? 0, 0, 20);
+      elements.yellowB.value = clampNumber(data.yellowB ?? 0, 0, 20);
+      elements.redA.value = clampNumber(data.redA ?? 0, 0, 10);
+      elements.redB.value = clampNumber(data.redB ?? 0, 0, 10);
+      if (state.clockRunning) {
+        state.clockAnchorMs = Date.now();
+        state.clockAnchorBaseSeconds = state.clockSeconds;
+      }
+      updateClockPreview();
+      if (!isTypingInTextControl()) {
+        elements.teamA.value = data.teamA ?? "Đội A";
+        elements.logoA.value = data.logoA ?? "";
+        elements.teamB.value = data.teamB ?? "Đội B";
+        elements.logoB.value = data.logoB ?? "";
+        elements.eventText.value = data.eventText ?? "";
+        elements.midbreakTitle.value = data.midbreakTitle ?? "NGHI GIUA HIEP";
+        elements.midbreakLine.value = data.midbreakLine ?? "";
+        if (elements.varTitle) elements.varTitle.value = data.varTitle ?? "PENALTY";
+        if (elements.varDetail) elements.varDetail.value = data.varDetail ?? "";
+        elements.refereeName.value = data.refereeName ?? "";
+        elements.commentatorMain.value = data.commentatorMain ?? "";
+        elements.commentatorGuest.value = data.commentatorGuest ?? "";
+        elements.lineupA.value = data.lineupA ?? "";
+        elements.lineupB.value = data.lineupB ?? "";
+        elements.coachA.value = data.coachA ?? "";
+        elements.coachB.value = data.coachB ?? "";
+      }
+    }
+
+    function saveData(data) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function sanitizeTemplateEntry(entry) {
+      if (!entry || typeof entry !== "object") return null;
+      const name = (entry.name ?? "").toString().trim().slice(0, 40);
+      if (!name) return null;
+      if (!entry.data || typeof entry.data !== "object") return null;
+      const savedAt = Number.isFinite(Number(entry.savedAt)) ? Number(entry.savedAt) : Date.now();
+      return {
+        name,
+        savedAt,
+        data: entry.data
+      };
+    }
+
+    function readTemplates() {
+      try {
+        const raw = localStorage.getItem(TEMPLATE_KEY);
+        const arr = raw ? JSON.parse(raw) : [];
+        if (!Array.isArray(arr)) return [];
+        return arr
+          .map((item) => sanitizeTemplateEntry(item))
+          .filter(Boolean);
+      } catch {
+        return [];
+      }
+    }
+
+    function writeTemplates(templates) {
+      const clean = Array.isArray(templates)
+        ? templates.map((item) => sanitizeTemplateEntry(item)).filter(Boolean)
+        : [];
+      localStorage.setItem(TEMPLATE_KEY, JSON.stringify(clean));
+    }
+
+    function createExportFileName() {
+      const now = new Date();
+      const pad2 = (n) => String(n).padStart(2, "0");
+      const stamp =
+        `${now.getFullYear()}${pad2(now.getMonth() + 1)}${pad2(now.getDate())}` +
+        `-${pad2(now.getHours())}${pad2(now.getMinutes())}${pad2(now.getSeconds())}`;
+      return `obs-controller-templates-${stamp}.json`;
+    }
+
+    function exportTemplates() {
+      const templates = readTemplates();
+      if (!templates.length) {
+        elements.statusText.textContent = "Chưa có template để xuất";
+        return;
+      }
+      const payload = {
+        app: "OBS_CONTROLLER",
+        type: "score-templates",
+        version: TEMPLATE_EXPORT_VERSION,
+        exportedAt: new Date().toISOString(),
+        templates
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = createExportFileName();
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+      elements.statusText.textContent = `Đã xuất ${templates.length} template ra file`;
+    }
+
+    function readTextFromFile(file) {
+      if (!file) return Promise.resolve("");
+      if (typeof file.text === "function") {
+        return file.text();
+      }
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve((reader.result ?? "").toString());
+        reader.onerror = () => reject(new Error("read failed"));
+        reader.readAsText(file, "utf-8");
+      });
+    }
+
+    async function importTemplatesFromFile(file) {
+      if (!file) return;
+      try {
+        const text = await readTextFromFile(file);
+        const parsed = JSON.parse((text || "").replace(/^\uFEFF/, ""));
+        const source = Array.isArray(parsed)
+          ? parsed
+          : Array.isArray(parsed?.templates)
+            ? parsed.templates
+            : null;
+        if (!source) {
+          elements.statusText.textContent = "File template không hợp lệ";
+          return;
+        }
+
+        const incoming = source
+          .map((item) => sanitizeTemplateEntry(item))
+          .filter(Boolean);
+        if (!incoming.length) {
+          elements.statusText.textContent = "File không có template hợp lệ";
+          return;
+        }
+
+        const existing = readTemplates();
+        const map = new Map();
+        for (const t of existing) {
+          map.set(t.name, t);
+        }
+
+        let added = 0;
+        let replaced = 0;
+        for (const t of incoming) {
+          if (map.has(t.name)) replaced += 1;
+          else added += 1;
+          map.set(t.name, t);
+        }
+
+        const latestImported = incoming
+          .slice()
+          .sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0))[0];
+        if (latestImported?.name) {
+          localStorage.setItem(TEMPLATE_LAST_KEY, latestImported.name);
+        }
+
+        writeTemplates(Array.from(map.values()));
+        renderTemplateSelect();
+
+        const autoName = latestImported?.name || "";
+        const merged = readTemplates();
+        const found = merged.find((t) => t && t.name === autoName);
+        if (autoName && found && found.data) {
+          if (elements.templateSelect) elements.templateSelect.value = autoName;
+          if (elements.templateName) elements.templateName.value = autoName;
+          fillForm(found.data);
+          void updateScore();
+          elements.statusText.textContent =
+            `Đã nhập template (${added} mới, ${replaced} ghi đè) và tải: ${autoName}`;
+        } else {
+          elements.statusText.textContent = `Đã nhập template (${added} mới, ${replaced} ghi đè)`;
+        }
+      } catch {
+        elements.statusText.textContent = "Không thể đọc file template";
+      }
+    }
+
+    function renderTemplateSelect() {
+      const sel = elements.templateSelect;
+      if (!sel) return;
+      const templates = readTemplates().slice().sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
+      const last = localStorage.getItem(TEMPLATE_LAST_KEY) || "";
+      sel.textContent = "";
+      const opt0 = document.createElement("option");
+      opt0.value = "";
+      opt0.textContent = templates.length ? "— Chọn template —" : "— Chưa có template —";
+      sel.appendChild(opt0);
+      for (const t of templates) {
+        if (!t || !t.name) continue;
+        const opt = document.createElement("option");
+        opt.value = t.name;
+        opt.textContent = t.name;
+        if (t.name === last) opt.selected = true;
+        sel.appendChild(opt);
+      }
+    }
+
+    function getSelectedTemplateName() {
+      const sel = elements.templateSelect;
+      const name = sel ? sel.value : "";
+      return (name ?? "").toString().trim();
+    }
+
+    function saveTemplate() {
+      const name = (elements.templateName?.value ?? "").toString().trim();
+      if (!name) {
+        elements.statusText.textContent = "Nhập tên template trước khi lưu";
+        return;
+      }
+      const templates = readTemplates();
+      const data = collectData();
+      const savedAt = Date.now();
+      const idx = templates.findIndex((t) => t && t.name === name);
+      const next = { name, savedAt, data };
+      if (idx >= 0) templates[idx] = next;
+      else templates.push(next);
+      writeTemplates(templates);
+      localStorage.setItem(TEMPLATE_LAST_KEY, name);
+      renderTemplateSelect();
+      elements.statusText.textContent = `Đã lưu template: ${name}`;
+    }
+
+    function loadTemplate() {
+      const name = getSelectedTemplateName();
+      if (!name) {
+        elements.statusText.textContent = "Chọn template để tải";
+        return;
+      }
+      const templates = readTemplates();
+      const found = templates.find((t) => t && t.name === name);
+      if (!found || !found.data) {
+        elements.statusText.textContent = "Template không tồn tại";
+        renderTemplateSelect();
+        return;
+      }
+      fillForm(found.data);
+      localStorage.setItem(TEMPLATE_LAST_KEY, name);
+      if (elements.templateName) elements.templateName.value = name;
+      void updateScore();
+      elements.statusText.textContent = `Đã tải template: ${name}`;
+    }
+
+    function deleteTemplate() {
+      const name = getSelectedTemplateName();
+      if (!name) {
+        elements.statusText.textContent = "Chọn template để xoá";
+        return;
+      }
+      const templates = readTemplates().filter((t) => t && t.name !== name);
+      writeTemplates(templates);
+      const last = localStorage.getItem(TEMPLATE_LAST_KEY);
+      if (last === name) localStorage.removeItem(TEMPLATE_LAST_KEY);
+      renderTemplateSelect();
+      elements.statusText.textContent = `Đã xoá template: ${name}`;
+    }
+
+    async function pushToServer(data) {
+      if (!CAN_USE_HTTP) {
+        return false;
+      }
+
+      try {
+        const response = await fetch(API_PATH, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+          body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+          throw new Error("POST failed");
+        }
+
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function parseUpdatedAtMs(iso) {
+      const t = Date.parse(iso || "");
+      return Number.isNaN(t) ? 0 : t;
+    }
+
+    async function loadFromServer() {
+      if (!CAN_USE_HTTP) {
+        return false;
+      }
+
+      try {
+        const response = await fetch(API_PATH, { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error("GET failed");
+        }
+        const data = await response.json();
+        let local = null;
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            local = JSON.parse(raw);
+          }
+        } catch {
+          // Ignore corrupt local snapshot.
+        }
+        const localMs = parseUpdatedAtMs(local?.updatedAt);
+        const serverMs = parseUpdatedAtMs(data?.updatedAt);
+        if (local && localMs > serverMs) {
+          fillForm(local);
+          elements.statusText.textContent = "Đã tải bản cục bộ (mới hơn dữ liệu trên máy chủ)";
+        } else {
+          fillForm(data);
+          elements.statusText.textContent = "Đã tải dữ liệu từ máy chủ";
+        }
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function loadSavedData() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        fillForm(data);
+        elements.statusText.textContent = "Đã tải dữ liệu đã lưu";
+      } catch {
+        elements.statusText.textContent = "Lỗi đọc dữ liệu cũ";
+      }
+    }
+
+    async function updateScore() {
+      syncTimer = null;
+      const data = collectData();
+      applySyncFromCollectedData(data);
+      saveData(data);
+
+      const pushed = await pushToServer(data);
+      if (pushed) {
+        elements.statusText.textContent = `Đã cập nhật OBS lúc ${new Date().toLocaleTimeString("vi-VN")}`;
+      } else if (CAN_USE_HTTP) {
+        elements.statusText.textContent = "Đã lưu cục bộ, không gửi được tới máy chủ";
+      } else {
+        elements.statusText.textContent = `Đã cập nhật cục bộ lúc ${new Date().toLocaleTimeString("vi-VN")}`;
+      }
+    }
+
+    function ensureClockTicker() {
+      if (clockTimer) {
+        clearInterval(clockTimer);
+      }
+      clockTimer = setInterval(() => {
+        if (!state.clockRunning) {
+          return;
+        }
+        updateClockPreview();
+      }, 250);
+    }
+
+    function scheduleAutoSync() {
+      clearTimeout(syncTimer);
+      elements.statusText.textContent = "Đang đồng bộ…";
+      syncTimer = setTimeout(() => {
+        updateScore();
+      }, AUTO_SYNC_DEBOUNCE_MS);
+    }
+
+    function flushAutoSync() {
+      clearTimeout(syncTimer);
+      updateScore();
+    }
+
+    function setPeriod(period) {
+      state.period = period;
+      scheduleAutoSync();
+    }
+
+    function startClock() {
+      state.clockSeconds = getEffectiveClockSeconds();
+      state.clockAnchorBaseSeconds = clampNumber(state.clockSeconds, 0, 9000);
+      state.clockAnchorMs = Date.now();
+      state.clockRunning = true;
+      flushAutoSync();
+    }
+
+    function pauseClock() {
+      state.clockSeconds = getEffectiveClockSeconds();
+      state.clockRunning = false;
+      state.clockAnchorMs = null;
+      state.clockAnchorBaseSeconds = null;
+      flushAutoSync();
+    }
+
+    function shiftClock(deltaSeconds) {
+      const cur = getEffectiveClockSeconds();
+      state.clockSeconds = clampNumber(cur + deltaSeconds, 0, 9000);
+      if (state.clockRunning) {
+        state.clockAnchorBaseSeconds = state.clockSeconds;
+        state.clockAnchorMs = Date.now();
+      }
+      updateClockPreview();
+      scheduleAutoSync();
+    }
+
+    function resetClock() {
+      state.clockSeconds = 0;
+      state.clockRunning = false;
+      state.clockAnchorMs = null;
+      state.clockAnchorBaseSeconds = null;
+      updateClockPreview();
+      scheduleAutoSync();
+    }
+
+    function showEvent(text, options = {}) {
+      const kind = (options.type || "custom").toString();
+      elements.eventText.value = text;
+      state.eventUntil =
+        Date.now() + (kind === "sub" ? SUB_EVENT_DURATION_MS : EVENT_DURATION_MS);
+      state.eventType = kind;
+      state.eventSide = (options.side || "").toString().toUpperCase();
+      if (kind === "sub") {
+        state.subOut = (options.subOut || "").toString().trim().slice(0, 80);
+        state.subIn = (options.subIn || "").toString().trim().slice(0, 80);
+      } else {
+        state.subOut = "";
+        state.subIn = "";
+      }
+      scheduleAutoSync();
+    }
+
+    function clearEvent() {
+      elements.eventText.value = "";
+      state.eventUntil = 0;
+      state.eventType = "none";
+      state.eventSide = "";
+      state.subOut = "";
+      state.subIn = "";
+      scheduleAutoSync();
+    }
+
+    function extractDisplayPlayerName(playerLine) {
+      const raw = (playerLine ?? "").toString().trim();
+      if (!raw) return "";
+      const cleaned = raw.replace(/^\d+\s*[.)-]?\s*/, "").trim();
+      return cleaned || raw;
+    }
+
+    function appendScorer(side, playerLine) {
+      const name = extractDisplayPlayerName(playerLine);
+      if (!name) return;
+      const key = side === "A" ? "scorersA" : "scorersB";
+      const current = (state[key] || "")
+        .split(/\r?\n/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+      current.push(name.toUpperCase());
+      state[key] = current.join("\n").slice(0, 2500);
+    }
+
+    function playerLineGoal(side, playerLine) {
+      const label = playerLine.trim();
+      if (!label) return;
+      if (side === "A") {
+        elements.scoreA.value = clampScore(Number(elements.scoreA.value) + 1);
+      } else {
+        elements.scoreB.value = clampScore(Number(elements.scoreB.value) + 1);
+      }
+      appendScorer(side, label);
+      showEvent(`BÀN THẮNG — ${label.toUpperCase()}`, { type: "goal", side });
+      flushAutoSync();
+    }
+
+    function playerLineYellow(side, playerLine) {
+      const label = playerLine.trim();
+      if (!label) return;
+      const input = side === "A" ? elements.yellowA : elements.yellowB;
+      input.value = clampNumber(Number(input.value) + 1, 0, 20);
+      showEvent(`THẺ VÀNG — ${label.toUpperCase()}`, { type: "yellow", side });
+      flushAutoSync();
+    }
+
+    function playerLineRed(side, playerLine) {
+      const label = playerLine.trim();
+      if (!label) return;
+      const input = side === "A" ? elements.redA : elements.redB;
+      input.value = clampNumber(Number(input.value) + 1, 0, 10);
+      showEvent(`THẺ ĐỎ — ${label.toUpperCase()}`, { type: "red", side });
+      flushAutoSync();
+    }
+
+    function playerLineSub(side, playerLine) {
+      const label = playerLine.trim();
+      if (!label) return;
+      const outName = extractDisplayPlayerName(label) || label;
+      const incoming = window.prompt("Tên cầu thủ vào sân:", "");
+      if (incoming === null) return;
+      const inName = extractDisplayPlayerName(incoming) || incoming.trim();
+      if (!inName) return;
+      const summary = `RA: ${outName} | VÀO: ${inName}`;
+      showEvent(summary, {
+        type: "sub",
+        side,
+        subOut: outName,
+        subIn: inName
+      });
+      flushAutoSync();
+    }
+
+    function playerLineEvent(side, line, kind) {
+      if (kind === "goal") {
+        playerLineGoal(side, line);
+      } else if (kind === "yellow") {
+        playerLineYellow(side, line);
+      } else if (kind === "red") {
+        playerLineRed(side, line);
+      } else if (kind === "sub") {
+        playerLineSub(side, line);
+      }
+    }
+
+    function rebuildLineupActions(side) {
+      const ta = side === "A" ? elements.lineupA : elements.lineupB;
+      const container = document.getElementById(side === "A" ? "lineupActionsA" : "lineupActionsB");
+      if (!container) return;
+      const lines = (ta.value || "")
+        .split(/\r?\n/)
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .slice(0, 11);
+      container.textContent = "";
+      if (!lines.length) {
+        const hint = document.createElement("p");
+        hint.className = "lineup-hint";
+        hint.textContent = "Nhập đội hình phía trên; mỗi dòng một cầu thủ — bấm ⚽ / 🟨 / 🟥 / 🔀 (thay người: nhập thêm cầu thủ vào sân, OUT/IN trên overlay).";
+        container.appendChild(hint);
+        return;
+      }
+      lines.forEach((line) => {
+        const row = document.createElement("div");
+        row.className = "lineup-action-row";
+        const label = document.createElement("span");
+        label.className = "pn";
+        label.textContent = line;
+        const grp = document.createElement("div");
+        grp.className = "lineup-ico-group";
+        function mkBtn(emoji, title, kind) {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.textContent = emoji;
+          b.title = title;
+          b.addEventListener("click", () => playerLineEvent(side, line, kind));
+          return b;
+        }
+        grp.appendChild(mkBtn("⚽", "Ghi bàn — cộng bàn + hiện tên cầu thủ", "goal"));
+        grp.appendChild(mkBtn("🟨", "Thẻ vàng — cộng thống kê + hiện tên", "yellow"));
+        grp.appendChild(mkBtn("🟥", "Thẻ đỏ — cộng thống kê + hiện tên", "red"));
+        grp.appendChild(mkBtn("🔀", "Thay người — nhập cầu thủ vào sân; overlay hiện OUT / IN", "sub"));
+        row.appendChild(label);
+        row.appendChild(grp);
+        container.appendChild(row);
+      });
+    }
+
+    function increaseStat(input, maxValue) {
+      input.value = clampNumber(Number(input.value) + 1, 0, maxValue);
+      scheduleAutoSync();
+    }
+
+    function increaseScore(side) {
+      if (side === "A") {
+        elements.scoreA.value = clampScore(Number(elements.scoreA.value) + 1);
+        showEvent(`BÀN THẮNG ${elements.teamA.value || "ĐỘI A"}`, { type: "goal", side: "A" });
+      } else {
+        elements.scoreB.value = clampScore(Number(elements.scoreB.value) + 1);
+        showEvent(`BÀN THẮNG ${elements.teamB.value || "ĐỘI B"}`, { type: "goal", side: "B" });
+      }
+      flushAutoSync();
+    }
+
+    function swapTeams() {
+      const left = {
+        team: elements.teamA.value,
+        score: elements.scoreA.value,
+        logo: elements.logoA.value,
+        lineup: elements.lineupA.value,
+        coach: elements.coachA.value,
+        scorers: state.scorersA
+      };
+      elements.teamA.value = elements.teamB.value;
+      elements.scoreA.value = elements.scoreB.value;
+      elements.logoA.value = elements.logoB.value;
+      elements.lineupA.value = elements.lineupB.value;
+      elements.coachA.value = elements.coachB.value;
+      elements.teamB.value = left.team;
+      elements.scoreB.value = left.score;
+      elements.logoB.value = left.logo;
+      elements.lineupB.value = left.lineup;
+      elements.coachB.value = left.coach;
+      state.scorersA = state.scorersB;
+      state.scorersB = left.scorers;
+      rebuildLineupActions("A");
+      rebuildLineupActions("B");
+      flushAutoSync();
+    }
+
+    function resetScores() {
+      elements.scoreA.value = 0;
+      elements.scoreB.value = 0;
+      state.scorersA = "";
+      state.scorersB = "";
+      flushAutoSync();
+    }
+
+    document.getElementById("btnUpdate").addEventListener("click", flushAutoSync);
+    document.getElementById("btnSwap").addEventListener("click", swapTeams);
+    document.getElementById("btnAPlus").addEventListener("click", () => increaseScore("A"));
+    document.getElementById("btnBPlus").addEventListener("click", () => increaseScore("B"));
+    document.getElementById("btnReset").addEventListener("click", resetScores);
+    document.getElementById("btnClockStart").addEventListener("click", startClock);
+    document.getElementById("btnClockPause").addEventListener("click", pauseClock);
+    document.getElementById("btnClockPlus").addEventListener("click", () => shiftClock(60));
+    document.getElementById("btnClockMinus").addEventListener("click", () => shiftClock(-60));
+    document.getElementById("btnClockReset").addEventListener("click", resetClock);
+    document.getElementById("btnClockSet").addEventListener("click", applyClockSet);
+    elements.clockSet.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        applyClockSet();
+      }
+    });
+    document.getElementById("btnTemplateSave").addEventListener("click", saveTemplate);
+    document.getElementById("btnTemplateLoad").addEventListener("click", loadTemplate);
+    document.getElementById("btnTemplateDelete").addEventListener("click", deleteTemplate);
+    document.getElementById("btnTemplateExport").addEventListener("click", exportTemplates);
+    document.getElementById("btnTemplateImport").addEventListener("click", () => {
+      if (!elements.templateImportFile) return;
+      elements.templateImportFile.value = "";
+      elements.templateImportFile.click();
+    });
+    if (elements.templateImportFile) {
+      elements.templateImportFile.addEventListener("change", async (event) => {
+        const file = event.target && event.target.files ? event.target.files[0] : null;
+        await importTemplatesFromFile(file);
+      });
+    }
+    elements.templateSelect.addEventListener("change", () => {
+      const name = getSelectedTemplateName();
+      if (name) {
+        if (elements.templateName) elements.templateName.value = name;
+        localStorage.setItem(TEMPLATE_LAST_KEY, name);
+      }
+    });
+    document.getElementById("btnShowEvent").addEventListener("click", () => showEventBanner());
+    document.getElementById("btnClearEvent").addEventListener("click", clearEvent);
+    document.getElementById("btnGoalA").addEventListener("click", () => increaseScore("A"));
+    document.getElementById("btnGoalB").addEventListener("click", () => increaseScore("B"));
+    document.getElementById("btnYellowA").addEventListener("click", yellowCardA);
+    document.getElementById("btnYellowB").addEventListener("click", yellowCardB);
+    document.getElementById("btnRedA").addEventListener("click", redCardA);
+    document.getElementById("btnRedB").addEventListener("click", redCardB);
+
+    function yellowCardA() {
+      increaseStat(elements.yellowA, 20);
+      showEvent(`THẺ VÀNG ${elements.teamA.value || "ĐỘI A"}`, { type: "yellow", side: "A" });
+    }
+
+    function yellowCardB() {
+      increaseStat(elements.yellowB, 20);
+      showEvent(`THẺ VÀNG ${elements.teamB.value || "ĐỘI B"}`, { type: "yellow", side: "B" });
+    }
+
+    function redCardA() {
+      increaseStat(elements.redA, 10);
+      showEvent(`THẺ ĐỎ ${elements.teamA.value || "ĐỘI A"}`, { type: "red", side: "A" });
+    }
+
+    function redCardB() {
+      increaseStat(elements.redB, 10);
+      showEvent(`THẺ ĐỎ ${elements.teamB.value || "ĐỘI B"}`, { type: "red", side: "B" });
+    }
+
+    function showEventBanner() {
+      const text = elements.eventText.value.trim() || "SỰ KIỆN TRẬN ĐẤU";
+      showEvent(text, { type: "custom" });
+    }
+
+    elements.periodButtons.querySelectorAll("button[data-period]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setPeriod(button.dataset.period);
+      });
+    });
+
+    [
+      elements.teamA,
+      elements.scoreA,
+      elements.logoA,
+      elements.teamB,
+      elements.scoreB,
+      elements.logoB,
+      elements.addedMinutes,
+      elements.midbreakTitle,
+      elements.midbreakLine,
+      elements.varTitle,
+      elements.varDetail,
+      elements.refereeName,
+      elements.commentatorMain,
+      elements.commentatorGuest,
+      elements.shotsA,
+      elements.shotsB,
+      elements.yellowA,
+      elements.yellowB,
+      elements.redA,
+      elements.redB,
+      elements.lineupA,
+      elements.lineupB,
+      elements.coachA,
+      elements.coachB
+    ].forEach((input) => {
+      input.addEventListener("input", scheduleAutoSync);
+      input.addEventListener("change", scheduleAutoSync);
+    });
+
+    elements.eventText.addEventListener("input", () => {
+      state.eventType = "custom";
+      state.eventSide = "";
+      state.subOut = "";
+      state.subIn = "";
+      scheduleAutoSync();
+    });
+    elements.eventText.addEventListener("change", scheduleAutoSync);
+
+    elements.lineupA.addEventListener("input", () => rebuildLineupActions("A"));
+    elements.lineupB.addEventListener("input", () => rebuildLineupActions("B"));
+
+    const lineupShowBar = document.getElementById("lineupShowBar");
+    if (lineupShowBar) {
+      lineupShowBar.querySelectorAll(".lineup-show-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          setLineupShow(btn.dataset.lineupShow);
+        });
+      });
+    }
+
+    const scoreViewBar = document.getElementById("scoreViewBar");
+    if (scoreViewBar) {
+      scoreViewBar.querySelectorAll(".score-view-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          setScoreboardView(btn.dataset.scoreView);
+        });
+      });
+    }
+
+    const infoTabs = document.getElementById("infoTabs");
+    if (infoTabs) {
+      infoTabs.querySelectorAll(".info-tab-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          switchInfoTab(btn.dataset.infoTab);
+        });
+      });
+    }
+
+    const infoPanelBar = document.getElementById("infoPanelBar");
+    if (infoPanelBar) {
+      infoPanelBar.querySelectorAll(".info-panel-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          setInfoPanelMode(btn.dataset.infoPanel);
+          if (btn.dataset.infoPanel === "officials") switchInfoTab("officials");
+          if (btn.dataset.infoPanel === "midbreak") switchInfoTab("midbreak");
+          if (btn.dataset.infoPanel === "var") switchInfoTab("var");
+        });
+      });
+    }
+
+    document.querySelectorAll(".var-preset").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const t = btn.getAttribute("data-var-title") || "";
+        if (elements.varTitle && t) {
+          elements.varTitle.value = t;
+          scheduleAutoSync();
+        }
+      });
+    });
+
+    document.getElementById("dockClockToggle").addEventListener("click", () => {
+      if (state.clockRunning) {
+        pauseClock();
+      } else {
+        startClock();
+      }
+      flushAutoSync();
+    });
+    document.getElementById("dockClockMinus").addEventListener("click", () => {
+      shiftClock(-60);
+      flushAutoSync();
+    });
+    document.getElementById("dockClockPlus").addEventListener("click", () => {
+      shiftClock(60);
+      flushAutoSync();
+    });
+    document.getElementById("dockClockReset").addEventListener("click", () => {
+      resetClock();
+      flushAutoSync();
+    });
+    document.getElementById("dockGoalA").addEventListener("click", () => increaseScore("A"));
+    document.getElementById("dockGoalB").addEventListener("click", () => increaseScore("B"));
+    document.getElementById("dockYellowA").addEventListener("click", () => {
+      yellowCardA();
+      flushAutoSync();
+    });
+    document.getElementById("dockYellowB").addEventListener("click", () => {
+      yellowCardB();
+      flushAutoSync();
+    });
+    document.getElementById("dockRedA").addEventListener("click", () => {
+      redCardA();
+      flushAutoSync();
+    });
+    document.getElementById("dockRedB").addEventListener("click", () => {
+      redCardB();
+      flushAutoSync();
+    });
+    document.getElementById("dockShotA").addEventListener("click", () => {
+      increaseStat(elements.shotsA, 99);
+      flushAutoSync();
+    });
+    document.getElementById("dockShotB").addEventListener("click", () => {
+      increaseStat(elements.shotsB, 99);
+      flushAutoSync();
+    });
+    document.getElementById("dockSwap").addEventListener("click", swapTeams);
+    document.getElementById("dockResetScore").addEventListener("click", resetScores);
+    document.getElementById("dockEventShow").addEventListener("click", () => {
+      showEventBanner();
+      flushAutoSync();
+    });
+    document.getElementById("dockEventClear").addEventListener("click", () => {
+      clearEvent();
+      flushAutoSync();
+    });
+
+    (async function initFromServerOrLocal() {
+      const fromServer = await loadFromServer();
+      if (!fromServer) {
+        loadSavedData();
+      }
+      ensureClockTicker();
+      updateClockPreview();
+      rebuildLineupActions("A");
+      rebuildLineupActions("B");
+      updateLineupShowButtons();
+      updateScoreViewButtons();
+      updateInfoPanelButtons();
+      switchInfoTab(
+        state.infoPanelMode === "officials"
+          ? "officials"
+          : state.infoPanelMode === "var"
+            ? "var"
+            : "midbreak"
+      );
+      renderTemplateSelect();
+    })();
+
+    if (!CAN_USE_HTTP) {
+      elements.statusText.textContent = "Đang chạy cục bộ (mở file trực tiếp, không có máy chủ)";
+    }
+  </script>
+</body>
+</html>

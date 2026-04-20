@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overlay Event</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #f8fbff;
+      --line: rgba(255, 255, 255, 0.25);
+      --a: #ff7b57;
+      --b: #53a6ff;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: transparent;
+      color: var(--ink);
+      font-family: "Rajdhani", "Segoe UI", Tahoma, sans-serif;
+    }
+
+    .wrap {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 188px 24px 0;
+      pointer-events: none;
+      position: relative;
+    }
+
+    .event {
+      width: min(760px, 94vw);
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(0, 0, 0, 0.46);
+      padding: 8px 14px;
+      font-family: "Bebas Neue", Impact, sans-serif;
+      letter-spacing: 0.08em;
+      font-size: clamp(1rem, 2.3vw, 1.6rem);
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    .event.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .goal {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-8px);
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      padding: 8px 14px;
+      background: rgba(0, 0, 0, 0.54);
+      font-family: "Bebas Neue", Impact, sans-serif;
+      letter-spacing: 0.08em;
+      font-size: clamp(1rem, 2.2vw, 1.55rem);
+      opacity: 0;
+      transition: opacity 220ms ease, transform 220ms ease;
+      white-space: nowrap;
+    }
+
+    .goal.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .goal.team-a {
+      box-shadow: 0 0 0 2px rgba(255, 123, 87, 0.4) inset;
+    }
+
+    .goal.team-b {
+      box-shadow: 0 0 0 2px rgba(83, 166, 255, 0.4) inset;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="goal" id="goalBanner">GOAL!</div>
+    <div class="event" id="eventTicker"></div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "scoreData.v2";
+    const API_PATH = "/api/score";
+    const STREAM_PATH = "/api/score/stream";
+    const CAN_USE_HTTP = location.protocol === "http:" || location.protocol === "https:";
+
+    const el = {
+      eventTicker: document.getElementById("eventTicker"),
+      goalBanner: document.getElementById("goalBanner")
+    };
+
+    let previous = { scoreA: 0, scoreB: 0 };
+    let hasRendered = false;
+    let goalTimer = null;
+    let streamConnected = false;
+    let stream = null;
+    let reconnectTimer = null;
+
+    function safeText(value, fallback) {
+      const text = (value ?? "").toString().trim();
+      return text || fallback;
+    }
+
+    function toNumber(value, min, max) {
+      const n = Number.parseInt(value, 10);
+      if (Number.isNaN(n) || n < min) return min;
+      if (n > max) return max;
+      return n;
+    }
+
+    function showGoal(teamName, sideClass) {
+      clearTimeout(goalTimer);
+      el.goalBanner.textContent = `${teamName.toUpperCase()} GOAL!`;
+      el.goalBanner.classList.remove("team-a", "team-b");
+      el.goalBanner.classList.add(sideClass, "show");
+      goalTimer = setTimeout(() => {
+        el.goalBanner.classList.remove("show");
+      }, 1800);
+    }
+
+    function render(data) {
+      const teamA = safeText(data.teamA, "TEAM A");
+      const teamB = safeText(data.teamB, "TEAM B");
+      const scoreA = toNumber(data.scoreA, 0, 99);
+      const scoreB = toNumber(data.scoreB, 0, 99);
+      const eventText = safeText(data.eventText, "");
+      const eventUntil = toNumber(data.eventUntil, 0, 9999999999999);
+      const eventType = (data.eventType ?? "none").toString().trim().toLowerCase();
+      const subOut = safeText(data.subOut, "");
+      const subIn = safeText(data.subIn, "");
+
+      const isSub =
+        eventUntil > Date.now() &&
+        eventType === "sub" &&
+        subOut &&
+        subIn;
+
+      /** Thay người chỉ hiện trên overlay bảng tỉ số (team-flash); không hiện ở overlay event này. */
+      if (isSub) {
+        el.eventTicker.className = "event";
+        el.eventTicker.textContent = "";
+        el.eventTicker.innerHTML = "";
+      } else if (eventText && eventUntil > Date.now()) {
+        el.eventTicker.className = "event show";
+        el.eventTicker.textContent = eventText.toUpperCase();
+      } else {
+        el.eventTicker.className = "event";
+        el.eventTicker.textContent = "";
+      }
+
+      if (hasRendered) {
+        if (scoreA > previous.scoreA) {
+          showGoal(teamA, "team-a");
+        }
+        if (scoreB > previous.scoreB) {
+          showGoal(teamB, "team-b");
+        }
+      }
+
+      previous = { scoreA, scoreB };
+      hasRendered = true;
+    }
+
+    function loadFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        render(JSON.parse(raw));
+      } catch {
+        // Silent in overlay.
+      }
+    }
+
+    async function loadFromServer() {
+      try {
+        const response = await fetch(API_PATH, { cache: "no-store" });
+        if (!response.ok) throw new Error("GET failed");
+        render(await response.json());
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function scheduleReconnect() {
+      if (reconnectTimer !== null) return;
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
+        connectStream();
+      }, 1000);
+    }
+
+    function connectStream() {
+      if (!CAN_USE_HTTP || typeof EventSource === "undefined") return;
+      if (stream) stream.close();
+      stream = new EventSource(STREAM_PATH);
+      stream.onopen = () => {
+        streamConnected = true;
+      };
+      stream.onmessage = (event) => {
+        try {
+          render(JSON.parse(event.data));
+        } catch {
+          // Ignore malformed payload.
+        }
+      };
+      stream.onerror = () => {
+        streamConnected = false;
+        if (stream) {
+          stream.close();
+          stream = null;
+        }
+        scheduleReconnect();
+      };
+    }
+
+    if (CAN_USE_HTTP) {
+      connectStream();
+      loadFromServer();
+      setInterval(async () => {
+        if (streamConnected) return;
+        const ok = await loadFromServer();
+        if (!ok) loadFromStorage();
+      }, 1000);
+    } else {
+      loadFromStorage();
+      setInterval(loadFromStorage, 300);
+    }
+  </script>
+</body>
+</html>

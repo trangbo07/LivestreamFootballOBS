@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overlay Scoreboard</title>
+  <style>
+    :root {
+      --navy: #0c1f3d;
+      --score-bg: #8f8f8f;
+      --score-ink: #0a0a0a;
+      --divider-red: #e31b23;
+      --time-bg: #ffffff;
+      --time-ink: #111111;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: transparent;
+      font-family: system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    .wrap {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      padding: 28px 40px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: flex-start;
+      gap: 26px;
+    }
+
+    .wrap.is-score-hidden .scoreboard {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-14px) scale(0.97);
+      pointer-events: none;
+    }
+
+    /* Điều khiển: chỉ đồng hồ — ẩn tên đội + tỉ số, giữ hiệp & giờ */
+    #scoreWrap.sv-clock .scoreboard {
+      grid-template-columns: 1fr !important;
+      grid-template-rows: auto !important;
+      width: min(380px, 96vw);
+      margin: 0 auto;
+    }
+
+    #scoreWrap.sv-clock .scoreboard .team-pane.left,
+    #scoreWrap.sv-clock .scoreboard .team-pane.right,
+    #scoreWrap.sv-clock .scoreboard .score-pane {
+      display: none !important;
+    }
+
+    #scoreWrap.sv-clock .scoreboard .time-pane {
+      grid-column: 1 !important;
+      grid-row: 1 !important;
+      width: 100%;
+    }
+
+    #scoreWrap.sv-clock .scoreboard .fx-layer {
+      min-height: 100px;
+    }
+
+    /* Điều khiển: ẩn hẳn bảng tỉ số (dữ liệu giờ vẫn cập nhật) */
+    #scoreWrap.sv-hidden .scoreboard {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-12px) scale(0.96);
+      pointer-events: none;
+    }
+
+    .scoreboard {
+      position: relative;
+      width: min(1120px, 96vw);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      grid-template-rows: auto auto;
+      align-items: stretch;
+      background: transparent;
+      transition:
+        opacity 0.28s ease,
+        visibility 0.28s ease,
+        transform 0.28s ease;
+    }
+
+    .team-pane {
+      background: var(--navy);
+      color: #fff;
+      min-height: 64px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      position: relative;
+    }
+
+    .team-pane.left {
+      grid-column: 1;
+      grid-row: 1;
+      justify-content: flex-start;
+    }
+
+    .team-pane.right {
+      grid-column: 3;
+      grid-row: 1;
+      justify-content: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .logo {
+      width: 40px;
+      height: 40px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.06);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+
+    .logo span {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .name {
+      flex: 1;
+      min-width: 0;
+      font-size: clamp(1rem, 2.8vw, 1.85rem);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: center;
+    }
+
+    .score-pane {
+      grid-column: 2;
+      grid-row: 1;
+      background: var(--score-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      min-width: clamp(120px, 22vw, 200px);
+      padding: 8px 12px;
+    }
+
+    .score {
+      font-size: clamp(2rem, 6.5vw, 4.25rem);
+      font-weight: 600;
+      line-height: 1;
+      min-width: 0.65em;
+      text-align: center;
+      color: var(--score-ink);
+      font-variant-numeric: tabular-nums;
+      transition: transform 180ms ease;
+    }
+
+    .v-divider {
+      width: 3px;
+      align-self: stretch;
+      min-height: 2.2em;
+      background: var(--divider-red);
+      margin: 0 10px;
+      flex-shrink: 0;
+    }
+
+    .time-pane {
+      grid-column: 2;
+      grid-row: 2;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      padding-top: 0;
+    }
+
+    .time-box {
+      background: var(--time-bg);
+      color: var(--time-ink);
+      font-weight: 600;
+      font-size: clamp(0.95rem, 2.2vw, 1.35rem);
+      padding: 7px 16px;
+      line-height: 1.2;
+      white-space: nowrap;
+      max-width: min(280px, 92%);
+      margin: 0 auto;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .time-box .period {
+      margin-right: 0.4em;
+    }
+
+    .time-box .added {
+      margin-left: 0.45em;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(227, 27, 35, 0.12);
+      color: var(--divider-red);
+      font-weight: 800;
+      letter-spacing: 0.03em;
+    }
+
+    .pulse {
+      animation: pulse 420ms ease;
+    }
+
+    .fx-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      pointer-events: none;
+      overflow: visible;
+    }
+
+    .event-banner {
+      position: absolute;
+      left: 50%;
+      top: calc(100% + 14px);
+      transform: translateX(-50%) translateY(8px);
+      width: min(860px, 92vw);
+      border: 1px solid rgba(12, 31, 61, 0.35);
+      background: rgba(255, 255, 255, 0.95);
+      color: #111;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      padding: 10px 16px;
+      font-size: clamp(0.95rem, 2.2vw, 1.4rem);
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      opacity: 0;
+      transition: opacity 220ms ease, transform 220ms ease;
+    }
+
+    .event-banner.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .team-flash {
+      position: absolute;
+      top: calc(100% + 14px);
+      min-width: 140px;
+      min-height: 60px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: rgba(12, 31, 61, 0.92);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+      opacity: 0;
+      transform: translateY(8px) scale(0.92);
+      transition: opacity 180ms ease, transform 180ms ease;
+      pointer-events: none;
+      z-index: 22;
+      padding: 9px 14px;
+      max-width: min(760px, 88vw);
+      white-space: nowrap;
+    }
+
+    .team-flash-icon {
+      font-size: 2rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .team-flash-text {
+      font-size: clamp(1rem, 2vw, 1.35rem);
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      line-height: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-transform: uppercase;
+    }
+
+    .team-pane.left .team-flash {
+      left: 10px;
+    }
+
+    .team-pane.right .team-flash {
+      right: 10px;
+      flex-direction: row-reverse;
+    }
+
+    .team-pane.right .team-flash .team-flash-text {
+      text-align: right;
+    }
+
+    .team-flash.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .team-flash.goal {
+      background: rgba(19, 77, 30, 0.94);
+      border-color: rgba(86, 193, 112, 0.75);
+    }
+
+    .team-flash.yellow {
+      background: rgba(120, 93, 16, 0.94);
+      border-color: rgba(255, 214, 87, 0.9);
+    }
+
+    .team-flash.red {
+      background: rgba(122, 21, 21, 0.96);
+      border-color: rgba(255, 120, 120, 0.85);
+    }
+
+    .team-flash.sub {
+      background: rgba(18, 38, 72, 0.96);
+      border-color: rgba(130, 180, 255, 0.75);
+      white-space: normal;
+      max-width: min(400px, 90vw);
+      align-items: flex-start;
+    }
+
+    .team-flash-sub {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .tf-sub-line {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .tf-sub-emoji {
+      font-size: 1.15rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .tf-sub-tag {
+      font-size: 0.58rem;
+      font-weight: 800;
+      letter-spacing: 0.22em;
+      opacity: 0.88;
+      flex-shrink: 0;
+    }
+
+    .tf-sub-name {
+      font-size: clamp(0.78rem, 1.55vw, 1.05rem);
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      line-height: 1.15;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-transform: uppercase;
+    }
+
+    .team-pane.right .team-flash.sub .tf-sub-line {
+      flex-direction: row-reverse;
+    }
+
+    .team-pane.right .team-flash.sub .tf-sub-name {
+      text-align: right;
+    }
+
+    .goal-pop {
+      position: absolute;
+      left: 50%;
+      top: -42px;
+      transform: translateX(-50%) translateY(8px);
+      border: 2px solid var(--divider-red);
+      background: var(--navy);
+      color: #fff;
+      padding: 8px 16px;
+      font-size: clamp(0.9rem, 2vw, 1.35rem);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 220ms ease, transform 220ms ease;
+    }
+
+    .goal-pop.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .goal-pop.team-a,
+    .goal-pop.team-b {
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      30% { transform: scale(1.14); }
+      100% { transform: scale(1); }
+    }
+
+    @media (max-width: 640px) {
+      .wrap {
+        padding: 10px 10px 14px;
+        gap: 14px;
+      }
+
+      .scoreboard {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto auto;
+      }
+
+      .team-pane.left {
+        grid-column: 1;
+        grid-row: 1;
+      }
+
+      .score-pane {
+        grid-column: 1;
+        grid-row: 2;
+        min-width: 0;
+      }
+
+      .team-pane.right {
+        grid-column: 1;
+        grid-row: 3;
+      }
+
+      .time-pane {
+        grid-column: 1;
+        grid-row: 4;
+      }
+
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap" id="scoreWrap">
+    <div class="scoreboard">
+      <div class="team-pane left">
+        <div class="logo">
+          <img id="logoAImg" alt="Logo A">
+          <span id="logoAFallback">A</span>
+        </div>
+        <div class="name" id="teamA">TEAM A</div>
+        <div class="team-flash" id="teamFlashA" aria-hidden="true"></div>
+      </div>
+
+      <div class="score-pane">
+        <div class="score" id="scoreA">0</div>
+        <div class="v-divider" aria-hidden="true"></div>
+        <div class="score" id="scoreB">0</div>
+      </div>
+
+      <div class="team-pane right">
+        <div class="logo">
+          <img id="logoBImg" alt="Logo B">
+          <span id="logoBFallback">B</span>
+        </div>
+        <div class="name" id="teamB">TEAM B</div>
+        <div class="team-flash" id="teamFlashB" aria-hidden="true"></div>
+      </div>
+
+      <div class="time-pane">
+        <div class="time-box">
+          <span class="period" id="period">H1</span>
+          <span class="clock" id="clock">00:00</span>
+        </div>
+      </div>
+
+      <div class="fx-layer">
+        <div class="event-banner" id="eventBanner"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const STORAGE_KEY = "scoreData.v2";
+    const API_PATH = "/api/score";
+    const STREAM_PATH = "/api/score/stream";
+    const CAN_USE_HTTP = location.protocol === "http:" || location.protocol === "https:";
+    const SCORE_HIDE_STORAGE = "overlay.scoreboard.hidden";
+
+    const el = {
+      teamA: document.getElementById("teamA"),
+      teamB: document.getElementById("teamB"),
+      scoreA: document.getElementById("scoreA"),
+      scoreB: document.getElementById("scoreB"),
+      clock: document.getElementById("clock"),
+      period: document.getElementById("period"),
+      logoAImg: document.getElementById("logoAImg"),
+      logoBImg: document.getElementById("logoBImg"),
+      logoAFallback: document.getElementById("logoAFallback"),
+      logoBFallback: document.getElementById("logoBFallback"),
+      eventBanner: document.getElementById("eventBanner"),
+      teamFlashA: document.getElementById("teamFlashA"),
+      teamFlashB: document.getElementById("teamFlashB")
+    };
+
+    const scoreWrap = document.getElementById("scoreWrap");
+
+    let lastServerScoreboardView = "full";
+
+    function normalizeScoreboardView(value) {
+      const s = (value ?? "").toString().trim().toLowerCase();
+      if (s === "clock" || s === "time" || s === "clock_only" || s === "dongho") return "clock";
+      if (s === "hidden" || s === "hide" || s === "off" || s === "an") return "hidden";
+      return "full";
+    }
+
+    function applyScoreboardViewFromServer(view) {
+      if (!scoreWrap) return;
+      const v = normalizeScoreboardView(view);
+      lastServerScoreboardView = v;
+      scoreWrap.classList.remove("sv-full", "sv-clock", "sv-hidden");
+      scoreWrap.classList.add(`sv-${v}`);
+    }
+
+    function isScoreboardHidden() {
+      return Boolean(scoreWrap && scoreWrap.classList.contains("is-score-hidden"));
+    }
+
+    function setScoreboardHidden(hidden) {
+      if (!scoreWrap) return;
+      scoreWrap.classList.toggle("is-score-hidden", hidden);
+      try {
+        sessionStorage.setItem(SCORE_HIDE_STORAGE, hidden ? "1" : "0");
+      } catch {
+        // Private mode or blocked storage.
+      }
+    }
+
+    function toggleScoreboardHidden() {
+      setScoreboardHidden(!isScoreboardHidden());
+    }
+
+    function restoreScoreboardHiddenFromSession() {
+      try {
+        if (sessionStorage.getItem(SCORE_HIDE_STORAGE) === "1") {
+          setScoreboardHidden(true);
+        }
+      } catch {
+        // Ignore.
+      }
+    }
+
+    window.addEventListener("keydown", (event) => {
+      if (event.repeat) return;
+      if (event.key === "F2") {
+        event.preventDefault();
+        toggleScoreboardHidden();
+        return;
+      }
+      if (event.ctrlKey && event.shiftKey && (event.code === "KeyB" || event.key === "B" || event.key === "b")) {
+        event.preventDefault();
+        toggleScoreboardHidden();
+      }
+    });
+
+    let previous = { scoreA: 0, scoreB: 0 };
+    let hasRendered = false;
+    let streamConnected = false;
+    let stream = null;
+    let reconnectTimer = null;
+    let flashTimerA = null;
+    let flashTimerB = null;
+
+    function safeText(value, fallback) {
+      const text = (value ?? "").toString().trim();
+      return text || fallback;
+    }
+
+    function toNumber(value, min, max) {
+      const n = Number.parseInt(value, 10);
+      if (Number.isNaN(n) || n < min) return min;
+      if (n > max) return max;
+      return n;
+    }
+
+    function escapeHtml(s) {
+      return String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function formatClock(seconds, added) {
+      const safe = toNumber(seconds, 0, 9000);
+      const mm = Math.floor(safe / 60).toString().padStart(2, "0");
+      const ss = (safe % 60).toString().padStart(2, "0");
+      const base = `${mm}:${ss}`;
+      return added > 0 ? `${base} +${added}` : base;
+    }
+
+    let lastScorePayload = null;
+
+    function renderClockNode(seconds, added) {
+      const safeAdded = toNumber(added, 0, 30);
+      const base = formatClock(seconds, 0);
+      if (safeAdded > 0) {
+        el.clock.innerHTML = `${base}<span class="added">+${safeAdded}</span>`;
+      } else {
+        el.clock.textContent = base;
+      }
+    }
+
+    function effectiveClockSeconds(data) {
+      if (!data) return 0;
+      if (!data.clockRunning) return toNumber(data.clockSeconds, 0, 9000);
+      if (data.clockAnchorMs == null) return toNumber(data.clockSeconds, 0, 9000);
+      const base =
+        data.clockAnchorBaseSeconds != null
+          ? toNumber(data.clockAnchorBaseSeconds, 0, 9000)
+          : toNumber(data.clockSeconds, 0, 9000);
+      const delta = Math.floor((Date.now() - Number(data.clockAnchorMs)) / 1000);
+      const n = base + delta;
+      if (n < 0) return 0;
+      if (n > 9000) return 9000;
+      return n;
+    }
+
+    function setLogo(imgEl, fallbackEl, url, teamName) {
+      const fallback = safeText(teamName, "?").charAt(0).toUpperCase();
+      fallbackEl.textContent = fallback;
+      if (!url) {
+        imgEl.style.display = "none";
+        fallbackEl.style.display = "grid";
+        return;
+      }
+      imgEl.onload = () => {
+        imgEl.style.display = "block";
+        fallbackEl.style.display = "none";
+      };
+      imgEl.onerror = () => {
+        imgEl.style.display = "none";
+        fallbackEl.style.display = "grid";
+      };
+      imgEl.src = url;
+    }
+
+    function pulse(node) {
+      node.classList.remove("pulse");
+      void node.offsetWidth;
+      node.classList.add("pulse");
+    }
+
+    function showTeamFlash(side, type, labelText = "") {
+      const node = side === "A" ? el.teamFlashA : side === "B" ? el.teamFlashB : null;
+      if (!node) return;
+      if (side === "A" && flashTimerA) clearTimeout(flashTimerA);
+      if (side === "B" && flashTimerB) clearTimeout(flashTimerB);
+
+      let icon = "⚽";
+      const cls = type === "yellow" || type === "red" ? type : "goal";
+      if (type === "yellow") icon = "🟨";
+      if (type === "red") icon = "🟥";
+
+      const safeLabel = safeText(labelText, "").slice(0, 48);
+      if (safeLabel) {
+        node.innerHTML = `<span class="team-flash-icon">${icon}</span><span class="team-flash-text">${safeLabel.toUpperCase()}</span>`;
+      } else {
+        node.innerHTML = `<span class="team-flash-icon">${icon}</span>`;
+      }
+      node.classList.remove("goal", "yellow", "red", "sub", "show");
+      node.classList.add(cls);
+      void node.offsetWidth;
+      node.classList.add("show");
+
+      const durationMs = type === "goal" ? 30000 : 5000;
+      const timer = setTimeout(() => {
+        node.classList.remove("show");
+      }, durationMs);
+      if (side === "A") flashTimerA = timer;
+      if (side === "B") flashTimerB = timer;
+    }
+
+    /** Thay người — cùng khung team-flash với ghi bàn / thẻ (icon 🔀 + 🟥 OUT / 🟩 IN). */
+    function showTeamSubFlash(side, outName, inName) {
+      const node = side === "A" ? el.teamFlashA : side === "B" ? el.teamFlashB : null;
+      if (!node) return;
+      if (side === "A" && flashTimerA) clearTimeout(flashTimerA);
+      if (side === "B" && flashTimerB) clearTimeout(flashTimerB);
+
+      const o = escapeHtml(safeText(outName, "").slice(0, 48));
+      const i = escapeHtml(safeText(inName, "").slice(0, 48));
+
+      node.innerHTML =
+        `<span class="team-flash-icon">🔀</span>` +
+        `<div class="team-flash-sub">` +
+        `<div class="tf-sub-line tf-out"><span class="tf-sub-emoji" aria-hidden="true">🟥</span><span class="tf-sub-tag">OUT</span><span class="tf-sub-name">${o.toUpperCase()}</span></div>` +
+        `<div class="tf-sub-line tf-in"><span class="tf-sub-emoji" aria-hidden="true">🟩</span><span class="tf-sub-tag">IN</span><span class="tf-sub-name">${i.toUpperCase()}</span></div>` +
+        `</div>`;
+
+      node.classList.remove("goal", "yellow", "red", "sub", "show");
+      node.classList.add("sub");
+      void node.offsetWidth;
+      node.classList.add("show");
+
+      const durationMs = 8000;
+      const timer = setTimeout(() => {
+        node.classList.remove("show");
+      }, durationMs);
+      if (side === "A") flashTimerA = timer;
+      if (side === "B") flashTimerB = timer;
+    }
+
+    function extractEventActor(type, eventText, teamNameFallback) {
+      const raw = (eventText ?? "").toString().trim();
+      if (!raw) return safeText(teamNameFallback, "");
+
+      const split = raw.split(/\s+[—\-:]\s+/);
+      if (split.length > 1) {
+        const last = split[split.length - 1].trim();
+        if (last) return last;
+      }
+
+      if (type === "goal") {
+        return raw.replace(/^BÀN THẮNG\s*/i, "").replace(/^GOAL\s*/i, "").trim() || safeText(teamNameFallback, "");
+      }
+      if (type === "yellow") {
+        return raw.replace(/^THẺ VÀNG\s*/i, "").replace(/^YELLOW\s*CARD\s*/i, "").trim() || safeText(teamNameFallback, "");
+      }
+      if (type === "red") {
+        return raw.replace(/^THẺ ĐỎ\s*/i, "").replace(/^RED\s*CARD\s*/i, "").trim() || safeText(teamNameFallback, "");
+      }
+      return safeText(teamNameFallback, "");
+    }
+
+    function render(data) {
+      applyScoreboardViewFromServer(data.scoreboardView);
+      lastScorePayload = data;
+      scheduleClockTick();
+
+      const teamA = safeText(data.teamA, "TEAM A");
+      const teamB = safeText(data.teamB, "TEAM B");
+      const scoreA = toNumber(data.scoreA, 0, 99);
+      const scoreB = toNumber(data.scoreB, 0, 99);
+      const seconds = effectiveClockSeconds(data);
+      const added = toNumber(data.addedMinutes, 0, 30);
+      const eventText = safeText(data.eventText, "");
+      const eventUntil = toNumber(data.eventUntil, 0, 9999999999999);
+      const eventType = (data.eventType ?? "none").toString().trim().toLowerCase();
+      const eventSide = (data.eventSide ?? "").toString().trim().toUpperCase();
+      const subOut = safeText(data.subOut, "");
+      const subIn = safeText(data.subIn, "");
+      const showSubEvent =
+        eventUntil > Date.now() &&
+        eventType === "sub" &&
+        subOut &&
+        subIn;
+
+      el.teamA.textContent = teamA.toUpperCase();
+      el.teamB.textContent = teamB.toUpperCase();
+      el.scoreA.textContent = scoreA;
+      el.scoreB.textContent = scoreB;
+      renderClockNode(seconds, added);
+      el.period.textContent = safeText(data.period, "H1").toUpperCase();
+
+      setLogo(el.logoAImg, el.logoAFallback, safeText(data.logoA, ""), teamA);
+      setLogo(el.logoBImg, el.logoBFallback, safeText(data.logoB, ""), teamB);
+
+      const showTeamEvent = eventUntil > Date.now() && (eventType === "goal" || eventType === "yellow" || eventType === "red") && (eventSide === "A" || eventSide === "B");
+
+      if (showTeamEvent) {
+        const fallback = eventSide === "A" ? teamA : teamB;
+        const actor = extractEventActor(eventType, eventText, fallback);
+        showTeamFlash(eventSide, eventType, actor);
+      }
+
+      if (showSubEvent && !showTeamEvent && (eventSide === "A" || eventSide === "B")) {
+        showTeamSubFlash(eventSide, subOut, subIn);
+        el.eventBanner.classList.remove("show", "event-sub");
+        el.eventBanner.textContent = "";
+        el.eventBanner.innerHTML = "";
+      } else if (eventText && eventUntil > Date.now() && !showTeamEvent) {
+        el.eventBanner.classList.remove("event-sub");
+        el.eventBanner.innerHTML = "";
+        el.eventBanner.textContent = eventText.toUpperCase();
+        el.eventBanner.classList.add("show");
+      } else {
+        el.eventBanner.classList.remove("show", "event-sub");
+        el.eventBanner.textContent = "";
+        el.eventBanner.innerHTML = "";
+      }
+
+      if (hasRendered && lastServerScoreboardView === "full") {
+        if (scoreA > previous.scoreA) {
+          pulse(el.scoreA);
+          if (!showTeamEvent) {
+            showTeamFlash("A", "goal", teamA);
+          }
+        }
+        if (scoreB > previous.scoreB) {
+          pulse(el.scoreB);
+          if (!showTeamEvent) {
+            showTeamFlash("B", "goal", teamB);
+          }
+        }
+      }
+      previous = { scoreA, scoreB };
+      hasRendered = true;
+    }
+
+    function loadFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        render(JSON.parse(raw));
+      } catch {
+        // Silent in overlay.
+      }
+    }
+
+    async function loadFromServer() {
+      try {
+        const response = await fetch(API_PATH, { cache: "no-store" });
+        if (!response.ok) throw new Error("GET failed");
+        render(await response.json());
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function scheduleReconnect() {
+      if (reconnectTimer !== null) return;
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
+        connectStream();
+      }, 1000);
+    }
+
+    function connectStream() {
+      if (!CAN_USE_HTTP || typeof EventSource === "undefined") return;
+      if (stream) stream.close();
+      stream = new EventSource(STREAM_PATH);
+      stream.onopen = () => {
+        streamConnected = true;
+      };
+      stream.onmessage = (event) => {
+        try {
+          render(JSON.parse(event.data));
+        } catch {
+          // Ignore malformed event payload.
+        }
+      };
+      stream.onerror = () => {
+        streamConnected = false;
+        if (stream) {
+          stream.close();
+          stream = null;
+        }
+        scheduleReconnect();
+      };
+    }
+
+    window.addEventListener("storage", (event) => {
+      if (event.key === STORAGE_KEY) loadFromStorage();
+    });
+
+    applyScoreboardViewFromServer("full");
+    restoreScoreboardHiddenFromSession();
+
+    let clockTickerTimer = null;
+    let lastRenderedSecond = null;
+
+    function stopClockTicker() {
+      if (clockTickerTimer != null) {
+        clearTimeout(clockTickerTimer);
+        clockTickerTimer = null;
+      }
+      lastRenderedSecond = null;
+    }
+
+    function scheduleClockTick() {
+      if (!lastScorePayload || !lastScorePayload.clockRunning) {
+        stopClockTicker();
+        return;
+      }
+
+      const sec = effectiveClockSeconds(lastScorePayload);
+      if (sec !== lastRenderedSecond) {
+        lastRenderedSecond = sec;
+        const add = toNumber(lastScorePayload.addedMinutes, 0, 30);
+        renderClockNode(sec, add);
+      }
+
+      // Canh đúng biên giây tiếp theo để nhảy 1s/lần, tránh giật.
+      const anchorMs = lastScorePayload.clockAnchorMs != null ? Number(lastScorePayload.clockAnchorMs) : null;
+      const baseSec =
+        lastScorePayload.clockAnchorBaseSeconds != null
+          ? Number(lastScorePayload.clockAnchorBaseSeconds)
+          : Number(lastScorePayload.clockSeconds) || 0;
+
+      let delay = 1000;
+      if (anchorMs != null) {
+        const elapsedMs = Date.now() - anchorMs;
+        const nextBoundaryMs = (Math.floor(elapsedMs / 1000) + 1) * 1000;
+        delay = Math.max(80, Math.min(1000, nextBoundaryMs - elapsedMs));
+      } else if (Number.isFinite(baseSec)) {
+        // Fallback: vẫn tick 1s.
+        delay = 1000;
+      }
+
+      clockTickerTimer = setTimeout(scheduleClockTick, delay);
+    }
+
+    scheduleClockTick();
+
+    if (CAN_USE_HTTP) {
+      connectStream();
+      loadFromServer();
+      setInterval(async () => {
+        if (streamConnected) return;
+        const ok = await loadFromServer();
+        if (!ok) loadFromStorage();
+      }, 1000);
+    } else {
+      loadFromStorage();
+      setInterval(loadFromStorage, 250);
+    }
+  </script>
+</body>
+</html>

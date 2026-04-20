@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overlay VAR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: transparent;
+    }
+
+    .wrap {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-end;
+      padding: 24px 36px 36px;
+      pointer-events: none;
+    }
+
+    .var-card {
+      position: relative;
+      width: min(520px, 92vw);
+      border-radius: 4px;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(10px) scale(0.98);
+      transition: opacity 280ms ease, transform 280ms ease;
+      box-shadow:
+        0 0 0 1px rgba(0, 220, 255, 0.28),
+        0 18px 48px rgba(0, 0, 0, 0.55);
+    }
+
+    .var-card.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Nền tím đậm giống khung truyền hình + vân chéo */
+    .var-pattern {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background-color: #2d014c;
+      background-image:
+        repeating-linear-gradient(
+          -32deg,
+          transparent,
+          transparent 12px,
+          rgba(255, 255, 255, 0.035) 12px,
+          rgba(255, 255, 255, 0.035) 13px
+        ),
+        linear-gradient(165deg, rgba(90, 0, 110, 0.45) 0%, transparent 50%),
+        radial-gradient(ellipse 80% 60% at 80% 20%, rgba(180, 80, 255, 0.12), transparent);
+    }
+
+    .var-inner {
+      position: relative;
+      z-index: 1;
+      padding: 22px 26px 26px;
+      text-align: center;
+    }
+
+    .var-word {
+      font-family: "Bebas Neue", Impact, sans-serif;
+      font-size: clamp(3.2rem, 11vw, 5.2rem);
+      font-weight: 400;
+      line-height: 0.88;
+      letter-spacing: 0.06em;
+      color: #ffffff;
+      text-shadow:
+        0 0 42px rgba(255, 255, 255, 0.2),
+        0 4px 0 rgba(0, 0, 0, 0.35),
+        0 8px 24px rgba(0, 0, 0, 0.45);
+      margin: 0 0 14px;
+    }
+
+    /* Gợi logo VAR: chấm giữa chữ A */
+    .var-word .var-a {
+      position: relative;
+      display: inline-block;
+    }
+
+    .var-word .var-a::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 38%;
+      width: 0.2em;
+      height: 0.2em;
+      margin-left: -0.1em;
+      margin-top: -0.1em;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.75);
+    }
+
+    .var-headline {
+      font-family: "Rajdhani", "Segoe UI", sans-serif;
+      font-weight: 800;
+      font-size: clamp(1.05rem, 3.2vw, 1.55rem);
+      letter-spacing: 0.14em;
+      color: #fff;
+      text-transform: uppercase;
+      line-height: 1.25;
+      margin: 0 0 8px;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .var-detail {
+      font-family: "Rajdhani", sans-serif;
+      font-weight: 600;
+      font-size: clamp(0.82rem, 2.1vw, 1.05rem);
+      letter-spacing: 0.06em;
+      color: rgba(255, 255, 255, 0.88);
+      line-height: 1.35;
+      margin: 0;
+      max-width: 100%;
+      word-break: break-word;
+    }
+
+    .var-detail:empty {
+      display: none;
+    }
+
+    @media (max-width: 520px) {
+      .wrap {
+        padding: 16px 14px 20px;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="var-card" id="varCard" aria-live="polite">
+      <div class="var-pattern" aria-hidden="true"></div>
+      <div class="var-inner">
+        <div class="var-word" id="varWordmark" aria-hidden="true">V<span class="var-a">A</span>R</div>
+        <div class="var-headline" id="varHeadline">PENALTY</div>
+        <p class="var-detail" id="varDetail"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "scoreData.v2";
+    const API_PATH = "/api/score";
+    const STREAM_PATH = "/api/score/stream";
+    const CAN_USE_HTTP = location.protocol === "http:" || location.protocol === "https:";
+
+    const el = {
+      varCard: document.getElementById("varCard"),
+      varHeadline: document.getElementById("varHeadline"),
+      varDetail: document.getElementById("varDetail")
+    };
+
+    let streamConnected = false;
+    let stream = null;
+    let reconnectTimer = null;
+
+    function normalizeInfoPanelMode(value) {
+      const s = (value ?? "").toString().trim().toLowerCase();
+      if (s === "var" || s === "varreview" || s === "video") return "var";
+      return "off";
+    }
+
+    function safeText(value, fallback) {
+      const text = (value ?? "").toString().trim();
+      return text || fallback;
+    }
+
+    function render(data) {
+      const mode = normalizeInfoPanelMode(data.infoPanelMode);
+      el.varCard.classList.toggle("show", mode === "var");
+
+      const title = safeText(data.varTitle, "PENALTY");
+      el.varHeadline.textContent = title.toUpperCase();
+
+      const det = (data.varDetail ?? "").toString().trim();
+      el.varDetail.textContent = det ? det.toUpperCase() : "";
+    }
+
+    function loadFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        render(JSON.parse(raw));
+      } catch {
+        // Silent.
+      }
+    }
+
+    async function loadFromServer() {
+      try {
+        const response = await fetch(API_PATH, { cache: "no-store" });
+        if (!response.ok) throw new Error("GET failed");
+        render(await response.json());
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function scheduleReconnect() {
+      if (reconnectTimer !== null) return;
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
+        connectStream();
+      }, 1000);
+    }
+
+    function connectStream() {
+      if (!CAN_USE_HTTP || typeof EventSource === "undefined") return;
+      if (stream) stream.close();
+      stream = new EventSource(STREAM_PATH);
+      stream.onopen = () => {
+        streamConnected = true;
+      };
+      stream.onmessage = (event) => {
+        try {
+          render(JSON.parse(event.data));
+        } catch {
+          // Ignore.
+        }
+      };
+      stream.onerror = () => {
+        streamConnected = false;
+        if (stream) {
+          stream.close();
+          stream = null;
+        }
+        scheduleReconnect();
+      };
+    }
+
+    if (CAN_USE_HTTP) {
+      connectStream();
+      loadFromServer();
+      setInterval(async () => {
+        if (streamConnected) return;
+        const ok = await loadFromServer();
+        if (!ok) loadFromStorage();
+      }, 1000);
+    } else {
+      loadFromStorage();
+      setInterval(loadFromStorage, 300);
+    }
+  </script>
+</body>
+</html>
