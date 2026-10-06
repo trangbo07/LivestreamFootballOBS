@@ -6,13 +6,16 @@
   <title>Overlay Event</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
+      --bar: #0a2464;
+      --bar-mid: #0c2a78;
       --ink: #f8fbff;
-      --line: rgba(255, 255, 255, 0.25);
-      --a: #ff7b57;
-      --b: #53a6ff;
+      --line: rgba(255, 255, 255, 0.18);
+      --accent: #f5c518;
+      --team-a: #e31b23;
+      --team-b: #f5c518;
     }
 
     * { box-sizing: border-box; }
@@ -24,7 +27,7 @@
       overflow: hidden;
       background: transparent;
       color: var(--ink);
-      font-family: "Rajdhani", "Segoe UI", Tahoma, sans-serif;
+      font-family: "Barlow Condensed", "Segoe UI", Tahoma, sans-serif;
     }
 
     .wrap {
@@ -40,13 +43,14 @@
 
     .event {
       width: min(760px, 94vw);
-      border-radius: 12px;
-      border: 1px solid var(--line);
-      background: rgba(0, 0, 0, 0.46);
-      padding: 8px 14px;
-      font-family: "Bebas Neue", Impact, sans-serif;
-      letter-spacing: 0.08em;
-      font-size: clamp(1rem, 2.3vw, 1.6rem);
+      border-radius: 8px;
+      border: 1px solid var(--accent);
+      background: linear-gradient(180deg, var(--bar-mid) 0%, var(--bar) 100%);
+      padding: 8px 16px;
+      font-family: "Barlow Condensed", "Segoe UI", Tahoma, sans-serif;
+      letter-spacing: 0.06em;
+      font-size: clamp(1.05rem, 2.4vw, 1.75rem);
+      font-weight: 800;
       text-align: center;
       white-space: nowrap;
       overflow: hidden;
@@ -67,12 +71,13 @@
       left: 50%;
       transform: translateX(-50%) translateY(-8px);
       border-radius: 999px;
-      border: 1px solid var(--line);
-      padding: 8px 14px;
-      background: rgba(0, 0, 0, 0.54);
-      font-family: "Bebas Neue", Impact, sans-serif;
-      letter-spacing: 0.08em;
-      font-size: clamp(1rem, 2.2vw, 1.55rem);
+      border: 1px solid var(--accent);
+      padding: 8px 16px;
+      background: linear-gradient(180deg, var(--bar-mid) 0%, var(--bar) 100%);
+      font-family: "Barlow Condensed", "Segoe UI", Tahoma, sans-serif;
+      letter-spacing: 0.06em;
+      font-size: clamp(1.05rem, 2.3vw, 1.65rem);
+      font-weight: 800;
       opacity: 0;
       transition: opacity 220ms ease, transform 220ms ease;
       white-space: nowrap;
@@ -84,11 +89,11 @@
     }
 
     .goal.team-a {
-      box-shadow: 0 0 0 2px rgba(255, 123, 87, 0.4) inset;
+      box-shadow: 0 0 0 2px rgba(227, 27, 35, 0.6) inset;
     }
 
     .goal.team-b {
-      box-shadow: 0 0 0 2px rgba(83, 166, 255, 0.4) inset;
+      box-shadow: 0 0 0 2px rgba(245, 197, 24, 0.7) inset;
     }
   </style>
 </head>

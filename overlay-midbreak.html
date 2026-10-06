@@ -4,7 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Overlay Midbreak</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bar: #0a2464;
+      --bar-mid: #0c2a78;
+      --ink: #f5f8ff;
+      --accent: #f5c518;
+    }
+
     * { box-sizing: border-box; }
     html, body {
       width: 100%;
@@ -12,7 +22,8 @@
       margin: 0;
       overflow: hidden;
       background: transparent;
-      font-family: system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+      font-family: "Barlow Condensed", "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--ink);
     }
 
     .wrap {
@@ -26,9 +37,9 @@
 
     .midbreak-card {
       width: min(980px, 94vw);
-      background: rgba(255, 255, 255, 0.2);
-      border: 2px solid rgba(255, 255, 255, 0.84);
-      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.2);
+      background: linear-gradient(180deg, rgba(12, 42, 120, 0.95) 0%, rgba(10, 36, 100, 0.95) 100%);
+      border: 2px solid rgba(245, 197, 24, 0.8);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32);
       padding: 12px 16px 20px;
       border-radius: 12px;
       opacity: 0;
@@ -44,13 +55,13 @@
 
     .midbreak-top {
       height: 34px;
-      background: #0a4678;
-      border: 2px solid rgba(255, 255, 255, 0.84);
+      background: linear-gradient(180deg, var(--bar-mid) 0%, var(--bar) 100%);
+      border: 2px solid rgba(245, 197, 24, 0.8);
       margin: 0 40px 14px;
       color: #f4f7fb;
       font-size: clamp(1rem, 2vw, 1.4rem);
       font-weight: 800;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.08em;
       display: grid;
       place-items: center;
       text-transform: uppercase;
@@ -59,19 +70,20 @@
     .scoreline {
       margin: 14px 20px 0;
       padding: 12px 16px;
-      background: rgba(8, 28, 58, 0.86);
+      background: rgba(9, 24, 60, 0.9);
       color: #fff;
       border-radius: 10px;
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
       align-items: center;
       gap: 12px;
+      border: 1px solid rgba(245, 197, 24, 0.55);
     }
 
     .team-name {
-      font-size: clamp(1rem, 1.9vw, 1.5rem);
+      font-size: clamp(1.05rem, 2.1vw, 1.6rem);
       font-weight: 800;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
       white-space: nowrap;
       overflow: hidden;
@@ -87,9 +99,9 @@
     }
 
     .score-main {
-      font-size: clamp(1.4rem, 3.6vw, 2.8rem);
+      font-size: clamp(1.5rem, 3.8vw, 3rem);
       font-weight: 900;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.06em;
       line-height: 1;
       white-space: nowrap;
     }
@@ -102,16 +114,17 @@
     }
 
     .scorer-col {
-      background: rgba(255, 255, 255, 0.86);
+      background: rgba(255, 255, 255, 0.92);
       border-radius: 10px;
       padding: 10px 12px;
       min-height: 140px;
+      border: 1px solid rgba(245, 197, 24, 0.45);
     }
 
     .scorer-title {
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       font-weight: 800;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.08em;
       color: #1f3454;
       text-transform: uppercase;
       margin: 0 0 8px;

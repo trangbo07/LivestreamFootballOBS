@@ -4,18 +4,45 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Overlay Scoreboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700&display=swap" rel="stylesheet">
   <style>
+    /* Giao diện đơn giản: nền xanh navy, ô tỉ số vàng chữ đen, vạch màu dưới tên đội */
     :root {
-      --navy: #0c1f3d;
-      --score-bg: #8f8f8f;
+      --bar: #0c1f4d;
+      --bar-mid: #102a5c;
+      --team-ink: #ffffff;
       --score-ink: #0a0a0a;
-      --divider-red: #e31b23;
-      --time-bg: #ffffff;
-      --time-ink: #111111;
+      --strip-a-default: #e31b23;
+      --strip-b-default: #f5c518;
+      --pl-accent: #e31b23;
     }
 
     * {
       box-sizing: border-box;
+    }
+
+    html {
+      -webkit-text-size-adjust: 100%;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0, 230, 255, 0.75) rgba(0, 0, 0, 0.4);
+    }
+
+    html::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    html::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 6px;
+    }
+
+    html::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, rgba(0, 245, 255, 0.95), rgba(233, 0, 82, 0.85));
+      border-radius: 6px;
+      border: 2px solid rgba(0, 0, 0, 0.25);
     }
 
     html,
@@ -25,7 +52,11 @@
       margin: 0;
       overflow: hidden;
       background: transparent;
-      font-family: system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-family: "Barlow Condensed", "Segoe UI", system-ui, Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      font-synthesis: none;
     }
 
     .wrap {
@@ -57,18 +88,25 @@
 
     #scoreWrap.sv-clock .scoreboard .team-pane.left,
     #scoreWrap.sv-clock .scoreboard .team-pane.right,
-    #scoreWrap.sv-clock .scoreboard .score-pane {
+    #scoreWrap.sv-clock .scoreboard .score-pane,
+    #scoreWrap.sv-clock .scoreboard .mid-col {
       display: none !important;
     }
 
-    #scoreWrap.sv-clock .scoreboard .time-pane {
+    #scoreWrap.sv-clock .scoreboard .mid-col {
       grid-column: 1 !important;
       grid-row: 1 !important;
-      width: 100%;
+      width: fit-content !important;
+      max-width: 96vw !important;
+      margin: 0 auto !important;
+      justify-self: center !important;
     }
 
-    #scoreWrap.sv-clock .scoreboard .fx-layer {
-      min-height: 100px;
+    #scoreWrap.sv-clock .scoreboard .time-box {
+      grid-column: 1 !important;
+      grid-row: 1 !important;
+      margin: 0 auto !important;
+      justify-self: center !important;
     }
 
     /* Điều khiển: ẩn hẳn bảng tỉ số (dữ liệu giờ vẫn cập nhật) */
@@ -81,13 +119,14 @@
 
     .scoreboard {
       position: relative;
-      width: min(1120px, 96vw);
+      width: min(860px, 96vw);
       margin: 0 auto;
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-      grid-template-rows: auto auto;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+      grid-template-rows: auto;
       align-items: stretch;
-      background: transparent;
+      font-feature-settings: "kern" 1, "tnum" 1;
+
       transition:
         opacity 0.28s ease,
         visibility 0.28s ease,
@@ -95,39 +134,54 @@
     }
 
     .team-pane {
-      background: var(--navy);
-      color: #fff;
-      min-height: 64px;
-      padding: 10px 14px;
+      background: linear-gradient(180deg, #0c2a78 0%, #0a2464 100%);
+      color: var(--team-ink);
+      min-height: 48px;
+      padding: 7px 12px;
       display: flex;
       align-items: center;
       gap: 10px;
       min-width: 0;
       position: relative;
+      z-index: 1;
+    }
+
+    .team-pane.left {
+      --strip: var(--strip-a-default);
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .team-pane.right {
+      --strip: var(--strip-b-default);
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .team-pane::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 0;
+      background: transparent;
+      pointer-events: none;
     }
 
     .team-pane.left {
       grid-column: 1;
       grid-row: 1;
-      justify-content: flex-start;
+      justify-content: center;
     }
 
     .team-pane.right {
       grid-column: 3;
       grid-row: 1;
-      justify-content: flex-end;
+      justify-content: center;
       flex-direction: row-reverse;
     }
 
     .logo {
-      width: 40px;
-      height: 40px;
-      overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      background: rgba(255, 255, 255, 0.06);
-      display: grid;
-      place-items: center;
-      flex-shrink: 0;
+      display: none;
     }
 
     .logo img {
@@ -139,98 +193,159 @@
 
     .logo span {
       font-size: 1rem;
-      font-weight: 700;
+      font-weight: 800;
       letter-spacing: 0.02em;
+      color: #fff;
     }
 
     .name {
       flex: 1;
       min-width: 0;
-      font-size: clamp(1rem, 2.8vw, 1.85rem);
-      font-weight: 700;
+      font-size: clamp(0.95rem, 2.4vw, 1.5rem);
+      font-weight: 800;
       letter-spacing: 0.02em;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       text-align: center;
+      color: #fff;
+      text-transform: uppercase;
+    }
+
+    /* Cột giữa: chỉ rộng bằng hai ô tỉ số — không kéo ngang dưới tên đội */
+    .mid-col {
+      grid-column: 2;
+      grid-row: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      width: fit-content;
+      max-width: 100%;
+      justify-self: center;
+      align-self: stretch;
+      position: relative;
+      z-index: 1;
     }
 
     .score-pane {
-      grid-column: 2;
-      grid-row: 1;
-      background: var(--score-bg);
+      position: relative;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      gap: 0;
+      min-width: clamp(104px, 19vw, 160px);
+      padding: 0;
+      background: transparent;
+      flex: 0 0 auto;
+    }
+
+    .score-cell {
+      flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0;
-      min-width: clamp(120px, 22vw, 200px);
-      padding: 8px 12px;
+      min-width: 48px;
+      padding: 5px 8px;
+      background: linear-gradient(180deg, #0c2a78 0%, #0a235f 100%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    }
+
+    .score-cell + .score-cell {
+      border-left: 2px solid #f5c518;
     }
 
     .score {
-      font-size: clamp(2rem, 6.5vw, 4.25rem);
-      font-weight: 600;
+      font-size: clamp(1.5rem, 5.2vw, 2.9rem);
+      font-weight: 800;
       line-height: 1;
-      min-width: 0.65em;
+      min-width: 0.5em;
       text-align: center;
-      color: var(--score-ink);
+      color: #ffffff;
       font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
       transition: transform 180ms ease;
     }
 
-    .v-divider {
-      width: 3px;
-      align-self: stretch;
-      min-height: 2.2em;
-      background: var(--divider-red);
-      margin: 0 10px;
-      flex-shrink: 0;
-    }
-
-    .time-pane {
-      grid-column: 2;
-      grid-row: 2;
-      display: flex;
-      justify-content: center;
-      width: 100%;
-      padding-top: 0;
-    }
-
     .time-box {
-      background: var(--time-bg);
-      color: var(--time-ink);
-      font-weight: 600;
-      font-size: clamp(0.95rem, 2.2vw, 1.35rem);
-      padding: 7px 16px;
-      line-height: 1.2;
+      grid-column: 4;
+      grid-row: 1;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      background: linear-gradient(180deg, #1a4db6 0%, #0f3a96 100%);
+      min-height: 48px;
+      padding: 0 12px;
+      color: #fff;
+      border-left: 2px solid #0a1f54;
+      z-index: 1;
+    }
+
+    .time-row {
+      display: flex;
+      align-items: stretch;
+      flex-wrap: nowrap;
+      width: 100%;
+      gap: 0;
+    }
+
+    .time-main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35em;
+      padding: 6px 8px;
+      background: transparent;
+      color: #fff;
+      font-weight: 800;
+      font-size: clamp(0.95rem, 2.3vw, 2.4rem);
+      line-height: 1.1;
       white-space: nowrap;
-      max-width: min(280px, 92%);
-      margin: 0 auto;
+      border: none;
+      border-radius: 0;
       font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+      box-shadow: none;
     }
 
-    .time-box .period {
-      margin-right: 0.4em;
+    .time-row:not(.has-added) .time-main {
+      border-radius: 0;
     }
 
-    .time-box .added {
-      margin-left: 0.45em;
-      padding: 2px 7px;
-      border-radius: 999px;
-      background: rgba(227, 27, 35, 0.12);
-      color: var(--divider-red);
+    .time-main .period {
+      display: none;
+    }
+
+    .time-main .clock {
+      color: #fff;
       font-weight: 800;
       letter-spacing: 0.03em;
+    }
+
+    /* Ô phút bù: đỏ, cạnh phải xiên như sóng truyền hình */
+    .time-added {
+      display: none !important;
+    }
+
+    .time-added[hidden] {
+      display: none !important;
     }
 
     .pulse {
       animation: pulse 420ms ease;
     }
 
+    /* Không phủ full khung — tránh OBS/CEF che mất tỉ số; banner vẫn xếp dưới đáy bảng */
     .fx-layer {
       position: absolute;
-      inset: 0;
-      z-index: 10;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      top: auto;
+      width: 100%;
+      height: 0;
+      z-index: 5;
       pointer-events: none;
       overflow: visible;
     }
@@ -241,14 +356,15 @@
       top: calc(100% + 14px);
       transform: translateX(-50%) translateY(8px);
       width: min(860px, 92vw);
-      border: 1px solid rgba(12, 31, 61, 0.35);
-      background: rgba(255, 255, 255, 0.95);
-      color: #111;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-      padding: 10px 16px;
-      font-size: clamp(0.95rem, 2.2vw, 1.4rem);
-      font-weight: 600;
-      letter-spacing: 0.04em;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: var(--bar);
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(6, 18, 48, 0.4);
+      padding: 11px 20px;
+      font-size: clamp(0.98rem, 2.2vw, 1.42rem);
+      font-weight: 700;
+      letter-spacing: 0.06em;
       text-align: center;
       white-space: nowrap;
       overflow: hidden;
@@ -267,13 +383,13 @@
       top: calc(100% + 14px);
       min-width: 140px;
       min-height: 60px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      background: rgba(12, 31, 61, 0.92);
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      background: var(--bar);
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+      box-shadow: 0 8px 22px rgba(6, 18, 48, 0.4);
       opacity: 0;
       transform: translateY(8px) scale(0.92);
       transition: opacity 180ms ease, transform 180ms ease;
@@ -298,6 +414,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
       text-transform: uppercase;
+      color: #fff;
     }
 
     .team-pane.left .team-flash {
@@ -334,8 +451,8 @@
     }
 
     .team-flash.sub {
-      background: rgba(18, 38, 72, 0.96);
-      border-color: rgba(130, 180, 255, 0.75);
+      background: var(--bar-mid);
+      border-color: rgba(130, 200, 255, 0.55);
       white-space: normal;
       max-width: min(400px, 90vw);
       align-items: flex-start;
@@ -379,6 +496,7 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       text-transform: uppercase;
+      color: #fff;
     }
 
     .team-pane.right .team-flash.sub .tf-sub-line {
@@ -394,16 +512,18 @@
       left: 50%;
       top: -42px;
       transform: translateX(-50%) translateY(8px);
-      border: 2px solid var(--divider-red);
-      background: var(--navy);
+      border-radius: 4px;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      background: var(--bar);
       color: #fff;
-      padding: 8px 16px;
-      font-size: clamp(0.9rem, 2vw, 1.35rem);
-      font-weight: 700;
-      letter-spacing: 0.04em;
+      padding: 8px 18px;
+      font-size: clamp(0.92rem, 2vw, 1.35rem);
+      font-weight: 800;
+      letter-spacing: 0.08em;
       white-space: nowrap;
       opacity: 0;
       transition: opacity 220ms ease, transform 220ms ease;
+      box-shadow: 0 6px 18px rgba(6, 18, 48, 0.45);
     }
 
     .goal-pop.show {
@@ -413,7 +533,7 @@
 
     .goal-pop.team-a,
     .goal-pop.team-b {
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 6px 18px rgba(6, 18, 48, 0.45);
     }
 
     @keyframes pulse {
@@ -438,10 +558,12 @@
         grid-row: 1;
       }
 
-      .score-pane {
+      .mid-col {
         grid-column: 1;
         grid-row: 2;
-        min-width: 0;
+        width: fit-content;
+        max-width: 100%;
+        justify-self: center;
       }
 
       .team-pane.right {
@@ -449,9 +571,11 @@
         grid-row: 3;
       }
 
-      .time-pane {
+      .time-box {
         grid-column: 1;
         grid-row: 4;
+        justify-self: center;
+        min-width: 140px;
       }
 
     }
@@ -460,7 +584,7 @@
 <body>
   <div class="wrap" id="scoreWrap">
     <div class="scoreboard">
-      <div class="team-pane left">
+      <div class="team-pane left" id="teamPaneA">
         <div class="logo">
           <img id="logoAImg" alt="Logo A">
           <span id="logoAFallback">A</span>
@@ -469,13 +593,18 @@
         <div class="team-flash" id="teamFlashA" aria-hidden="true"></div>
       </div>
 
-      <div class="score-pane">
-        <div class="score" id="scoreA">0</div>
-        <div class="v-divider" aria-hidden="true"></div>
-        <div class="score" id="scoreB">0</div>
+      <div class="mid-col">
+        <div class="score-pane">
+          <div class="score-cell">
+            <div class="score" id="scoreA">0</div>
+          </div>
+          <div class="score-cell">
+            <div class="score" id="scoreB">0</div>
+          </div>
+        </div>
       </div>
 
-      <div class="team-pane right">
+      <div class="team-pane right" id="teamPaneB">
         <div class="logo">
           <img id="logoBImg" alt="Logo B">
           <span id="logoBFallback">B</span>
@@ -484,10 +613,13 @@
         <div class="team-flash" id="teamFlashB" aria-hidden="true"></div>
       </div>
 
-      <div class="time-pane">
-        <div class="time-box">
-          <span class="period" id="period">H1</span>
-          <span class="clock" id="clock">00:00</span>
+      <div class="time-box">
+        <div class="time-row" id="timeRow">
+          <div class="time-main">
+            <span class="period" id="period">H1</span>
+            <span class="clock" id="clock">00:00</span>
+          </div>
+          <div class="time-added" id="timeAdded" hidden aria-hidden="true"></div>
         </div>
       </div>
 
@@ -518,7 +650,9 @@
       logoBFallback: document.getElementById("logoBFallback"),
       eventBanner: document.getElementById("eventBanner"),
       teamFlashA: document.getElementById("teamFlashA"),
-      teamFlashB: document.getElementById("teamFlashB")
+      teamFlashB: document.getElementById("teamFlashB"),
+      teamPaneA: document.getElementById("teamPaneA"),
+      teamPaneB: document.getElementById("teamPaneB")
     };
 
     const scoreWrap = document.getElementById("scoreWrap");
@@ -609,6 +743,28 @@
         .replace(/"/g, "&quot;");
     }
 
+    /** Chỉ chấp nhận màu CSS an toàn cho vạch áo (hex / rgb / hsl / tên). */
+    function normalizeKitColor(value) {
+      const raw = (value ?? "").toString().trim().slice(0, 40);
+      if (!raw) return "";
+      if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(raw)) return raw;
+      if (/^rgba?\(\s*[\d\s.%+,-]+\)$/i.test(raw)) return raw;
+      if (/^hsla?\(\s*[\d\s.%+deg,-]+\)$/i.test(raw)) return raw;
+      if (/^[a-z]{3,20}$/i.test(raw)) return raw.toLowerCase();
+      return "";
+    }
+
+    function applyKitColors(kitA, kitB) {
+      const ca = normalizeKitColor(kitA);
+      const cb = normalizeKitColor(kitB);
+      if (el.teamPaneA) {
+        el.teamPaneA.style.setProperty("--strip", ca || "#e31b23");
+      }
+      if (el.teamPaneB) {
+        el.teamPaneB.style.setProperty("--strip", cb || "#f5c518");
+      }
+    }
+
     function formatClock(seconds, added) {
       const safe = toNumber(seconds, 0, 9000);
       const mm = Math.floor(safe / 60).toString().padStart(2, "0");
@@ -622,11 +778,21 @@
     function renderClockNode(seconds, added) {
       const safeAdded = toNumber(added, 0, 30);
       const base = formatClock(seconds, 0);
-      if (safeAdded > 0) {
-        el.clock.innerHTML = `${base}<span class="added">+${safeAdded}</span>`;
-      } else {
-        el.clock.textContent = base;
+      if (el.clock) el.clock.textContent = base;
+      const elAdd = document.getElementById("timeAdded");
+      const timeRow = document.getElementById("timeRow");
+      if (elAdd) {
+        if (safeAdded > 0) {
+          elAdd.textContent = `+${safeAdded}`;
+          elAdd.hidden = false;
+          elAdd.setAttribute("aria-hidden", "false");
+        } else {
+          elAdd.textContent = "";
+          elAdd.hidden = true;
+          elAdd.setAttribute("aria-hidden", "true");
+        }
       }
+      if (timeRow) timeRow.classList.toggle("has-added", safeAdded > 0);
     }
 
     function effectiveClockSeconds(data) {
@@ -783,6 +949,7 @@
 
       setLogo(el.logoAImg, el.logoAFallback, safeText(data.logoA, ""), teamA);
       setLogo(el.logoBImg, el.logoBFallback, safeText(data.logoB, ""), teamB);
+      applyKitColors(data.kitColorA, data.kitColorB);
 
       const showTeamEvent = eventUntil > Date.now() && (eventType === "goal" || eventType === "yellow" || eventType === "red") && (eventSide === "A" || eventSide === "B");
 

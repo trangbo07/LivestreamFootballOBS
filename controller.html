@@ -154,6 +154,39 @@
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
     }
 
+    .kit-color-row {
+      display: flex;
+      align-items: stretch;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .kit-color-row input[type="color"] {
+      width: 52px;
+      min-width: 52px;
+      height: 44px;
+      padding: 3px;
+      cursor: pointer;
+      flex-shrink: 0;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .kit-color-row input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 2px;
+    }
+
+    .kit-color-row input[type="color"]::-webkit-color-swatch {
+      border-radius: 6px;
+      border: none;
+    }
+
+    .kit-color-row input[type="text"] {
+      flex: 1;
+      min-width: 140px;
+    }
+
     input[type="text"],
     input:not([type]) {
       text-transform: none;
@@ -731,6 +764,45 @@
         </div>
       </article>
 
+      <article class="card">
+        <div class="label">Giới thiệu trước trận</div>
+        <p class="small" style="margin: 0 0 10px">
+          Overlay intro dùng cho màn hình trước giờ bóng lăn: hiển thị vòng đấu, giải, ngày giờ, sân, logo và tên đội.
+        </p>
+        <div class="grid-2">
+          <div class="row">
+            <div class="small">Vòng đấu / sự kiện</div>
+            <input id="introStage" maxlength="80" placeholder="VD: CHUNG KẾT" />
+          </div>
+          <div class="row">
+            <div class="small">Giải đấu</div>
+            <input id="introTournament" maxlength="120" placeholder="VD: GIẢI BÓNG ĐÁ S7" />
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="row">
+            <div class="small">Ngày</div>
+            <input id="introDate" maxlength="40" placeholder="VD: 17/09/2024" />
+          </div>
+          <div class="row">
+            <div class="small">Giờ</div>
+            <input id="introTime" maxlength="40" placeholder="VD: 17H00" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="small">Sân đấu</div>
+          <input id="introVenue" maxlength="120" placeholder="VD: SVĐ JADE HILL" />
+        </div>
+        <div class="row">
+          <div class="small">Tagline (tuỳ chọn)</div>
+          <input id="introTagline" maxlength="120" placeholder="VD: GIẢI BÓNG ĐÁ MỞ RỘNG CUP JADE HILL & ALITA" />
+        </div>
+        <div class="lineup-show-bar" id="introShowBar">
+          <button type="button" class="chip intro-show-btn" data-intro-show="on">Hiện intro</button>
+          <button type="button" class="chip intro-show-btn" data-intro-show="off">Ẩn intro</button>
+        </div>
+      </article>
+
       <div class="teams">
         <article class="card team-a">
           <div class="label">Đội A</div>
@@ -742,6 +814,13 @@
           </div>
           <div class="row">
             <input id="logoA" placeholder="Đường dẫn logo A (tuỳ chọn)" />
+          </div>
+          <div class="row">
+            <div class="small">Màu áo — vạch dưới bảng tỉ số (overlay)</div>
+            <div class="kit-color-row">
+              <input type="color" id="kitColorPickA" value="#ff5e3a" title="Chọn màu" aria-label="Chọn màu áo đội A" />
+              <input id="kitColorA" maxlength="40" placeholder="#hex hoặc gõ tên: orange, white…" />
+            </div>
           </div>
           <div class="row">
             <div class="small">Huấn luyện viên (hiện trên overlay đội hình)</div>
@@ -766,6 +845,13 @@
             <input id="logoB" placeholder="Đường dẫn logo B (tuỳ chọn)" />
           </div>
           <div class="row">
+            <div class="small">Màu áo — vạch dưới bảng tỉ số (overlay)</div>
+            <div class="kit-color-row">
+              <input type="color" id="kitColorPickB" value="#1685ff" title="Chọn màu" aria-label="Chọn màu áo đội B" />
+              <input id="kitColorB" maxlength="40" placeholder="#hex hoặc gõ tên: orange, white…" />
+            </div>
+          </div>
+          <div class="row">
             <div class="small">Huấn luyện viên (hiện trên overlay đội hình)</div>
             <input id="coachB" maxlength="120" placeholder="VD: Chủ tịch HLV" />
           </div>
@@ -778,7 +864,7 @@
       </div>
 
       <p class="hint" style="margin:0">Overlay đội hình (OBS): <span style="font-family:ui-monospace,Consolas,monospace;font-size:0.88em">http://localhost:8080/overlay-lineup.html</span></p>
-      <p class="hint" style="margin:6px 0 0">Overlay Trọng tài/BLV: <span style="font-family:ui-monospace,Consolas,monospace;font-size:0.88em">http://localhost:8080/overlay-officials.html</span> • Nghỉ giữa hiệp: <span style="font-family:ui-monospace,Consolas,monospace;font-size:0.88em">http://localhost:8080/overlay-midbreak.html</span> • VAR: <span style="font-family:ui-monospace,Consolas,monospace;font-size:0.88em">http://localhost:8080/overlay-var.html</span></p>
+      <p class="hint" style="margin:6px 0 0">Overlay Intro: <span style="font-family:ui-monospace,Consolas,monospace;font-size:0.88em">http://localhost:8080/overlay-intro.html</span> • Trọng tài/BLV: <span style="font-family:ui-monospace,Consolas,monospace;font-size:0.88em">http://localhost:8080/overlay-officials.html</span> • Nghỉ giữa hiệp: <span style="font-family:ui-monospace,Consolas,monospace;font-size:0.88em">http://localhost:8080/overlay-midbreak.html</span> • VAR: <span style="font-family:ui-monospace,Consolas,monospace;font-size:0.88em">http://localhost:8080/overlay-var.html</span></p>
 
       <article class="card" style="margin-top: 12px">
         <div class="label">Hiển thị đội hình lên stream</div>
@@ -937,9 +1023,13 @@
       teamA: document.getElementById("teamA"),
       scoreA: document.getElementById("scoreA"),
       logoA: document.getElementById("logoA"),
+      kitColorA: document.getElementById("kitColorA"),
+      kitColorPickA: document.getElementById("kitColorPickA"),
       teamB: document.getElementById("teamB"),
       scoreB: document.getElementById("scoreB"),
       logoB: document.getElementById("logoB"),
+      kitColorB: document.getElementById("kitColorB"),
+      kitColorPickB: document.getElementById("kitColorPickB"),
       lineupA: document.getElementById("lineupA"),
       lineupB: document.getElementById("lineupB"),
       coachA: document.getElementById("coachA"),
@@ -956,6 +1046,12 @@
       refereeName: document.getElementById("refereeName"),
       commentatorMain: document.getElementById("commentatorMain"),
       commentatorGuest: document.getElementById("commentatorGuest"),
+      introStage: document.getElementById("introStage"),
+      introTournament: document.getElementById("introTournament"),
+      introDate: document.getElementById("introDate"),
+      introTime: document.getElementById("introTime"),
+      introVenue: document.getElementById("introVenue"),
+      introTagline: document.getElementById("introTagline"),
       shotsA: document.getElementById("shotsA"),
       shotsB: document.getElementById("shotsB"),
       yellowA: document.getElementById("yellowA"),
@@ -986,7 +1082,8 @@
       scorersB: "",
       lineupShow: "off",
       scoreboardView: "full",
-      infoPanelMode: "off"
+      infoPanelMode: "off",
+      introShow: "off"
     };
 
     let activeInfoTab = "midbreak";
@@ -1001,6 +1098,42 @@
 
     function clampScore(value) {
       return clampNumber(value, 0, 99);
+    }
+
+    /** Ô type=color chỉ nhận #rrggbb — đồng bộ với ô chữ (hex / để trống). */
+    const KIT_PICK_PLACEHOLDER = "#888888";
+
+    function expandKitHex3(t) {
+      const s = (t || "").trim();
+      const m = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(s);
+      if (!m) return null;
+      return `#${m[1]}${m[1]}${m[2]}${m[2]}${m[3]}${m[3]}`.toLowerCase();
+    }
+
+    function parseKitHexForPicker(value) {
+      const s = (value || "").trim();
+      if (!s) return null;
+      if (/^#[0-9a-f]{6}$/i.test(s)) return s.toLowerCase();
+      return expandKitHex3(s);
+    }
+
+    function syncKitPickFromText(pickEl, textEl) {
+      if (!pickEl || !textEl) return;
+      const hex = parseKitHexForPicker(textEl.value);
+      pickEl.value = hex || KIT_PICK_PLACEHOLDER;
+    }
+
+    function wireKitColorPair(pickEl, textEl) {
+      if (!pickEl || !textEl) return;
+      pickEl.addEventListener("input", () => {
+        textEl.value = pickEl.value.toLowerCase();
+        scheduleAutoSync();
+      });
+      pickEl.addEventListener("change", scheduleAutoSync);
+      textEl.addEventListener("input", () => {
+        syncKitPickFromText(pickEl, textEl);
+        scheduleAutoSync();
+      });
     }
 
     function parseClockText(text) {
@@ -1053,6 +1186,11 @@
       return "off";
     }
 
+    function normalizeIntroShow(value) {
+      const s = (value ?? "").toString().trim().toLowerCase();
+      return s === "on" || s === "1" || s === "true" || s === "show" ? "on" : "off";
+    }
+
     function updateScoreViewButtons() {
       const bar = document.getElementById("scoreViewBar");
       if (!bar) return;
@@ -1083,6 +1221,23 @@
     function setInfoPanelMode(mode) {
       state.infoPanelMode = normalizeInfoPanelMode(mode);
       updateInfoPanelButtons();
+      clearTimeout(syncTimer);
+      void updateScore();
+    }
+
+    function updateIntroShowButtons() {
+      const bar = document.getElementById("introShowBar");
+      if (!bar) return;
+      const current = normalizeIntroShow(state.introShow);
+      bar.querySelectorAll(".intro-show-btn").forEach((btn) => {
+        const m = normalizeIntroShow(btn.dataset.introShow);
+        btn.classList.toggle("is-active", m === current);
+      });
+    }
+
+    function setIntroShow(mode) {
+      state.introShow = normalizeIntroShow(mode);
+      updateIntroShowButtons();
       clearTimeout(syncTimer);
       void updateScore();
     }
@@ -1166,9 +1321,11 @@
         teamA: elements.teamA.value.trim() || "Đội A",
         scoreA: clampScore(elements.scoreA.value),
         logoA: elements.logoA.value.trim(),
+        kitColorA: elements.kitColorA.value.trim(),
         teamB: elements.teamB.value.trim() || "Đội B",
         scoreB: clampScore(elements.scoreB.value),
         logoB: elements.logoB.value.trim(),
+        kitColorB: elements.kitColorB.value.trim(),
         period: state.period,
         clockSeconds: getEffectiveClockSeconds(),
         clockRunning: Boolean(state.clockRunning),
@@ -1198,6 +1355,13 @@
         infoPanelMode: normalizeInfoPanelMode(state.infoPanelMode),
         midbreakTitle: elements.midbreakTitle.value.trim(),
         midbreakLine: elements.midbreakLine.value.trim(),
+        introShow: normalizeIntroShow(state.introShow),
+        introStage: elements.introStage.value.trim(),
+        introTournament: elements.introTournament.value.trim(),
+        introDate: elements.introDate.value.trim(),
+        introTime: elements.introTime.value.trim(),
+        introVenue: elements.introVenue.value.trim(),
+        introTagline: elements.introTagline.value.trim(),
         varTitle: (elements.varTitle && elements.varTitle.value.trim()) || "PENALTY",
         varDetail: (elements.varDetail && elements.varDetail.value.trim()) || "",
         scorersA: (state.scorersA || "").toString(),
@@ -1213,9 +1377,13 @@
       elements.teamA.value = data.teamA ?? "Đội A";
       elements.scoreA.value = clampScore(data.scoreA ?? 0);
       elements.logoA.value = data.logoA ?? "";
+      elements.kitColorA.value = data.kitColorA ?? "";
+      syncKitPickFromText(elements.kitColorPickA, elements.kitColorA);
       elements.teamB.value = data.teamB ?? "Đội B";
       elements.scoreB.value = clampScore(data.scoreB ?? 0);
       elements.logoB.value = data.logoB ?? "";
+      elements.kitColorB.value = data.kitColorB ?? "";
+      syncKitPickFromText(elements.kitColorPickB, elements.kitColorB);
       state.period = (data.period || "H1").toString().toUpperCase();
       state.clockSeconds = clampNumber(data.clockSeconds ?? 0, 0, 9000);
       state.clockRunning = Boolean(data.clockRunning);
@@ -1233,6 +1401,12 @@
       elements.eventText.value = data.eventText ?? "";
       elements.midbreakTitle.value = data.midbreakTitle ?? "NGHI GIUA HIEP";
       elements.midbreakLine.value = data.midbreakLine ?? "";
+      elements.introStage.value = data.introStage ?? "";
+      elements.introTournament.value = data.introTournament ?? "";
+      elements.introDate.value = data.introDate ?? "";
+      elements.introTime.value = data.introTime ?? "";
+      elements.introVenue.value = data.introVenue ?? "";
+      elements.introTagline.value = data.introTagline ?? "";
       if (elements.varTitle) elements.varTitle.value = data.varTitle ?? "PENALTY";
       if (elements.varDetail) elements.varDetail.value = data.varDetail ?? "";
       state.scorersA = (data.scorersA ?? "").toString();
@@ -1259,12 +1433,16 @@
       if (Object.prototype.hasOwnProperty.call(data, "infoPanelMode")) {
         state.infoPanelMode = normalizeInfoPanelMode(data.infoPanelMode);
       }
+      if (Object.prototype.hasOwnProperty.call(data, "introShow")) {
+        state.introShow = normalizeIntroShow(data.introShow);
+      }
       updateClockPreview();
       rebuildLineupActions("A");
       rebuildLineupActions("B");
       updateLineupShowButtons();
       updateScoreViewButtons();
       updateInfoPanelButtons();
+      updateIntroShowButtons();
       switchInfoTab(
         state.infoPanelMode === "officials"
           ? "officials"
@@ -1308,9 +1486,11 @@
       state.lineupShow = normalizeLineupShow(data.lineupShow);
       state.scoreboardView = normalizeScoreboardView(data.scoreboardView);
       state.infoPanelMode = normalizeInfoPanelMode(data.infoPanelMode);
+      state.introShow = normalizeIntroShow(data.introShow);
       updateLineupShowButtons();
       updateScoreViewButtons();
       updateInfoPanelButtons();
+      updateIntroShowButtons();
       elements.scoreA.value = clampScore(data.scoreA ?? 0);
       elements.scoreB.value = clampScore(data.scoreB ?? 0);
       elements.addedMinutes.value = clampNumber(data.addedMinutes ?? 0, 0, 30);
@@ -1328,11 +1508,21 @@
       if (!isTypingInTextControl()) {
         elements.teamA.value = data.teamA ?? "Đội A";
         elements.logoA.value = data.logoA ?? "";
+        if (elements.kitColorA) elements.kitColorA.value = data.kitColorA ?? "";
+        syncKitPickFromText(elements.kitColorPickA, elements.kitColorA);
         elements.teamB.value = data.teamB ?? "Đội B";
         elements.logoB.value = data.logoB ?? "";
+        if (elements.kitColorB) elements.kitColorB.value = data.kitColorB ?? "";
+        syncKitPickFromText(elements.kitColorPickB, elements.kitColorB);
         elements.eventText.value = data.eventText ?? "";
         elements.midbreakTitle.value = data.midbreakTitle ?? "NGHI GIUA HIEP";
         elements.midbreakLine.value = data.midbreakLine ?? "";
+        elements.introStage.value = data.introStage ?? "";
+        elements.introTournament.value = data.introTournament ?? "";
+        elements.introDate.value = data.introDate ?? "";
+        elements.introTime.value = data.introTime ?? "";
+        elements.introVenue.value = data.introVenue ?? "";
+        elements.introTagline.value = data.introTagline ?? "";
         if (elements.varTitle) elements.varTitle.value = data.varTitle ?? "PENALTY";
         if (elements.varDetail) elements.varDetail.value = data.varDetail ?? "";
         elements.refereeName.value = data.refereeName ?? "";
@@ -1901,6 +2091,7 @@
         team: elements.teamA.value,
         score: elements.scoreA.value,
         logo: elements.logoA.value,
+        kitColor: elements.kitColorA.value,
         lineup: elements.lineupA.value,
         coach: elements.coachA.value,
         scorers: state.scorersA
@@ -1908,11 +2099,15 @@
       elements.teamA.value = elements.teamB.value;
       elements.scoreA.value = elements.scoreB.value;
       elements.logoA.value = elements.logoB.value;
+      elements.kitColorA.value = elements.kitColorB.value;
+      syncKitPickFromText(elements.kitColorPickA, elements.kitColorA);
       elements.lineupA.value = elements.lineupB.value;
       elements.coachA.value = elements.coachB.value;
       elements.teamB.value = left.team;
       elements.scoreB.value = left.score;
       elements.logoB.value = left.logo;
+      elements.kitColorB.value = left.kitColor;
+      syncKitPickFromText(elements.kitColorPickB, elements.kitColorB);
       elements.lineupB.value = left.lineup;
       elements.coachB.value = left.coach;
       state.scorersA = state.scorersB;
@@ -2030,6 +2225,12 @@
       elements.yellowB,
       elements.redA,
       elements.redB,
+      elements.introStage,
+      elements.introTournament,
+      elements.introDate,
+      elements.introTime,
+      elements.introVenue,
+      elements.introTagline,
       elements.lineupA,
       elements.lineupB,
       elements.coachA,
@@ -2038,6 +2239,11 @@
       input.addEventListener("input", scheduleAutoSync);
       input.addEventListener("change", scheduleAutoSync);
     });
+
+    wireKitColorPair(elements.kitColorPickA, elements.kitColorA);
+    wireKitColorPair(elements.kitColorPickB, elements.kitColorB);
+    syncKitPickFromText(elements.kitColorPickA, elements.kitColorA);
+    syncKitPickFromText(elements.kitColorPickB, elements.kitColorB);
 
     elements.eventText.addEventListener("input", () => {
       state.eventType = "custom";
@@ -2086,6 +2292,15 @@
           if (btn.dataset.infoPanel === "officials") switchInfoTab("officials");
           if (btn.dataset.infoPanel === "midbreak") switchInfoTab("midbreak");
           if (btn.dataset.infoPanel === "var") switchInfoTab("var");
+        });
+      });
+    }
+
+    const introShowBar = document.getElementById("introShowBar");
+    if (introShowBar) {
+      introShowBar.querySelectorAll(".intro-show-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          setIntroShow(btn.dataset.introShow);
         });
       });
     }
@@ -2169,6 +2384,7 @@
       updateLineupShowButtons();
       updateScoreViewButtons();
       updateInfoPanelButtons();
+      updateIntroShowButtons();
       switchInfoTab(
         state.infoPanelMode === "officials"
           ? "officials"

@@ -6,19 +6,23 @@
   <title>Overlay đội hình</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Semi+Condensed:wght@500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --panel-bg: #0a1628;
-      --panel-bg2: #0d1f35;
+      --bar: #0a2464;
+      --bar-mid: #0c2a78;
+      --gold: #f5c518;
+      --panel: #0b1d4f;
+      --panel-dark: #07132f;
+      --glass: rgba(255, 255, 255, 0.08);
       --text: #f4f7fb;
-      --muted: rgba(255, 255, 255, 0.55);
-      --line: rgba(255, 255, 255, 0.07);
-      --team-a: #00c6a8;
-      --team-a-dim: rgba(0, 198, 168, 0.22);
-      --team-b: #ff4d6d;
-      --team-b-dim: rgba(255, 77, 109, 0.22);
-      --hlv: #ffd54f;
+      --muted: rgba(255, 255, 255, 0.72);
+      --line: rgba(255, 255, 255, 0.14);
+      --team-a: #e31b23;
+      --team-a-dim: rgba(227, 27, 35, 0.2);
+      --team-b: #f5c518;
+      --team-b-dim: rgba(245, 197, 24, 0.2);
+      --hlv: #f5c518;
     }
 
     * { box-sizing: border-box; }
@@ -31,7 +35,7 @@
       max-width: 100%;
       background: transparent;
       color: var(--text);
-      font-family: "Barlow Semi Condensed", "Rajdhani", "Segoe UI", Tahoma, sans-serif;
+      font-family: "Barlow Condensed", "Segoe UI", Tahoma, sans-serif;
     }
 
     .stage {
@@ -113,16 +117,15 @@
       flex-direction: column;
       min-width: 0;
       max-width: 100%;
-      border-radius: 4px;
+      border-radius: 12px;
       overflow: hidden;
       min-height: 300px;
-      background: linear-gradient(165deg, rgba(255, 255, 255, 0.04) 0%, transparent 42%),
-        linear-gradient(180deg, var(--panel-bg) 0%, #060d18 100%);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.08) 0%, transparent 40%),
+        linear-gradient(180deg, var(--panel) 0%, var(--panel-dark) 100%);
+      border: 1px solid rgba(245, 197, 24, 0.4);
       box-shadow:
-        0 0 0 1px rgba(0, 0, 0, 0.35) inset,
-        0 24px 48px rgba(0, 0, 0, 0.55),
-        0 0 80px rgba(0, 0, 0, 0.25);
+        0 0 0 1px rgba(0, 0, 0, 0.32) inset,
+        0 18px 40px rgba(0, 0, 0, 0.5);
       animation: card-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
 
@@ -132,7 +135,7 @@
     }
 
     .lineup-card-b .lineup-head {
-      background: linear-gradient(270deg, var(--accent-dim) 0%, rgba(0, 0, 0, 0.15) 55%);
+      background: linear-gradient(270deg, var(--accent-dim) 0%, rgba(0, 0, 0, 0.2) 55%);
     }
 
     .lineup-card-b .lineup-head::before {
@@ -183,8 +186,8 @@
       align-items: stretch;
       padding: 0;
       overflow: hidden;
-      background: linear-gradient(90deg, var(--accent-dim) 0%, rgba(0, 0, 0, 0.15) 55%);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background: linear-gradient(180deg, rgba(15, 45, 120, 0.95) 0%, rgba(7, 19, 47, 0.95) 100%);
+      border-bottom: 1px solid rgba(245, 197, 24, 0.35);
     }
 
     .lineup-head::before {
@@ -194,28 +197,39 @@
       top: 0;
       bottom: 0;
       width: 5px;
-      background: linear-gradient(180deg, var(--accent) 0%, #1a1a1a 100%);
+      background: linear-gradient(180deg, var(--accent) 0%, rgba(0, 0, 0, 0.35) 100%);
+    }
+
+    .lineup-head::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.25) 0%, transparent 60%);
+      opacity: 0.6;
     }
 
     .lineup-card-a .lineup-head::before {
-      box-shadow: 0 0 20px rgba(0, 198, 168, 0.45);
+      box-shadow: 0 0 20px rgba(227, 27, 35, 0.45);
     }
 
     .lineup-card-b .lineup-head::before {
-      box-shadow: 0 0 20px rgba(255, 77, 109, 0.45);
+      box-shadow: 0 0 20px rgba(245, 197, 24, 0.45);
     }
 
     .lineup-head-inner {
-      padding: 11px 16px 12px 22px;
+      padding: 12px 18px 12px 22px;
       text-align: left;
     }
 
     .lineup-eyebrow {
       display: block;
-      font-family: "Rajdhani", sans-serif;
-      font-size: clamp(0.62rem, 1.1vw, 0.72rem);
+      font-family: "Barlow Condensed", "Segoe UI", sans-serif;
+      font-size: clamp(0.6rem, 1.1vw, 0.7rem);
       font-weight: 700;
-      letter-spacing: 0.28em;
+      letter-spacing: 0.22em;
       text-transform: uppercase;
       color: rgba(255, 255, 255, 0.88);
       margin-bottom: 2px;
@@ -224,9 +238,9 @@
 
     .lineup-title {
       margin: 0;
-      font-family: "Bebas Neue", Impact, sans-serif;
-      font-size: clamp(1.35rem, 3vw, 2rem);
-      font-weight: 400;
+      font-family: "Rajdhani", "Barlow Condensed", "Segoe UI", sans-serif;
+      font-size: clamp(1.4rem, 3vw, 2.2rem);
+      font-weight: 700;
       letter-spacing: 0.08em;
       line-height: 1.05;
       text-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
@@ -241,8 +255,8 @@
       min-width: 0;
       overflow: hidden;
       background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 28%),
-        linear-gradient(135deg, var(--panel-bg2) 0%, #070f1a 100%);
+        radial-gradient(circle at 20% 0%, rgba(255, 255, 255, 0.08) 0%, transparent 45%),
+        linear-gradient(135deg, var(--panel) 0%, var(--panel-dark) 100%);
     }
 
     .lineup-mainrow {
@@ -250,8 +264,8 @@
       display: flex;
       flex-direction: row;
       align-items: stretch;
-      gap: 0;
-      padding: 12px 12px 10px 14px;
+      gap: 10px;
+      padding: 14px 14px 12px 16px;
       min-height: 0;
       min-width: 0;
       overflow: hidden;
@@ -266,16 +280,17 @@
 
     .lineup-list-header {
       display: grid;
-      grid-template-columns: 2.35rem minmax(0, 1fr);
+      grid-template-columns: 2.5rem minmax(0, 1fr);
       align-items: baseline;
       gap: 10px;
-      padding: 4px 8px 8px 4px;
-      border-bottom: 1px solid var(--line);
-      margin-bottom: 4px;
+      padding: 6px 10px 8px 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+      margin-bottom: 6px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0%, transparent 80%);
     }
 
     .lineup-list-header span {
-      font-size: clamp(0.65rem, 1vw, 0.72rem);
+      font-size: clamp(0.62rem, 1vw, 0.7rem);
       font-weight: 700;
       letter-spacing: 0.14em;
       text-transform: uppercase;
@@ -303,20 +318,32 @@
 
     .lineup-li {
       display: grid;
-      grid-template-columns: 2.35rem minmax(0, 1fr);
+      grid-template-columns: 2.5rem minmax(0, 1fr);
       align-items: center;
       gap: 10px;
-      padding: 6px 8px;
+      padding: 7px 10px 7px 6px;
       margin: 0;
       font-size: clamp(0.84rem, 1.25vw, 0.98rem);
       font-weight: 600;
       line-height: 1.25;
       border-bottom: 1px solid var(--line);
       animation: row-in 0.38s ease both;
+      position: relative;
+    }
+
+    .lineup-li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 6px;
+      bottom: 6px;
+      width: 2px;
+      background: linear-gradient(180deg, var(--accent) 0%, transparent 100%);
+      opacity: 0.75;
     }
 
     .lineup-li:nth-child(even) {
-      background: rgba(255, 255, 255, 0.025);
+      background: rgba(255, 255, 255, 0.04);
     }
 
     .lineup-li:nth-child(1) { animation-delay: 0.03s; }
@@ -361,16 +388,16 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-width: 2.1rem;
-      height: 1.75rem;
-      padding: 0 4px;
-      border-radius: 3px;
+      min-width: 2.2rem;
+      height: 1.85rem;
+      padding: 0 6px;
+      border-radius: 999px;
       font-variant-numeric: tabular-nums;
-      font-weight: 800;
+      font-weight: 700;
       font-size: clamp(0.78rem, 1.15vw, 0.92rem);
       color: #fff;
-      background: linear-gradient(145deg, var(--accent-dim) 0%, #0c121c 100%);
-      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: linear-gradient(145deg, var(--accent-dim) 0%, rgba(10, 20, 50, 0.95) 100%);
+      border: 1px solid rgba(245, 197, 24, 0.35);
       box-shadow:
         0 0 0 1px var(--accent-dim) inset,
         0 1px 0 rgba(255, 255, 255, 0.12) inset,
@@ -395,8 +422,8 @@
       justify-content: center;
       align-self: stretch;
       padding: 8px 8px 8px 14px;
-      border-left: 1px solid var(--line);
-      background: linear-gradient(180deg, rgba(0, 0, 0, 0.12) 0%, transparent 55%);
+      border-left: 1px solid rgba(255, 255, 255, 0.12);
+      background: linear-gradient(180deg, rgba(12, 38, 110, 0.35) 0%, rgba(7, 19, 47, 0.1) 60%);
     }
 
     .lineup-logo-col img {
@@ -416,7 +443,7 @@
       aspect-ratio: 1;
       max-height: 120px;
       border-radius: 4px;
-      border: 1px dashed rgba(255, 255, 255, 0.12);
+      border: 1px dashed rgba(245, 197, 24, 0.35);
       background: rgba(0, 0, 0, 0.2);
       display: none;
       align-items: center;
@@ -443,13 +470,13 @@
       font-size: clamp(0.78rem, 1.15vw, 0.92rem);
       font-weight: 600;
       background: linear-gradient(0deg, rgba(0, 0, 0, 0.35) 0%, transparent 100%);
-      border-top: 1px solid var(--line);
+      border-top: 1px solid rgba(245, 197, 24, 0.35);
     }
 
     .lineup-coach .hlv {
       flex: 0 0 auto;
-      font-family: "Rajdhani", sans-serif;
-      font-size: 0.68rem;
+      font-family: "Barlow Condensed", "Segoe UI", sans-serif;
+      font-size: 0.7rem;
       font-weight: 800;
       letter-spacing: 0.2em;
       color: var(--hlv);

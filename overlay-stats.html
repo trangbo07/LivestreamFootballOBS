@@ -6,12 +6,15 @@
   <title>Overlay Stats</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
+      --bar: #0a2464;
+      --bar-mid: #0c2a78;
       --ink: #f5f8ff;
-      --bg: rgba(7, 12, 27, 0.72);
-      --line: rgba(255, 255, 255, 0.2);
+      --bg: rgba(9, 24, 60, 0.86);
+      --line: rgba(255, 255, 255, 0.16);
+      --accent: #f5c518;
     }
 
     * { box-sizing: border-box; }
@@ -23,7 +26,7 @@
       background: transparent;
       overflow: hidden;
       color: var(--ink);
-      font-family: "Rajdhani", "Segoe UI", Tahoma, sans-serif;
+      font-family: "Barlow Condensed", "Segoe UI", Tahoma, sans-serif;
     }
 
     .wrap {
@@ -38,41 +41,43 @@
 
     .panel {
       width: min(1120px, 96vw);
-      border-radius: 18px;
-      border: 1px solid var(--line);
-      background: var(--bg);
-      backdrop-filter: blur(6px);
+      border-radius: 14px;
+      border: 1px solid var(--accent);
+      background: linear-gradient(180deg, rgba(12, 42, 120, 0.92) 0%, rgba(10, 36, 100, 0.92) 100%);
       box-shadow: 0 12px 28px rgba(0, 0, 0, 0.36);
-      padding: 8px;
+      padding: 10px;
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 8px;
     }
 
     .stat {
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(255, 255, 255, 0.05);
-      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(245, 197, 24, 0.55);
+      background: rgba(255, 255, 255, 0.06);
+      padding: 8px 12px 10px;
     }
 
     .k {
-      font-family: "Bebas Neue", Impact, sans-serif;
-      letter-spacing: 0.08em;
+      font-family: "Barlow Condensed", "Segoe UI", Tahoma, sans-serif;
+      letter-spacing: 0.12em;
       font-size: 0.85rem;
-      opacity: 0.82;
+      font-weight: 700;
+      opacity: 0.9;
       text-align: center;
+      text-transform: uppercase;
     }
 
     .v {
-      margin-top: 2px;
+      margin-top: 4px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-family: "Bebas Neue", Impact, sans-serif;
-      font-size: 1.45rem;
-      letter-spacing: 0.06em;
+      font-family: "Barlow Condensed", "Segoe UI", Tahoma, sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 0.04em;
       line-height: 1;
+      font-weight: 800;
     }
 
     @media (max-width: 760px) {

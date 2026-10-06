@@ -1,0 +1,126 @@
+/* =====================================================================
+ *  THEME.CSS — bảng màu. Đổi theme: CONFIG.theme hoặc nút trong control.
+ *  Mọi file CSS khác chỉ dùng các biến này.
+ *    neon (mặc định) · premier · gold · classic
+ * ===================================================================== */
+
+/* ---------- NEON NIGHT: kính tối + cyan / hồng neon ---------- */
+:root,
+html[data-theme="neon"] {
+    --accent: #2ee6ff;
+    --accent-2: #ff3d8b;
+    --accent-ink: #031821;
+    --accent-grad: linear-gradient(90deg, #2ee6ff 0%, #7b6cff 50%, #ff3d8b 100%);
+    --glow: rgba(46, 230, 255, .55);
+    --glow-2: rgba(255, 61, 139, .55);
+
+    --panel: linear-gradient(160deg, rgba(22, 28, 66, .94) 0%, rgba(9, 12, 32, .95) 100%);
+    --panel-strong: linear-gradient(180deg, #121a46 0%, #0a0f2a 100%);
+    --panel-line: rgba(140, 200, 255, .22);
+    --line-w: 1.5px;
+    --panel-shadow: 0 14px 34px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .08);
+
+    --score-bg: linear-gradient(180deg, #1c2560 0%, #0f1538 100%);
+    --score-ink: #ffffff;
+    --clock-bg: linear-gradient(180deg, #5cf0ff 0%, #17c3ea 100%);
+    --clock-ink: #031821;
+    --tab-bg: linear-gradient(180deg, #ff5c9e, #e8226f);
+    --tab-ink: #ffffff;
+    --hi-bg: linear-gradient(180deg, #ffffff 0%, #e6ecf7 100%);
+    --hi-ink: #0a0f1d;
+
+    --frame: #070b1f;
+    --backdrop: rgba(6, 9, 26, .97);
+    --text: #ffffff;
+    --text-dim: rgba(220, 230, 255, .66);
+}
+
+/* ---------- PREMIER: tím đậm + xanh neon + hồng ---------- */
+html[data-theme="premier"] {
+    --accent: #00ff87;
+    --accent-2: #ff2882;
+    --accent-ink: #1c0022;
+    --accent-grad: linear-gradient(90deg, #00ff87 0%, #04f5ff 50%, #e90052 100%);
+    --glow: rgba(0, 255, 135, .5);
+    --glow-2: rgba(255, 40, 130, .55);
+
+    --panel: linear-gradient(160deg, rgba(74, 0, 86, .95) 0%, rgba(38, 0, 46, .96) 100%);
+    --panel-strong: linear-gradient(180deg, #4a0056 0%, #2a0031 100%);
+    --panel-line: rgba(255, 255, 255, .2);
+    --line-w: 1.5px;
+    --panel-shadow: 0 14px 34px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .1);
+
+    --score-bg: linear-gradient(180deg, #ffffff 0%, #f1e7f3 100%);
+    --score-ink: #37003c;
+    --clock-bg: linear-gradient(180deg, #4dffaa 0%, #00e676 100%);
+    --clock-ink: #1c0022;
+    --tab-bg: linear-gradient(180deg, #ff4f99, #e90052);
+    --tab-ink: #ffffff;
+    --hi-bg: linear-gradient(180deg, #ffffff 0%, #f1e7f3 100%);
+    --hi-ink: #37003c;
+
+    --frame: #2a0031;
+    --backdrop: rgba(30, 0, 36, .97);
+    --text: #ffffff;
+    --text-dim: rgba(255, 230, 255, .66);
+}
+
+/* ---------- GOLD: đen nhám + vàng kim ---------- */
+html[data-theme="gold"] {
+    --accent: #f6c453;
+    --accent-2: #ff5468;
+    --accent-ink: #1d1404;
+    --accent-grad: linear-gradient(90deg, #8c6a1c 0%, #f6c453 45%, #fff1c2 70%, #f6c453 100%);
+    --glow: rgba(246, 196, 83, .5);
+    --glow-2: rgba(255, 84, 104, .5);
+
+    --panel: linear-gradient(160deg, rgba(30, 30, 34, .95) 0%, rgba(10, 10, 12, .96) 100%);
+    --panel-strong: linear-gradient(180deg, #232327 0%, #101012 100%);
+    --panel-line: rgba(246, 196, 83, .32);
+    --line-w: 1.5px;
+    --panel-shadow: 0 14px 34px rgba(0, 0, 0, .55), inset 0 1px 0 rgba(255, 255, 255, .07);
+
+    --score-bg: linear-gradient(180deg, #2c2c32 0%, #17171b 100%);
+    --score-ink: #ffffff;
+    --clock-bg: linear-gradient(180deg, #ffe08a 0%, #e9ad2e 100%);
+    --clock-ink: #1d1404;
+    --tab-bg: linear-gradient(180deg, #ffe08a, #e9ad2e);
+    --tab-ink: #1d1404;
+    --hi-bg: linear-gradient(180deg, #fff6dc 0%, #f1dfb0 100%);
+    --hi-ink: #1d1404;
+
+    --frame: #0c0c0e;
+    --backdrop: rgba(8, 8, 10, .97);
+    --text: #ffffff;
+    --text-dim: rgba(255, 240, 210, .62);
+}
+
+/* ---------- CLASSIC: navy + đỏ + viền trắng (bản cũ) ---------- */
+html[data-theme="classic"] {
+    --accent: #ec1c3a;
+    --accent-2: #ffc531;
+    --accent-ink: #ffffff;
+    --accent-grad: linear-gradient(90deg, #ec1c3a, #ff4560);
+    --glow: rgba(236, 28, 58, .5);
+    --glow-2: rgba(255, 197, 49, .5);
+
+    --panel: linear-gradient(180deg, #16338a 0%, #0b1f61 52%, #071446 100%);
+    --panel-strong: linear-gradient(180deg, #0b1f61 0%, #061036 100%);
+    --panel-line: rgba(255, 255, 255, .96);
+    --line-w: 3px;
+    --panel-shadow: 0 10px 28px rgba(0, 0, 0, .45);
+
+    --score-bg: linear-gradient(180deg, #ffffff 0%, #eef1f6 45%, #cdd4e1 100%);
+    --score-ink: #0a0f1d;
+    --clock-bg: linear-gradient(180deg, #1d3378 0%, #0b1844 100%);
+    --clock-ink: #ffffff;
+    --tab-bg: linear-gradient(180deg, #ff4560, #c8102e);
+    --tab-ink: #ffffff;
+    --hi-bg: linear-gradient(180deg, #ffffff 0%, #e8ecf3 100%);
+    --hi-ink: #0a0f1d;
+
+    --frame: #0b1d63;
+    --backdrop: rgba(7, 18, 60, .97);
+    --text: #ffffff;
+    --text-dim: rgba(220, 230, 255, .7);
+}

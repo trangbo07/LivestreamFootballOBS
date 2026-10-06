@@ -10,6 +10,16 @@ San dau:
 Ngay gio: 
 
 ====================
+GIOI THIEU TRUOC TRAN
+====================
+Vong dau / su kien: 
+Giai dau: 
+Ngay: 
+Gio: 
+San: 
+Tagline: 
+
+====================
 DOI A
 ====================
 Ten doi A: 

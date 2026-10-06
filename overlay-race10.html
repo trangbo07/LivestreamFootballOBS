@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overlay Race to 10</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bar-top: #f5c518;
+      --bar-main: #0c2a78;
+      --bar-deep: #0a2464;
+      --cap: #f5c518;
+      --score-box: #0a235f;
+      --ink: #f5f5f7;
+      --score-ink: #ffffff;
+      --shadow: rgba(0, 0, 0, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      background: transparent;
+      overflow: hidden;
+      font-family: "Barlow Condensed", "Segoe UI", system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    .wrap {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 14px 18px 0;
+    }
+
+    .scorebar {
+      position: relative;
+      width: min(1500px, 96vw);
+      min-height: 56px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 26px;
+      border-radius: 6px;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, var(--bar-main) 0%, var(--bar-deep) 100%);
+      box-shadow: 0 12px 26px var(--shadow);
+      overflow: hidden;
+      border: 1px solid rgba(245, 197, 24, 0.35);
+    }
+
+    .scorebar::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 4px;
+      background: var(--bar-top);
+    }
+
+    .scorebar::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .cap {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 10px;
+      background: var(--cap);
+    }
+
+    .cap.left {
+      left: 0;
+      border-top-left-radius: 6px;
+      border-bottom-left-radius: 6px;
+    }
+
+    .cap.right {
+      right: 0;
+      border-top-right-radius: 6px;
+      border-bottom-right-radius: 6px;
+    }
+
+    .team {
+      display: grid;
+      grid-template-columns: auto;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+    }
+
+    .team.left {
+      justify-self: start;
+    }
+
+    .team.right {
+      justify-self: end;
+      grid-template-columns: auto;
+    }
+
+    .team.right .name {
+      text-align: right;
+    }
+
+    .name {
+      font-size: clamp(1.15rem, 2.3vw, 2rem);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 46vw;
+    }
+
+    .score-box {
+      min-width: 44px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      padding: 0 10px;
+      border-radius: 6px;
+      background: var(--score-box);
+      box-shadow: inset 0 0 0 2px rgba(245, 197, 24, 0.85);
+    }
+
+    .score {
+      font-size: clamp(1.3rem, 2.8vw, 2.1rem);
+      color: var(--score-ink);
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .center {
+      justify-self: center;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(245, 197, 24, 0.55);
+      white-space: nowrap;
+      min-width: 240px;
+    }
+
+    .center-title {
+      font-size: clamp(0.95rem, 1.7vw, 1.3rem);
+      line-height: 1;
+      text-align: center;
+    }
+
+    .center-score {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: clamp(1.15rem, 2.2vw, 1.6rem);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .center-score .score-box {
+      height: 32px;
+      min-width: 38px;
+      padding: 0 8px;
+    }
+
+    .center .play {
+      display: inline-block;
+      margin: 0 6px;
+      width: 0;
+      height: 0;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-left: 9px solid rgba(255, 255, 255, 0.8);
+      transform: translateY(1px);
+    }
+
+    @media (max-width: 820px) {
+      .scorebar {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 10px 14px 12px;
+      }
+
+      .center {
+        order: -1;
+      }
+
+      .team {
+        grid-template-columns: 1fr;
+      }
+
+      .team.right {
+        grid-template-columns: 1fr;
+      }
+
+      .name {
+        max-width: 90vw;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="scorebar" id="scorebar">
+      <span class="cap left" aria-hidden="true"></span>
+      <span class="cap right" aria-hidden="true"></span>
+      <div class="team left">
+        <div class="name" id="teamA">TEAM A</div>
+      </div>
+      <div class="center" id="raceTitle">
+        <div class="center-score">
+          <span class="score-box"><span class="score" id="scoreA">0</span></span>
+        </div>
+        <div class="center-title" id="raceTitleText">RACE TO 10</div>
+        <div class="center-score">
+          <span class="score-box"><span class="score" id="scoreB">0</span></span>
+        </div>
+      </div>
+      <div class="team right">
+        <div class="name" id="teamB">TEAM B</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "scoreData.v2";
+    const API_PATH = "/api/score";
+    const STREAM_PATH = "/api/score/stream";
+    const CAN_USE_HTTP = location.protocol === "http:" || location.protocol === "https:";
+
+    const el = {
+      teamA: document.getElementById("teamA"),
+      teamB: document.getElementById("teamB"),
+      scoreA: document.getElementById("scoreA"),
+      scoreB: document.getElementById("scoreB"),
+      raceTitle: document.getElementById("raceTitle"),
+      raceTitleText: document.getElementById("raceTitleText")
+    };
+
+    function safeText(value, fallback) {
+      const text = (value ?? "").toString().trim();
+      return text || fallback;
+    }
+
+    function toNumber(value, min, max) {
+      const n = Number.parseInt(value, 10);
+      if (Number.isNaN(n) || n < min) return min;
+      if (n > max) return max;
+      return n;
+    }
+
+    function getTitleFromQuery() {
+      const params = new URLSearchParams(location.search);
+      const title = params.get("title") || params.get("race") || "";
+      return safeText(title, "RACE TO 10");
+    }
+
+    function render(data) {
+      const teamA = safeText(data.teamA, "TEAM A");
+      const teamB = safeText(data.teamB, "TEAM B");
+      const scoreA = toNumber(data.scoreA, 0, 99);
+      const scoreB = toNumber(data.scoreB, 0, 99);
+
+      el.teamA.textContent = teamA.toUpperCase();
+      el.teamB.textContent = teamB.toUpperCase();
+      el.scoreA.textContent = scoreA;
+      el.scoreB.textContent = scoreB;
+    }
+
+    function loadFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        render(JSON.parse(raw));
+      } catch {
+        // Silent in overlay.
+      }
+    }
+
+    async function loadFromServer() {
+      try {
+        const response = await fetch(API_PATH, { cache: "no-store" });
+        if (!response.ok) throw new Error("GET failed");
+        render(await response.json());
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    let stream = null;
+    let streamConnected = false;
+    let reconnectTimer = null;
+
+    function scheduleReconnect() {
+      if (reconnectTimer !== null) return;
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
+        connectStream();
+      }, 1000);
+    }
+
+    function connectStream() {
+      if (!CAN_USE_HTTP || typeof EventSource === "undefined") return;
+      if (stream) stream.close();
+      stream = new EventSource(STREAM_PATH);
+      stream.onopen = () => {
+        streamConnected = true;
+      };
+      stream.onmessage = (event) => {
+        try {
+          render(JSON.parse(event.data));
+        } catch {
+          // Ignore malformed event payload.
+        }
+      };
+      stream.onerror = () => {
+        streamConnected = false;
+        if (stream) {
+          stream.close();
+          stream = null;
+        }
+        scheduleReconnect();
+      };
+    }
+
+    window.addEventListener("storage", (event) => {
+      if (event.key === STORAGE_KEY) loadFromStorage();
+    });
+
+    el.raceTitleText.textContent = getTitleFromQuery().toUpperCase();
+
+    if (CAN_USE_HTTP) {
+      connectStream();
+      loadFromServer();
+      setInterval(async () => {
+        if (streamConnected) return;
+        const ok = await loadFromServer();
+        if (!ok) loadFromStorage();
+      }, 1000);
+    } else {
+      loadFromStorage();
+      setInterval(loadFromStorage, 250);
+    }
+  </script>
+</body>
+</html>

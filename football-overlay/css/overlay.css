@@ -1,0 +1,299 @@
+/* =====================================================================
+ *  OVERLAY.CSS — biến chung, reset cho OBS, frame, watermark, date, LIVE
+ *  (màu nằm trong theme.css)
+ * ===================================================================== */
+:root {
+    --red: #ff2d55;
+    --red-600: #d6153d;
+    --green: #1fd17b;
+    --yellow: #ffd60a;
+    --gold: #ffc531;
+    --ink: #0a0f1d;
+
+    --font-display: 'Oswald', 'Roboto Condensed', 'Arial Narrow', Impact, sans-serif;
+    --font-body: 'Roboto Condensed', 'Arial Narrow', Arial, sans-serif;
+
+    --ease-out: cubic-bezier(.16, 1, .3, 1);
+    --ease-in: cubic-bezier(.7, 0, .84, 0);
+    --ease-io: cubic-bezier(.65, 0, .35, 1);
+    --ease-back: cubic-bezier(.34, 1.56, .64, 1);
+    --radius: 14px;
+}
+
+/* ---- OBS: nền trong suốt, không margin, không scrollbar ---- */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: transparent;
+}
+*, *::before, *::after { box-sizing: border-box; }
+
+#stage {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    transform-origin: 0 0;
+    font-family: var(--font-body);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+}
+#stage img { display: block; }
+
+/* Panel kính dùng chung */
+.glass {
+    background: var(--panel);
+    border: var(--line-w) solid var(--panel-line);
+    box-shadow: var(--panel-shadow);
+}
+/* Vạch accent dưới đáy panel */
+.accent-line {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 4px;
+    background: var(--accent-grad);
+    box-shadow: 0 0 14px var(--glow);
+    pointer-events: none;
+}
+
+/* Nền giả lập (chỉ khi xem bằng trình duyệt thường) */
+html.preview-bg body {
+    background:
+        radial-gradient(ellipse at 50% 35%, rgba(255, 255, 255, .10), transparent 60%),
+        repeating-linear-gradient(90deg, #2f7d3a 0 120px, #2a7334 120px 240px);
+}
+html.preview-bg #stage::before {
+    content: '';
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 300px; height: 300px;
+    margin: -150px 0 0 -150px;
+    border: 4px solid rgba(255, 255, 255, .35);
+    border-radius: 50%;
+}
+html.preview-bg #stage::after {
+    content: '';
+    position: absolute;
+    left: 50%; top: 0; bottom: 0;
+    width: 4px;
+    margin-left: -2px;
+    background: rgba(255, 255, 255, .35);
+}
+
+/* ---------------- FRAME ---------------- */
+.frame {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    transition: opacity .6s var(--ease-out);
+}
+.frame::before {
+    content: '';
+    position: absolute;
+    inset: 14px;
+    border-radius: 20px;
+    box-shadow: 0 0 0 80px var(--frame), inset 0 0 0 1.5px var(--panel-line);
+}
+.frame::after {                 /* vạch accent ở cạnh dưới khung */
+    content: '';
+    position: absolute;
+    left: 34px; right: 34px; bottom: 5px;
+    height: 3px;
+    border-radius: 3px;
+    background: var(--accent-grad);
+    opacity: .9;
+}
+.frame.off { opacity: 0; }
+
+/* ---------------- WATERMARK ---------------- */
+.wm {
+    position: absolute;
+    left: 60px;
+    top: 64px;
+    min-width: 160px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    text-align: center;
+    transition: opacity .6s var(--ease-out), transform .6s var(--ease-out);
+}
+.wm.off { opacity: 0 !important; transform: translateY(-16px); }
+.wm::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0; left: 0;
+    width: 60%;
+    background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, .22) 50%, transparent 80%);
+    transform: translateX(-120%);
+    animation: wmShine 9s var(--ease-io) infinite 3s;
+    pointer-events: none;
+}
+@keyframes wmShine {
+    0% { transform: translateX(-120%); }
+    14%, 100% { transform: translateX(260%); }
+}
+.wm-top {
+    padding: 12px 14px 10px;
+    background: rgba(0, 0, 0, .28);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.wm-logo { max-width: 180px; max-height: 64px; object-fit: contain; }
+.wm-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 26px;
+    line-height: 1.05;
+    max-width: 200px;
+    text-transform: uppercase;
+}
+.wm-bottom { position: relative; padding: 7px 12px 12px; }
+.wm-line1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 32px;
+    line-height: 1.05;
+    color: var(--accent);
+    text-shadow: 0 0 18px var(--glow);
+}
+.wm-line2 { font-weight: 700; font-size: 14px; letter-spacing: 1.5px; margin-top: 4px; color: var(--text-dim); }
+.wm-bottom:empty, .wm-line1:empty, .wm-line2:empty { display: none; }
+
+/* ---------------- DATE BOX ---------------- */
+.datebox {
+    position: absolute;
+    left: 60px;
+    top: 788px;
+    width: 175px;
+    height: 236px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    transition: opacity .6s var(--ease-out), transform .7s var(--ease-out);
+}
+.datebox.off { opacity: 0; transform: translateX(-40px); }
+.db-month {
+    height: 58px;
+    font-size: 30px;
+    letter-spacing: 1px;
+    background: var(--accent-grad);
+    color: var(--accent-ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.db-day {
+    flex: 1;
+    font-size: 100px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    text-shadow: 0 0 30px var(--glow);
+}
+.db-day span { display: block; }
+.db-day.flip span { animation: dayFlip .7s var(--ease-out); }
+@keyframes dayFlip {
+    0% { transform: translateY(70%); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+.db-year {
+    height: 54px;
+    font-size: 36px;
+    letter-spacing: 3px;
+    border-top: 1px solid var(--panel-line);
+    background: rgba(0, 0, 0, .25);
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ---------------- LIVE BADGE ---------------- */
+.live {
+    position: absolute;
+    left: 270px;
+    top: 958px;
+    height: 66px;
+    width: 140px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 32px;
+    letter-spacing: 2px;
+    color: #fff;
+    background: linear-gradient(180deg, #ff4769 0%, #d6153d 100%);
+    border: var(--line-w) solid rgba(255, 255, 255, .35);
+    box-shadow: 0 10px 26px rgba(214, 21, 61, .45), inset 0 1px 0 rgba(255, 255, 255, .3);
+    z-index: 2;
+    transition: opacity .5s var(--ease-out), transform .6s var(--ease-out);
+}
+.live.off { opacity: 0; transform: translateY(24px); }
+.live-dot {
+    position: relative;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    animation: liveBlink 1.6s ease-in-out infinite;
+}
+.live-dot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: #fff;
+    animation: livePing 1.6s var(--ease-out) infinite;
+}
+@keyframes liveBlink { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+@keyframes livePing {
+    0% { transform: scale(1); opacity: .6; }
+    80%, 100% { transform: scale(2.6); opacity: 0; }
+}
+
+/* ---------------- DEV BAR (chỉ trình duyệt thường) ---------------- */
+.devbar {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    padding: 6px;
+    background: rgba(6, 12, 36, .88);
+    border: 1px solid rgba(255, 255, 255, .2);
+    border-radius: 10px;
+    font: 600 12px/1 system-ui, sans-serif;
+    color: #fff;
+}
+.devbar[hidden] { display: none; }
+.devbar button, .devbar a {
+    font: inherit;
+    color: #fff;
+    background: #26306b;
+    border: 0;
+    border-radius: 6px;
+    padding: 7px 10px;
+    cursor: pointer;
+    text-decoration: none;
+}
+.devbar button.on { background: #e8226f; }
+.devbar-keys { opacity: .6; padding: 0 6px; }

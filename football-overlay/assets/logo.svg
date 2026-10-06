@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 120" width="480" height="240">
+<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff3b4f"/><stop offset="1" stop-color="#c50f26"/></linearGradient></defs>
+<path d="M16 8h208l-16 104H0z" fill="url(#g)"/>
+<path d="M150 8h74l-16 104h-74z" fill="#ffffff"/>
+<text x="76" y="88" text-anchor="middle" font-family="Impact,'Arial Black',sans-serif" font-size="78" font-style="italic" fill="#fff">24H</text>
+<text x="176" y="58" text-anchor="middle" font-family="Impact,'Arial Black',sans-serif" font-size="30" font-style="italic" fill="#0a1d5c">THỂ</text>
+<text x="170" y="92" text-anchor="middle" font-family="Impact,'Arial Black',sans-serif" font-size="30" font-style="italic" fill="#0a1d5c">THAO</text>
+</svg>

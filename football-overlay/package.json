@@ -1,0 +1,10 @@
+{
+  "name": "football-overlay",
+  "version": "1.0.0",
+  "description": "Overlay livestream bóng đá cho OBS Browser Source (HTML/CSS/JS thuần)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "MIT"
+}

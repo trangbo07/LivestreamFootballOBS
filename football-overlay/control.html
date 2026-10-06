@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overlay Control</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Roboto+Condensed:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/control.css">
+</head>
+<body>
+
+<header class="top">
+    <div class="brand">
+        <span class="brand-dot"></span>
+        <div>
+            <div class="brand-title">FOOTBALL OVERLAY</div>
+            <div class="brand-sub">CONTROL PANEL</div>
+        </div>
+    </div>
+
+    <!-- Bản sao scoreboard đang phát -->
+    <div class="mirror" id="mirror">
+        <span class="m-name" id="m-home">—</span>
+        <span class="m-score" id="m-home-score">0</span>
+        <span class="m-clock"><small id="m-period">1H</small><b id="m-time">00:00</b></span>
+        <span class="m-score" id="m-away-score">0</span>
+        <span class="m-name" id="m-away">—</span>
+    </div>
+
+    <div class="status">
+        <span class="pill" id="st-link">…</span>
+        <span class="pill" id="st-overlay">OVERLAY: ?</span>
+        <button class="btn demo" id="btn-demo" data-cmd="toggleDemo">DEMO MODE: ?</button>
+    </div>
+</header>
+
+<main class="grid">
+
+    <!-- ============ MATCH ============ -->
+    <section class="card span-2">
+        <h2>⚽ Trận đấu</h2>
+        <div class="teams">
+            <div class="team-col">
+                <h3>Đội nhà (trái)</h3>
+                <label>Tên đội <input id="home-name" placeholder="ĐT VIỆT NAM"></label>
+                <label>Tên ngắn (popup) <input id="home-short" placeholder="VIỆT NAM"></label>
+                <label>Logo / cờ (URL) <input id="home-logo" placeholder="./assets/vietnam.svg"></label>
+                <div class="row">
+                    <label class="file">Upload logo<input type="file" accept="image/*" data-upload="home-logo"></label>
+                    <label class="color">Màu <input type="color" id="home-color" value="#da251d"></label>
+                </div>
+            </div>
+            <div class="team-col">
+                <h3>Đội khách (phải)</h3>
+                <label>Tên đội <input id="away-name" placeholder="ĐT MALAYSIA"></label>
+                <label>Tên ngắn (popup) <input id="away-short" placeholder="MALAYSIA"></label>
+                <label>Logo / cờ (URL) <input id="away-logo" placeholder="./assets/malaysia.svg"></label>
+                <div class="row">
+                    <label class="file">Upload logo<input type="file" accept="image/*" data-upload="away-logo"></label>
+                    <label class="color">Màu <input type="color" id="away-color" value="#f5c400"></label>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <button class="btn primary" id="btn-teams">Áp dụng đội</button>
+            <button class="btn" data-cmd="swapTeams">⇄ Đổi bên</button>
+        </div>
+
+        <div class="split">
+            <div>
+                <h3>Tỷ số</h3>
+                <div class="score-ctl">
+                    <div class="score-side">
+                        <button class="btn sq" data-cmd="addScore" data-args='["home",-1]'>−</button>
+                        <input type="number" min="0" id="score-home" value="0">
+                        <button class="btn sq" data-cmd="addScore" data-args='["home",1]'>+</button>
+                    </div>
+                    <span class="dash">-</span>
+                    <div class="score-side">
+                        <button class="btn sq" data-cmd="addScore" data-args='["away",-1]'>−</button>
+                        <input type="number" min="0" id="score-away" value="0">
+                        <button class="btn sq" data-cmd="addScore" data-args='["away",1]'>+</button>
+                    </div>
+                    <button class="btn" id="btn-score">Set</button>
+                </div>
+            </div>
+            <div>
+                <h3>Đồng hồ <span class="kbd">Space</span></h3>
+                <div class="clock-big" id="c-clock">00:00</div>
+                <div class="row">
+                    <button class="btn green" data-cmd="startClock">▶ Start</button>
+                    <button class="btn amber" data-cmd="pauseClock">❚❚ Pause</button>
+                    <button class="btn" data-cmd="resetClock">↺ Reset</button>
+                </div>
+                <div class="row">
+                    <button class="btn sm" data-cmd="adjustTime" data-args="[-60]">−1'</button>
+                    <button class="btn sm" data-cmd="adjustTime" data-args="[-10]">−10s</button>
+                    <button class="btn sm" data-cmd="adjustTime" data-args="[10]">+10s</button>
+                    <button class="btn sm" data-cmd="adjustTime" data-args="[60]">+1'</button>
+                </div>
+                <div class="row">
+                    <input type="number" min="0" id="time-m" class="w60" placeholder="mm">
+                    <span>:</span>
+                    <input type="number" min="0" max="59" id="time-s" class="w60" placeholder="ss">
+                    <button class="btn" id="btn-time">Set giờ</button>
+                </div>
+            </div>
+        </div>
+
+        <h3>Hiệp</h3>
+        <div class="row" id="period-btns">
+            <button class="btn period" data-period="1H">Hiệp 1</button>
+            <button class="btn period" data-period="HT">HT</button>
+            <button class="btn period" data-period="2H">Hiệp 2</button>
+            <button class="btn period" data-period="ET1">ET1</button>
+            <button class="btn period" data-period="ET2">ET2</button>
+            <button class="btn period" data-period="FT">FT</button>
+            <button class="btn period" data-period="PEN">PEN</button>
+        </div>
+        <div class="row">
+            <label class="inline">Bù giờ (phút) <input type="number" min="0" id="added" class="w60" value="0"></label>
+            <button class="btn" id="btn-added">Set bù giờ</button>
+            <span class="spacer"></span>
+            <button class="btn danger" id="btn-reset-match">Reset trận (0-0, 00:00)</button>
+        </div>
+    </section>
+
+    <!-- ============ THEME ============ -->
+    <section class="card">
+        <h2>🎨 Giao diện</h2>
+        <div class="themes" id="themes">
+            <button class="theme-sw" data-theme="neon"><i style="background:linear-gradient(135deg,#0d1236 40%,#2ee6ff 40% 70%,#ff3d8b 70%)"></i>Neon Night</button>
+            <button class="theme-sw" data-theme="premier"><i style="background:linear-gradient(135deg,#3d0047 40%,#00ff87 40% 70%,#ff2882 70%)"></i>Premier</button>
+            <button class="theme-sw" data-theme="gold"><i style="background:linear-gradient(135deg,#141416 40%,#f6c453 40% 70%,#fff1c2 70%)"></i>Gold</button>
+            <button class="theme-sw" data-theme="classic"><i style="background:linear-gradient(135deg,#0b1f61 40%,#ec1c3a 40% 70%,#ffffff 70%)"></i>Classic</button>
+        </div>
+        <p class="muted">Đổi ngay trên overlay, không cần refresh OBS.</p>
+    </section>
+
+    <!-- ============ YOUTUBE ============ -->
+    <section class="card">
+        <h2>▶️ YouTube Live Chat</h2>
+        <label>Link livestream / ID video / link kênh (@tenkenh)
+            <input id="yt-source" placeholder="https://www.youtube.com/watch?v=... hoặc @tenkenh">
+        </label>
+        <div class="row">
+            <button class="btn red" id="btn-yt-start">Kết nối chat</button>
+            <button class="btn" id="btn-yt-stop">Ngắt</button>
+            <span class="pill" id="yt-pill">CHƯA KẾT NỐI</span>
+        </div>
+        <div class="yt-info" id="yt-info">Bình luận mới trên YouTube sẽ tự hiện lên khung chat của overlay. Không cần API key.</div>
+        <details>
+            <summary>Tuỳ chọn nâng cao</summary>
+            <label>YouTube Data API key (tuỳ chọn — để trống là tốt nhất) <input id="yt-key" placeholder="AIza..."></label>
+        </details>
+    </section>
+
+    <!-- ============ LINEUP ============ -->
+    <section class="card span-2">
+        <h2>👥 Đội hình ra sân <span class="kbd">U</span></h2>
+        <div class="teams">
+            <div class="team-col">
+                <h3>Đội nhà</h3>
+                <div class="row two">
+                    <label>Sơ đồ <input id="lu-home-form" placeholder="4-3-3"></label>
+                    <label>HLV <input id="lu-home-coach"></label>
+                </div>
+                <label><span>11 người đá chính (thủ môn → hậu vệ phải→trái → tiền vệ → tiền đạo), dòng <code>---</code>, rồi dự bị. Dạng <code>số|họ tên|tên ngắn</code></span>
+                    <textarea id="lu-home-text" rows="9"></textarea>
+                </label>
+            </div>
+            <div class="team-col">
+                <h3>Đội khách</h3>
+                <div class="row two">
+                    <label>Sơ đồ <input id="lu-away-form" placeholder="4-4-2"></label>
+                    <label>HLV <input id="lu-away-coach"></label>
+                </div>
+                <label><span>Cùng định dạng như đội nhà</span>
+                    <textarea id="lu-away-text" rows="9"></textarea>
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <button class="btn primary" id="btn-lu-save">Lưu đội hình</button>
+            <span class="spacer"></span>
+            <button class="btn green" data-cmd="showLineup" data-args='["both"]'>Hiện cả 2 đội</button>
+            <button class="btn" data-cmd="showLineup" data-args='["home"]'>Chỉ đội nhà</button>
+            <button class="btn" data-cmd="showLineup" data-args='["away"]'>Chỉ đội khách</button>
+            <button class="btn amber" data-cmd="hideLineup">Ẩn đội hình</button>
+        </div>
+    </section>
+
+    <!-- ============ ANALYSIS / STATS ============ -->
+    <section class="card span-2">
+        <h2>📊 Phân tích &amp; thống kê <span class="kbd">A</span></h2>
+        <div class="row">
+            <button class="btn tgl big" id="btn-analysis" data-cmd="toggleAnalysis" data-state-eq="layout:analysis">Chế độ phân tích (camera nhỏ + heatmap)</button>
+            <button class="btn primary" data-cmd="showStats">Popup thống kê <span class="kbd">K</span></button>
+            <button class="btn danger" id="btn-stats-reset">Reset thống kê</button>
+        </div>
+
+        <div class="split">
+            <div>
+                <h3>Kiểm soát bóng — đội đang giữ bóng</h3>
+                <div class="row">
+                    <button class="btn poss" data-cmd="setPossession" data-args='["home"]' data-poss="home"><span class="kbd">1</span> <b id="poss-home-name">Đội nhà</b></button>
+                    <button class="btn poss" data-cmd="setPossession" data-args='["away"]' data-poss="away"><span class="kbd">2</span> <b id="poss-away-name">Đội khách</b></button>
+                    <button class="btn" data-cmd="setPossession" data-args='[null]'><span class="kbd">0</span> Dừng</button>
+                </div>
+                <div class="poss-bar"><i id="poss-bar-h"></i><span id="poss-txt">50% - 50%</span></div>
+                <p class="muted">Bấm đội đang có bóng; thời gian chỉ được tính khi đồng hồ trận chạy.</p>
+
+                <h3>Chỉ số</h3>
+                <div class="stat-grid" id="stat-grid"></div>
+            </div>
+            <div>
+                <h3>Heatmap — chạm lên sân để ghi vị trí</h3>
+                <div class="row">
+                    <div class="seg" id="heat-team">
+                        <button class="on" data-team="home">Đội nhà</button>
+                        <button data-team="away">Đội khách</button>
+                    </div>
+                    <select id="heat-view">
+                        <option value="auto">Hiển thị: luân phiên</option>
+                        <option value="home">Hiển thị: đội nhà</option>
+                        <option value="away">Hiển thị: đội khách</option>
+                        <option value="both">Hiển thị: cả hai</option>
+                    </select>
+                </div>
+                <div class="pad" id="heat-pad">
+                    <canvas id="heat-pad-canvas" width="525" height="340"></canvas>
+                    <span class="pad-dir">ĐỘI NHÀ TẤN CÔNG ▶</span>
+                </div>
+                <div class="row">
+                    <button class="btn" id="btn-heat-sim">✨ Mô phỏng dữ liệu</button>
+                    <button class="btn" id="btn-heat-clear-team">Xoá đội đang chọn</button>
+                    <button class="btn danger" data-cmd="clearHeat">Xoá tất cả</button>
+                    <span class="muted" id="heat-count"></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ OBS ============ -->
+    <section class="card">
+        <h2>🔌 Kết nối OBS</h2>
+        <p class="muted">Để chuyển 2 camera và thu nhỏ cam. Cần OBS 28+: <b>Tools → WebSocket Server Settings → Enable WebSocket server</b>.</p>
+        <div class="row two">
+            <label>Địa chỉ <input id="obs-url" placeholder="ws://127.0.0.1:4455"></label>
+            <label>Mật khẩu <input id="obs-pass" type="password"></label>
+        </div>
+        <div class="row two">
+            <label>Tên source CAM CẬN <input id="obs-cam-close" placeholder="Cam can"></label>
+            <label>Tên source CAM TOÀN CẢNH <input id="obs-cam-wide" placeholder="Cam toan canh"></label>
+        </div>
+        <div class="row">
+            <button class="btn primary" id="btn-obs-connect">Kết nối OBS</button>
+            <button class="btn" id="btn-obs-disconnect">Ngắt</button>
+            <span class="pill" id="obs-pill">CHƯA KẾT NỐI</span>
+        </div>
+        <div class="muted" id="obs-info"></div>
+    </section>
+
+    <!-- ============ CAMERA ============ -->
+    <section class="card span-2">
+        <h2>🎥 Camera &amp; chuyển cảnh</h2>
+        <div class="cam-grid">
+            <button class="cam-btn" data-cmd="setCamLayout" data-args='["close"]' data-state-eq="cam.layout:close">
+                <span class="cam-ico"><i class="c full"></i></span><b>CAM CẬN</b><span class="kbd">Q</span></button>
+            <button class="cam-btn" data-cmd="setCamLayout" data-args='["wide"]' data-state-eq="cam.layout:wide">
+                <span class="cam-ico"><i class="w full"></i></span><b>TOÀN CẢNH</b><span class="kbd">W</span></button>
+            <button class="cam-btn" data-cmd="setCamLayout" data-args='["pip"]' data-state-eq="cam.layout:pip">
+                <span class="cam-ico"><i class="w full"></i><i class="c pip"></i></span><b>PiP: TOÀN CẢNH + CẬN</b><span class="kbd">E</span></button>
+            <button class="cam-btn" data-cmd="setCamLayout" data-args='["pip2"]' data-state-eq="cam.layout:pip2">
+                <span class="cam-ico"><i class="c full"></i><i class="w pip"></i></span><b>PiP: CẬN + TOÀN CẢNH</b><span class="kbd">⇧E</span></button>
+            <button class="cam-btn" data-cmd="setCamLayout" data-args='["split"]' data-state-eq="cam.layout:split">
+                <span class="cam-ico"><i class="c left"></i><i class="w right"></i></span><b>CHIA ĐÔI 2 CAM</b><span class="kbd">Z</span></button>
+        </div>
+
+        <div class="split">
+            <div>
+                <h3>Tự động chuyển cam</h3>
+                <label class="check"><input type="checkbox" id="ca-enabled" checked> Bật tự chuyển cam theo diễn biến</label>
+                <div class="auto-grid">
+                    <span>Khi hiện đội hình</span><select data-auto="lineup"></select>
+                    <span>Khi có bàn thắng</span><select data-auto="goal"></select>
+                    <span>Giữ cam bàn thắng (giây)</span><input type="number" id="ca-hold" min="2" max="60" class="w60" value="8">
+                    <span>Khi bắt đầu trận</span><select data-auto="matchStart"></select>
+                    <span>Khi nghỉ giữa hiệp</span><select data-auto="halfTime"></select>
+                    <span>Khi kết thúc trận</span><select data-auto="fullTime"></select>
+                </div>
+                <h3>Chế độ phân tích (heatmap) → đổi scene</h3>
+                <div class="auto-grid">
+                    <span>Khi BẬT phân tích, chuyển sang scene</span><select data-scene-auto="sceneAnalysis"></select>
+                    <span>Khi TẮT phân tích, quay về scene</span><select data-scene-auto="sceneNormal"></select>
+                </div>
+                <p class="muted">Chọn scene ở đây thì OBS đổi scene cùng lúc với overlay (camera không bị thu nhỏ — scene đó tự bố trí). Nhớ thêm source overlay vào cả scene đó.</p>
+                <p class="muted">Đội hình: ẩn đội hình thì tự quay lại cam cũ. Bàn thắng: sau vài giây tự quay lại. Bạn bấm chọn cam bằng tay thì tự động bị huỷ lượt đó.</p>
+            </div>
+            <div>
+                <h3>Scene OBS</h3>
+                <div class="row">
+                    <button class="btn" id="btn-scenes">↻ Tải danh sách scene</button>
+                    <button class="btn" id="btn-cam-reapply" title="Đặt lại vị trí camera theo bố cục hiện tại">Đặt lại vị trí cam</button>
+                </div>
+                <div class="scene-list" id="scene-list"><span class="muted">Kết nối OBS rồi bấm "Tải danh sách scene".</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ COUNTDOWN ============ -->
+    <section class="card">
+        <h2>⏳ Đếm ngược trước trận</h2>
+        <div class="row">
+            <label class="inline">Phút <input type="number" id="cd-min" class="w60" min="1" value="10"></label>
+            <button class="btn sm" data-cd="5">5'</button>
+            <button class="btn sm" data-cd="10">10'</button>
+            <button class="btn sm" data-cd="15">15'</button>
+            <button class="btn sm" data-cd="30">30'</button>
+        </div>
+        <label>Tiêu đề <input id="cd-title" placeholder="TRẬN ĐẤU SẮP BẮT ĐẦU"></label>
+        <div class="row">
+            <button class="btn green" id="btn-cd-start">Bắt đầu đếm ngược</button>
+            <button class="btn" data-cmd="stopCountdown">Ẩn</button>
+        </div>
+    </section>
+
+    <!-- ============ POPUPS ============ -->
+    <section class="card">
+        <h2>🎬 Popup sự kiện</h2>
+        <div class="row">
+            <div class="seg" id="ev-team">
+                <button class="on" data-team="home">Đội nhà</button>
+                <button data-team="away">Đội khách</button>
+            </div>
+        </div>
+        <label>Cầu thủ <input id="ev-player" placeholder="NGUYỄN VĂN A"></label>
+        <div class="row">
+            <button class="btn goal" id="btn-goal">⚽ GOAL <span class="kbd">G</span></button>
+            <button class="btn yellow" id="btn-yellow">🟨 Thẻ vàng <span class="kbd">Y</span></button>
+            <button class="btn red" id="btn-red">🟥 Thẻ đỏ <span class="kbd">R</span></button>
+        </div>
+        <div class="row two">
+            <label>Ra sân (OUT) <input id="sub-out" placeholder="PLAYER A"></label>
+            <label>Vào sân (IN) <input id="sub-in" placeholder="PLAYER B"></label>
+        </div>
+        <button class="btn" id="btn-sub">🔄 Thay người <span class="kbd">S</span></button>
+
+        <h3>Trạng thái trận</h3>
+        <div class="row">
+            <button class="btn" id="btn-start">MATCH START</button>
+            <button class="btn" id="btn-ht">HALF TIME <span class="kbd">H</span></button>
+            <button class="btn" id="btn-ft">FULL TIME <span class="kbd">F</span></button>
+        </div>
+        <label class="check"><input type="checkbox" id="ev-change" checked> Tự đổi hiệp + dừng/chạy đồng hồ</label>
+
+        <h3>Popup tuỳ chỉnh</h3>
+        <label>Tiêu đề <input id="cu-title" placeholder="VAR CHECK"></label>
+        <label>Nội dung <input id="cu-text" placeholder="KIỂM TRA KHẢ NĂNG PENALTY"></label>
+        <div class="row">
+            <button class="btn" id="btn-custom">Hiện popup</button>
+            <button class="btn" data-cmd="hidePopup">Ẩn popup hiện tại</button>
+            <button class="btn" data-cmd="clearPopups">Xoá hàng đợi</button>
+        </div>
+    </section>
+
+    <!-- ============ TICKER ============ -->
+    <section class="card">
+        <h2>📰 Ticker <span class="kbd">T</span></h2>
+        <label><span>Nội dung (mỗi dòng 1 tin — dạng <code>TAG|nội dung</code>)</span>
+            <textarea id="tk-text" rows="6" placeholder="BREAKING|VIỆT NAM ĐANG KIỂM SOÁT THẾ TRẬN"></textarea>
+        </label>
+        <div class="tags">Tag: LIVE · BREAKING · NEWS · FULL TIME · TRANSFER · UPDATE · GOAL</div>
+        <div class="row">
+            <button class="btn primary" id="btn-tk-apply">Áp dụng nội dung</button>
+            <button class="btn green" data-cmd="tickerStart">▶ Start</button>
+            <button class="btn amber" data-cmd="tickerStop">❚❚ Stop</button>
+            <button class="btn tgl" data-cmd="toggleTicker" data-state="ticker.visible">Hiện</button>
+        </div>
+        <div class="row">
+            <select id="tk-tag">
+                <option>BREAKING</option><option>LIVE</option><option>NEWS</option><option>UPDATE</option>
+                <option>TRANSFER</option><option>FULL TIME</option><option value="">(không tag)</option>
+            </select>
+            <input id="tk-breaking" class="grow" placeholder="Tin nóng đưa lên đầu ticker…">
+            <button class="btn red" id="btn-tk-push">Đẩy tin</button>
+        </div>
+        <div class="row">
+            <label class="inline grow">Tốc độ <input type="range" id="tk-speed" min="20" max="300" step="5" value="90"> <b id="tk-speed-v">90</b> px/s</label>
+            <select id="tk-dir"><option value="left">← Phải sang trái</option><option value="right">→ Trái sang phải</option></select>
+        </div>
+    </section>
+
+    <!-- ============ CHAT ============ -->
+    <section class="card">
+        <h2>💬 Chat <span class="kbd">C</span></h2>
+        <div class="row two">
+            <label>Username <input id="chat-user" placeholder="username"></label>
+            <label>Màu (tuỳ chọn) <input type="color" id="chat-color" value="#b18cff"></label>
+        </div>
+        <label>Bình luận <input id="chat-text" placeholder="Việt Nam cố lên!"></label>
+        <div class="row">
+            <button class="btn primary" id="btn-chat">Gửi</button>
+            <label class="check"><input type="checkbox" id="chat-usecolor"> Dùng màu đã chọn</label>
+        </div>
+        <div class="row">
+            <button class="btn tgl" data-cmd="toggleChat" data-state="chat.visible">Hiện</button>
+            <button class="btn tgl" id="btn-fake" data-state="chat.fake">Fake chat</button>
+            <button class="btn" data-cmd="clearChat">Xoá chat</button>
+            <label class="inline">Tối đa <input type="number" id="chat-max" min="1" max="12" class="w60" value="5"></label>
+        </div>
+    </section>
+
+    <!-- ============ LOWER THIRD ============ -->
+    <section class="card">
+        <h2>🪪 Lower third <span class="kbd">L</span></h2>
+        <label>Tên <input id="lt-name" placeholder="NGUYỄN VĂN A"></label>
+        <div class="row two">
+            <label>Vai trò <input id="lt-role" placeholder="FORWARD"></label>
+            <label>Đội <input id="lt-team" placeholder="VIỆT NAM"></label>
+        </div>
+        <label class="inline">Tự ẩn sau (giây, 0 = giữ) <input type="number" id="lt-dur" min="0" class="w60" value="5"></label>
+        <div class="row">
+            <button class="btn primary" id="btn-lt-show">Show</button>
+            <button class="btn" data-cmd="hideLowerThird">Hide</button>
+            <button class="btn" id="btn-lt-preset">Preset: bình luận viên</button>
+        </div>
+    </section>
+
+    <!-- ============ LOGO ============ -->
+    <section class="card">
+        <h2>🏷️ Logo kênh</h2>
+        <label>Logo (URL) <input id="wm-logo" placeholder="./assets/logo.svg"></label>
+        <div class="row">
+            <label class="file">Upload logo PNG<input type="file" accept="image/*" data-upload="wm-logo"></label>
+            <button class="btn" id="btn-wm-clear">Bỏ logo (dùng chữ)</button>
+        </div>
+        <label>Tên kênh (khi không có logo) <input id="wm-title"></label>
+        <div class="row two">
+            <label>Dòng 1 <input id="wm-line1" placeholder="HƠN 500K"></label>
+            <label>Dòng 2 <input id="wm-line2" placeholder="NGƯỜI ĐĂNG KÝ"></label>
+        </div>
+        <label class="inline">Opacity <input type="range" id="wm-opacity" min="0.1" max="1" step="0.05" value="0.95"> <b id="wm-opacity-v">0.95</b></label>
+        <div class="row">
+            <button class="btn primary" id="btn-wm">Áp dụng</button>
+            <button class="btn tgl" data-cmd="toggleWatermark" data-state="watermark.visible">Hiện</button>
+        </div>
+    </section>
+
+    <!-- ============ DONATION ============ -->
+    <section class="card">
+        <h2>❤️ Ủng hộ <span class="kbd">D</span></h2>
+        <div class="row two">
+            <label>Ngân hàng <input id="dn-bankName" placeholder="TECHCOMBANK"></label>
+            <label>Mã VietQR <input id="dn-bankId" placeholder="TCB"></label>
+        </div>
+        <div class="row two">
+            <label>Số tài khoản <input id="dn-accountNo"></label>
+            <label>Chủ tài khoản <input id="dn-accountName"></label>
+        </div>
+        <label>Nội dung CK <input id="dn-content"></label>
+        <label>Ảnh QR (URL — để trống sẽ tự tạo bằng VietQR) <input id="dn-qrImage"></label>
+        <div class="row">
+            <label class="file">Upload QR<input type="file" accept="image/*" data-upload="dn-qrImage"></label>
+            <button class="btn" id="btn-dn-save">Lưu thông tin</button>
+        </div>
+        <div class="row">
+            <button class="btn primary" id="btn-dn-show">Show</button>
+            <button class="btn" data-cmd="hideDonation">Hide</button>
+        </div>
+    </section>
+
+    <!-- ============ DISPLAY ============ -->
+    <section class="card">
+        <h2>🖥️ Hiển thị</h2>
+        <div class="row wrap">
+            <button class="btn tgl" data-cmd="toggleLive" data-state="live">● LIVE</button>
+            <button class="btn tgl" data-cmd="toggleScoreboard" data-state="scoreboardVisible">Scoreboard</button>
+            <button class="btn tgl" data-cmd="toggleDate" data-state="date.visible">Ngày tháng</button>
+            <button class="btn tgl" data-cmd="toggleFrame" data-state="frame">Khung viền</button>
+        </div>
+        <div class="row">
+            <button class="btn primary" data-cmd="showSocial">🔔 Follow us</button>
+            <button class="btn" data-cmd="hideSocial">Ẩn follow</button>
+        </div>
+        <h3>Ngày hiển thị</h3>
+        <div class="row">
+            <input type="number" id="dt-d" class="w60" min="1" max="31" placeholder="dd">
+            <input type="number" id="dt-m" class="w60" min="1" max="12" placeholder="mm">
+            <input type="number" id="dt-y" class="w80" placeholder="yyyy">
+            <button class="btn" id="btn-date">Nhập tay</button>
+            <button class="btn" id="btn-date-auto">Tự động</button>
+        </div>
+        <h3>Hệ thống</h3>
+        <div class="row">
+            <a class="btn" href="index.html" target="_blank">Mở overlay ↗</a>
+            <button class="btn danger" id="btn-reset-all">Reset về config.js</button>
+        </div>
+    </section>
+
+    <!-- ============ SHORTCUTS ============ -->
+    <section class="card">
+        <h2>⌨️ Phím tắt</h2>
+        <p class="muted">Hoạt động khi trang control đang được focus (không gõ trong ô nhập). Dùng team / cầu thủ đang chọn ở mục Popup.</p>
+        <div class="keys">
+            <div><span class="kbd">Space</span> Start / Pause đồng hồ</div>
+            <div><span class="kbd">G</span> Goal (<span class="kbd">Shift</span> = đội khách)</div>
+            <div><span class="kbd">Y</span> Thẻ vàng</div>
+            <div><span class="kbd">R</span> Thẻ đỏ</div>
+            <div><span class="kbd">S</span> Thay người</div>
+            <div><span class="kbd">H</span> Half time</div>
+            <div><span class="kbd">F</span> Full time</div>
+            <div><span class="kbd">T</span> Bật/tắt ticker</div>
+            <div><span class="kbd">C</span> Bật/tắt chat</div>
+            <div><span class="kbd">L</span> Lower third</div>
+            <div><span class="kbd">D</span> Donation</div>
+            <div><span class="kbd">A</span> Chế độ phân tích</div>
+            <div><span class="kbd">U</span> Đội hình (<span class="kbd">Shift</span> = đội khách)</div>
+            <div><span class="kbd">K</span> Popup thống kê</div>
+            <div><span class="kbd">1</span> <span class="kbd">2</span> <span class="kbd">0</span> Bóng: nhà / khách / dừng</div>
+            <div><span class="kbd">Q</span> <span class="kbd">W</span> Cam cận / toàn cảnh</div>
+            <div><span class="kbd">E</span> PiP (<span class="kbd">Shift</span> = đảo) · <span class="kbd">Z</span> chia đôi</div>
+            <div><span class="kbd">Esc</span> Ẩn popup hiện tại</div>
+        </div>
+    </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/config.js"></script>
+<script src="js/bus.js"></script>
+<script src="js/control.js"></script>
+</body>
+</html>

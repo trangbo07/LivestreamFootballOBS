@@ -1,0 +1,194 @@
+/* =====================================================================
+ *  ANALYSIS.CSS — chế độ phân tích: camera thu nhỏ + heatmap + thống kê
+ *  Khung camera (an-window) là "lỗ" trong suốt; phần còn lại phủ nền tối
+ *  bằng box-shadow khổng lồ → OBS hiện camera đúng trong khung.
+ * ===================================================================== */
+.an {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    visibility: hidden;
+    transition: visibility 0s .95s;
+}
+.an.on { visibility: visible; transition: visibility 0s; }
+
+.an-window {
+    position: absolute;
+    /* left/top/width/height đặt bằng JS theo CONFIG.analysis.camera */
+    border-radius: 18px;
+    box-shadow: 0 0 0 4000px var(--backdrop);
+    transform-origin: 0 0;
+    transition: transform .9s var(--ease-io), border-radius .9s var(--ease-io);
+}
+.an-window::before {                     /* viền neon quanh camera */
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 21px;
+    border: 3px solid var(--accent);
+    box-shadow: 0 0 30px var(--glow), inset 0 0 30px var(--glow);
+    opacity: 0;
+    transition: opacity .4s ease;
+}
+.an.on .an-window::before { opacity: 1; transition: opacity .5s ease .7s; }
+
+.an-cam-label {
+    position: absolute;
+    left: 18px;
+    top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 14px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, .55);
+    font: 700 16px var(--font-display);
+    letter-spacing: 2px;
+    opacity: 0;
+    transition: opacity .3s;
+}
+.an.on .an-cam-label { opacity: 1; transition: opacity .5s ease .9s; }
+.an-cam-label i { width: 9px; height: 9px; border-radius: 50%; background: var(--red); animation: liveBlink 1.4s infinite; }
+
+/* --- Cột phải --- */
+.an-side {
+    position: absolute;
+    left: 1390px;
+    top: 56px;
+    width: 470px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.an-card {
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--panel);
+    border: var(--line-w) solid var(--panel-line);
+    box-shadow: var(--panel-shadow);
+    opacity: 0;
+    transform: translateX(60px);
+    transition: opacity .4s var(--ease-in), transform .5s var(--ease-in);
+}
+.an.on .an-card { opacity: 1; transform: none; transition: opacity .6s var(--ease-out) .55s, transform .8s var(--ease-out) .55s; }
+.an.on .an-card + .an-card { transition-delay: .7s; }
+
+.an-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 40px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--panel-line);
+    background: rgba(0, 0, 0, .2);
+    font: 700 19px var(--font-display);
+    letter-spacing: 3px;
+}
+.an-head .an-h-title { color: var(--accent); text-shadow: 0 0 12px var(--glow); }
+.an-h-team {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    letter-spacing: 1px;
+    transition: opacity .3s;
+}
+.an-h-team img { width: 30px; height: 20px; object-fit: cover; border-radius: 3px; }
+.an-h-team.swap { opacity: 0; }
+
+.an-pitch {
+    position: relative;
+    width: 410px;
+    height: 266px;
+    margin: 10px auto 4px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: repeating-linear-gradient(90deg, #17602f 0 8.333%, #145629 8.333% 16.666%);
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, .5);
+}
+.an-pitch canvas { position: absolute; inset: 0; width: 100%; height: 100%; transition: opacity .35s; }
+.an-pitch canvas.swap { opacity: 0; }
+.an-pitch .lu-lines { opacity: .55; animation: none; }
+.an-dir {
+    position: absolute;
+    left: 50%;
+    bottom: 6px;
+    transform: translateX(-50%);
+    padding: 0 10px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, .45);
+    font: 700 13px/20px var(--font-display);
+    letter-spacing: 2px;
+}
+.an-legend {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 0 0 8px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+}
+.an-legend i {
+    width: 160px;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #2b5cff, #00e5ff, #39ff7a, #ffe14d, #ff2d55);
+}
+
+.an-stats .st-list { padding: 4px 18px 10px; }
+.an-stats .st-row { padding: 3px 0; animation: none; }
+.an-stats .st-top { line-height: 1.15; }
+.an-stats .st-top .v { font-size: 21px; }
+.an-stats .st-top .k { font-size: 13px; }
+.an-stats .st-bars { height: 6px; margin-top: 2px; }
+.an-poss {
+    margin-left: auto;
+    font-size: 15px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.an-poss i { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: liveBlink 1.2s infinite; }
+
+/* =====================================================================
+ *  CAMFX — viền & nhãn cho bố cục 2 camera (PiP / chia đôi)
+ * ===================================================================== */
+.camfx {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .45s ease;
+}
+.camfx.on { opacity: 1; }
+.camfx-bd { position: absolute; inset: 0; width: 100%; height: 100%; }
+.camfx-bd path { fill: var(--backdrop); }
+.camfx-frame {
+    position: absolute;
+    border-radius: 16px;
+    box-shadow: 0 0 0 3px var(--accent), 0 0 26px var(--glow), 0 14px 34px rgba(0, 0, 0, .5);
+    animation: scaleIn .5s var(--ease-out) both;
+}
+.camfx-frame.small { box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--accent), 0 0 26px var(--glow), 0 14px 34px rgba(0, 0, 0, .55); }
+.camfx-frame.right { box-shadow: 0 0 0 3px var(--accent-2), 0 0 26px var(--glow-2), 0 14px 34px rgba(0, 0, 0, .5); }
+.camfx-label {
+    position: absolute;
+    left: 14px;
+    bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 12px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, .6);
+    font: 700 15px var(--font-display);
+    letter-spacing: 2px;
+}
+.camfx-label i { width: 8px; height: 8px; border-radius: 50%; background: var(--red); animation: liveBlink 1.4s infinite; }

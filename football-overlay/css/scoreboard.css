@@ -1,0 +1,220 @@
+/* =====================================================================
+ *  SCOREBOARD.CSS
+ * ===================================================================== */
+.sb {
+    position: absolute;
+    left: 270px;
+    top: 788px;
+    width: 935px;
+    height: 130px;
+    transition: opacity .6s var(--ease-out), transform .8s var(--ease-out);
+}
+.sb.off { opacity: 0; transform: translateY(40px) scale(.97); }
+
+.sb-body {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--panel);
+    border: var(--line-w) solid var(--panel-line);
+    box-shadow: var(--panel-shadow);
+}
+.sb-body::after {                       /* vạch accent neon dưới đáy */
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 4px;
+    background: var(--accent-grad);
+    box-shadow: 0 0 16px var(--glow);
+    z-index: 3;
+}
+
+/* --- Đội --- */
+.sb-team {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 0 20px 0 26px;
+    overflow: hidden;
+    background-image:
+        radial-gradient(ellipse at 50% -40%, rgba(255, 255, 255, .12), transparent 70%),
+        repeating-linear-gradient(115deg, rgba(255, 255, 255, .025) 0 14px, transparent 14px 28px);
+}
+.sb-away { padding: 0 26px 0 20px; }
+
+.sb-logo-wrap { flex: 0 0 auto; }
+.sb-logo {
+    width: 64px;
+    height: 44px;
+    object-fit: cover;
+    border-radius: 7px;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .85), 0 4px 12px rgba(0, 0, 0, .45);
+}
+.sb-logo-wrap.no-logo { display: none; }
+
+.sb-name {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-align: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 54px;
+    line-height: 1.12;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    text-shadow: 0 3px 10px rgba(0, 0, 0, .45);
+}
+
+/* Vạch màu áo đội — dọc ở mép ngoài */
+.sb-kit {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 8px;
+}
+.sb-home .sb-kit { left: 0; }
+.sb-away .sb-kit { right: 0; }
+.sb-kit::after {                        /* quầng sáng nhẹ theo màu áo */
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: inherit;
+    filter: blur(8px);
+    opacity: .6;
+}
+
+/* Hiệu ứng lướt sáng khi ghi bàn */
+.sb-team::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0; left: 0;
+    width: 55%;
+    background: linear-gradient(100deg, transparent 10%, rgba(255, 255, 255, .5) 50%, transparent 90%);
+    transform: translateX(-130%);
+    pointer-events: none;
+}
+.sb-team.flash::after { animation: sbSweep .9s var(--ease-io) 3; }
+.sb-team.flash .sb-name { animation: sbNamePulse .45s ease-in-out 6 alternate; }
+@keyframes sbSweep { to { transform: translateX(300%); } }
+@keyframes sbNamePulse { to { transform: scale(1.06); } }
+
+/* --- Khối giữa: tỷ số + đồng hồ --- */
+.sb-center {
+    flex: 0 0 350px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px 4px;
+    background: var(--score-bg);
+    border-left: 1px solid var(--panel-line);
+    border-right: 1px solid var(--panel-line);
+    position: relative;
+}
+.sb-score {
+    position: relative;
+    width: 88px;
+    height: 124px;
+    overflow: hidden;
+    color: var(--score-ink);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 112px;
+    line-height: 124px;
+    text-align: center;
+}
+.sb-score span {
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    display: block;
+}
+.sb-score span.in { animation: scoreIn .7s var(--ease-back) both; }
+.sb-score span.out { animation: scoreOut .45s var(--ease-in) both; }
+@keyframes scoreIn {
+    from { transform: translateY(100%) scale(.7); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes scoreOut {
+    to { transform: translateY(-90%) scale(.8); opacity: 0; }
+}
+/* Nhấp nháy trên khung chứa (không đè animation trượt số của span) */
+.sb-score.flash { animation: scoreFlash .45s ease-in-out .7s 4 alternate; }
+@keyframes scoreFlash { to { color: var(--accent-2); transform: scale(1.12); } }
+
+.sb-clock {
+    width: 150px;
+    height: 84px;
+    border-radius: 14px;
+    background: var(--clock-bg);
+    box-shadow: 0 0 26px var(--glow), inset 0 1px 0 rgba(255, 255, 255, .45), 0 6px 14px rgba(0, 0, 0, .35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.sb-time {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 52px;
+    line-height: 1;
+    color: var(--clock-ink);
+    white-space: nowrap;
+}
+.sb-time .d { display: inline-block; width: .56em; text-align: center; }   /* số cố định độ rộng */
+.sb-time .c { display: inline-block; width: .26em; text-align: center; transform: translateY(-.06em); }
+.sb-time .t { letter-spacing: 2px; }                                         /* HT / FT / PEN */
+.sb-time.running .c { animation: colonBlink 1s steps(1) infinite; }
+@keyframes colonBlink { 50% { opacity: .3; } }
+
+/* --- Tab hiệp & bù giờ --- */
+.sb-period, .sb-added {
+    position: absolute;
+    left: 50%;
+    z-index: 4;
+    font-family: var(--font-display);
+    font-weight: 700;
+    white-space: nowrap;
+    border-radius: 999px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, .4);
+    transition: transform .5s var(--ease-back), opacity .4s;
+}
+.sb-period {
+    top: -16px;
+    transform: translateX(-50%);
+    padding: 3px 18px;
+    font-size: 18px;
+    letter-spacing: 2px;
+    background: var(--tab-bg);
+    color: var(--tab-ink);
+    border: 1.5px solid rgba(255, 255, 255, .6);
+}
+.sb-period.change { animation: tabPop .5s var(--ease-back); }
+@keyframes tabPop { from { transform: translateX(-50%) scale(.5); opacity: 0; } }
+
+.sb-added {
+    bottom: -15px;
+    transform: translateX(-50%);
+    padding: 1px 14px;
+    font-size: 21px;
+    background: var(--accent-2);
+    color: #fff;
+    border: 1.5px solid rgba(255, 255, 255, .7);
+    box-shadow: 0 0 18px var(--glow-2);
+}
+.sb-added.hide { opacity: 0; transform: translateX(-50%) scale(.4); }
+
+/* Viền phát sáng khi có bàn thắng (chỉ animate opacity) */
+.sb-glow {
+    position: absolute;
+    inset: -4px;
+    border-radius: 18px;
+    box-shadow: 0 0 40px 10px var(--glow), 0 0 0 3px var(--accent);
+    opacity: 0;
+    pointer-events: none;
+}
+.sb.goal .sb-glow { animation: sbGlow .6s ease-in-out 6 alternate; }
+@keyframes sbGlow { to { opacity: 1; } }

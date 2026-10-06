@@ -1,0 +1,110 @@
+/* =====================================================================
+ *  TICKER.CSS — thanh chạy chữ phía dưới scoreboard
+ * ===================================================================== */
+.tk {
+    position: absolute;
+    left: 270px;
+    top: 958px;
+    width: 935px;
+    height: 66px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--panel);
+    border: var(--line-w) solid var(--panel-line);
+    box-shadow: var(--panel-shadow);
+    transition: opacity .5s var(--ease-out), transform .7s var(--ease-out);
+}
+.tk.off { opacity: 0; transform: translateY(30px); }
+.tk::after {                            /* vạch accent mảnh phía trên */
+    content: '';
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    height: 2px;
+    background: var(--accent-grad);
+    opacity: .85;
+}
+
+.tk-viewport {
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 0;
+    right: 72px;
+    overflow: hidden;
+    transition: left .5s var(--ease-out);
+}
+.tk.with-live .tk-viewport { left: 134px; }
+
+.tk-track {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    display: flex;
+    will-change: transform;
+}
+.tk-group {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    height: 100%;
+}
+.tk-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding-left: 24px;
+    white-space: nowrap;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 28px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+.tk-sep {
+    width: 8px;
+    height: 8px;
+    margin-left: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--glow);
+}
+.tk-tag {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: 1.5px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .14);
+    color: #fff;
+}
+.tk-tag.tag-live, .tk-tag.tag-breaking { background: var(--red); color: #fff; }
+.tk-tag.tag-news { background: var(--accent); color: var(--accent-ink); }
+.tk-tag.tag-full-time { background: #fff; color: var(--ink); }
+.tk-tag.tag-transfer { background: var(--green); color: #04220f; }
+.tk-tag.tag-update { background: var(--yellow); color: var(--ink); }
+.tk-tag.tag-goal { background: var(--accent-2); color: #fff; }
+
+/* Fade 2 mép (div tĩnh — rẻ hơn mask-image) */
+.tk-fade {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 40px;
+    pointer-events: none;
+}
+.tk-fade-l { left: 0; background: linear-gradient(90deg, rgba(10, 14, 36, .95), transparent); transition: left .5s var(--ease-out); }
+.tk.with-live .tk-fade-l { left: 134px; }
+.tk-fade-r { right: 72px; background: linear-gradient(270deg, rgba(10, 14, 36, .95), transparent); }
+
+.tk-cap {
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 72px;
+    background: var(--accent-grad);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.tk-cap svg { width: 40px; height: 40px; animation: capSpin 6s linear infinite; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .35)); }
+.tk.paused .tk-cap svg { animation-play-state: paused; }
+@keyframes capSpin { to { transform: rotate(360deg); } }

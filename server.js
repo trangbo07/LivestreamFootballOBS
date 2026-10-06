@@ -22,9 +22,12 @@ const defaultScore = {
   teamA: "Đội A",
   scoreA: 0,
   logoA: "",
+  /** Màu áo đội A — hex / rgb / tên (hiện vạch dưới overlay tỉ số) */
+  kitColorA: "",
   teamB: "Đội B",
   scoreB: 0,
   logoB: "",
+  kitColorB: "",
   period: "H1",
   clockSeconds: 0,
   clockRunning: false,
@@ -61,6 +64,14 @@ const defaultScore = {
   infoPanelMode: "off",
   midbreakTitle: "NGHI GIUA HIEP",
   midbreakLine: "",
+  /** Intro overlay (trước trận) */
+  introShow: "off",
+  introStage: "CHUNG KET",
+  introTournament: "GIAI BONG DA",
+  introDate: "",
+  introTime: "",
+  introVenue: "",
+  introTagline: "",
   /** Overlay VAR — tiêu đề (Penalty / Phạm lỗi…) và dòng phụ */
   varTitle: "PENALTY",
   varDetail: "",
@@ -119,6 +130,16 @@ function sanitizeScore(input) {
   const truncEvent = (value) => (value ?? "").toString().trim().slice(0, 220);
   const truncShort = (value, max) => (value ?? "").toString().trim().slice(0, max);
 
+  const kitColor = (value) => {
+    const raw = truncShort(value, 40);
+    if (!raw) return "";
+    if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(raw)) return raw;
+    if (/^rgba?\(\s*[\d\s.%+,-]+\)$/i.test(raw)) return raw;
+    if (/^hsla?\(\s*[\d\s.%+deg,-]+\)$/i.test(raw)) return raw;
+    if (/^[a-z]{3,20}$/i.test(raw)) return raw.toLowerCase();
+    return "";
+  };
+
   const lineupShow = (() => {
     const s = (input.lineupShow ?? "").toString().trim().toLowerCase();
     if (s === "a" || s === "teama" || s === "team_a") return "A";
@@ -162,9 +183,11 @@ function sanitizeScore(input) {
     teamA: toText(input.teamA, "Đội A"),
     scoreA: toInt(input.scoreA, 0, 99),
     logoA: toText(input.logoA, ""),
+    kitColorA: kitColor(input.kitColorA),
     teamB: toText(input.teamB, "Đội B"),
     scoreB: toInt(input.scoreB, 0, 99),
     logoB: toText(input.logoB, ""),
+    kitColorB: kitColor(input.kitColorB),
     period: toText(input.period, "H1").toUpperCase(),
     clockSeconds: toInt(input.clockSeconds, 0, 9000),
     clockRunning: Boolean(input.clockRunning),
@@ -192,6 +215,13 @@ function sanitizeScore(input) {
     infoPanelMode,
     midbreakTitle: truncShort(input.midbreakTitle || "NGHI GIUA HIEP", 80) || "NGHI GIUA HIEP",
     midbreakLine: truncShort(input.midbreakLine || "", 120),
+    introShow: truncShort(input.introShow || "off", 10).toLowerCase() === "on" ? "on" : "off",
+    introStage: truncShort(input.introStage || "", 80),
+    introTournament: truncShort(input.introTournament || "", 120),
+    introDate: truncShort(input.introDate || "", 40),
+    introTime: truncShort(input.introTime || "", 40),
+    introVenue: truncShort(input.introVenue || "", 120),
+    introTagline: truncShort(input.introTagline || "", 120),
     varTitle: truncShort(input.varTitle || "PENALTY", 80) || "PENALTY",
     varDetail: truncShort(input.varDetail || "", 120),
     scorersA: truncLineup(input.scorersA || "", 2500),
