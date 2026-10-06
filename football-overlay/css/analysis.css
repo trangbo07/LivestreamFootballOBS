@@ -192,3 +192,71 @@
     letter-spacing: 2px;
 }
 .camfx-label i { width: 8px; height: 8px; border-radius: 50%; background: var(--red); animation: liveBlink 1.4s infinite; }
+
+/* ---- Bố cục "cam + ảnh": nửa phải là ảnh trận đấu ---- */
+.camfx-photo {
+    position: absolute;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #05080f;
+    box-shadow: 0 0 0 3px var(--accent-2), 0 0 26px var(--glow-2), 0 14px 34px rgba(0, 0, 0, .5);
+    animation: scaleIn .5s var(--ease-out) both;
+}
+.camfx-ph-slide { position: absolute; inset: 0; animation: camfxPhIn .8s var(--ease-out) both; }
+.camfx-ph-bg {
+    position: absolute;
+    inset: -30px;
+    background-size: cover;
+    background-position: center;
+    filter: blur(24px) brightness(.5) saturate(1.2);
+}
+#stage .camfx-ph-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    animation: camfxPhZoom 16s ease-out both;
+}
+.camfx-ph-flash { position: absolute; inset: 0; background: #fff; opacity: 0; animation: camfxPhFlash .7s ease-out both; }
+.camfx-ph-head {
+    position: absolute;
+    left: 14px; top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 4px 14px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, .62);
+    font: 700 15px var(--font-display);
+    letter-spacing: 2px;
+}
+.camfx-ph-head b { padding: 0 8px; border-radius: 999px; background: var(--tab-bg); color: var(--tab-ink); letter-spacing: 1px; }
+.camfx-ph-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-2); }
+.camfx-ph-cap {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    padding: 40px 18px 14px;
+    background: linear-gradient(transparent, rgba(0, 0, 0, .8));
+    font: 700 24px/1.2 var(--font-body);
+    text-transform: uppercase;
+}
+.camfx-ph-cap span { flex: 1; }
+.camfx-ph-cap small { font-size: 16px; color: var(--text-dim); }
+.camfx-ph-empty {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 40px;
+    text-align: center;
+    font: 600 22px var(--font-display);
+    letter-spacing: 1px;
+    color: var(--text-dim);
+}
+@keyframes camfxPhIn { from { opacity: 0; transform: scale(1.05); } to { opacity: 1; transform: none; } }
+@keyframes camfxPhZoom { from { transform: scale(1); } to { transform: scale(1.05); } }
+@keyframes camfxPhFlash { 0% { opacity: 0; } 12% { opacity: .85; } 100% { opacity: 0; } }

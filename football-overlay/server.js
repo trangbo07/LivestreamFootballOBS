@@ -22,6 +22,8 @@
  *    POST /api/obs/disconnect
  *    GET  /api/obs/scenes      danh sách scene ;  POST /api/obs/scene {"name"} chuyển scene
  *    GET  /api/obs/status
+ *    POST /api/photo/upload    {"data":"data:image/jpeg;base64,..."} → {"url":"uploads/..."}
+ *    POST /api/obs/snapshot    {"camera":"close"|"wide"} chụp camera trong OBS → {"url"}
  * ===================================================================== */
 const http = require('http');
 const fs = require('fs');
@@ -64,6 +66,23 @@ function loadConfig() {
         return {};
     }
 }
+
+/** Dấu vân tay của config.js — giống hệt cách overlay tính (hash JSON của CONFIG).
+ *  Dùng để nhận ra overlay đang chạy cấu hình cũ (chưa refresh).            */
+let fpCache = { mtime: 0, value: '' };
+function configFingerprint() {
+    try {
+        const mtime = fs.statSync(path.join(ROOT, 'js', 'config.js')).mtimeMs;
+        if (mtime !== fpCache.mtime) {
+            const s = JSON.stringify(loadConfig());
+            let h = 0;
+            for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+            fpCache = { mtime, value: String(Math.abs(h)) };
+        }
+    } catch (e) { /* giữ giá trị cũ */ }
+    return fpCache.value;
+}
+const staleWarned = new Set();
 
 // Lỗi bất ngờ (vd. mạng YouTube / OBS) không được làm sập server khi đang live
 process.on('uncaughtException', (e) => console.error('  ! Lỗi:', e && e.message));
@@ -115,7 +134,7 @@ obs.on('status', (s) => {
  * Bố cục cam nằm trong state overlay (state.cam.layout) để overlay vẽ
  * khung/nhãn khớp với vị trí camera thật. Server thấy state đổi → OBS.  */
 let lastCamKey = null;
-const MAIN_CAM = { close: 'close', wide: 'wide', pip: 'wide', pip2: 'close', split: 'close' };
+const MAIN_CAM = { close: 'close', wide: 'wide', pip: 'wide', pip2: 'close', split: 'close', photo: 'close', photo2: 'wide' };
 
 function camRects() {
     const C = loadConfig();
@@ -225,6 +244,37 @@ function onOverlayEvent(ev) {
     }
 }
 
+/* ---------------- GHI NHỚ KẾT NỐI OBS ----------------
+ * Lưu thông số lần "Kết nối OBS" gần nhất (địa chỉ, mật khẩu, tên camera)
+ * → khởi động lại server sẽ tự kết nối lại, camera vẫn tự thu nhỏ / phóng to. */
+const OBS_SAVE = path.join(ROOT, '.obs-connection.json');
+
+function saveObsConnection(body) {
+    try {
+        if (body) fs.writeFileSync(OBS_SAVE, JSON.stringify(body, null, 2));
+        else if (fs.existsSync(OBS_SAVE)) fs.unlinkSync(OBS_SAVE);
+    } catch (e) { console.log('  [OBS] không lưu được thông số kết nối: ' + e.message); }
+}
+
+function loadObsConnection() {
+    try { return JSON.parse(fs.readFileSync(OBS_SAVE, 'utf8')); } catch (e) { return null; }
+}
+
+/* ---------------- ẢNH TRẬN ĐẤU ----------------
+ * Lưu ảnh (dataURL) vào thư mục uploads/ → overlay chỉ cần giữ đường dẫn ngắn. */
+const UPLOAD_DIR = path.join(ROOT, 'uploads');
+
+function savePhoto(dataUrl) {
+    const m = /^data:image\/(png|jpe?g|webp);base64,(.+)$/i.exec(String(dataUrl || ''));
+    if (!m) throw new Error('Ảnh không hợp lệ (chỉ nhận PNG / JPG / WEBP)');
+    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+    const ext = m[1].toLowerCase() === 'png' ? 'png' : m[1].toLowerCase() === 'webp' ? 'webp' : 'jpg';
+    const name = `photo-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
+    fs.writeFileSync(path.join(UPLOAD_DIR, name), Buffer.from(m[2], 'base64'));
+    console.log('  [Ảnh] đã lưu uploads/' + name);
+    return 'uploads/' + name;
+}
+
 /* ---------------- HTTP ---------------- */
 function readBody(req) {
     return new Promise((resolve, reject) => {
@@ -256,7 +306,7 @@ function serveStatic(req, res, pathname) {
     const file = path.normalize(path.join(ROOT, rel));
     if (file !== ROOT && !file.startsWith(ROOT + path.sep)) { res.writeHead(403); return res.end('Forbidden'); }
     // Không phục vụ mã nguồn server / file lưu nội bộ
-    if (/^[\\/](lib[\\/]|\.obs-camera\.json$|server\.js$)/.test(file.slice(ROOT.length))) { res.writeHead(404); return res.end('Not found'); }
+    if (/^[\\/](lib[\\/]|\.obs-camera\.json$|\.obs-connection\.json$|server\.js$)/.test(file.slice(ROOT.length))) { res.writeHead(404); return res.end('Not found'); }
     fs.stat(file, (err, st) => {
         if (err || !st.isFile()) { res.writeHead(404); return res.end('Not found'); }
         res.writeHead(200, {
@@ -298,7 +348,20 @@ const server = http.createServer(async (req, res) => {
         if (pathname === '/api/send' && req.method === 'POST') {
             const msg = await readJson(req);
             if (!msg || !msg.id || !msg.type) return json(res, 400, { ok: false, error: 'invalid message' });
-            if (msg.type === 'state' && msg.payload && msg.payload.cam) { lastState = msg; watchCameras(msg.payload); }
+            if (msg.type === 'state' && msg.payload) {
+                // Overlay chạy config.js cũ (source OBS / tab chưa refresh): KHÔNG nghe theo,
+                // nếu không 2 overlay lệch nhau sẽ kéo camera qua lại. Bảo nó tự tải lại.
+                const fp = configFingerprint();
+                if (fp && msg.payload.fingerprint !== fp) {
+                    if (!staleWarned.has(msg.from)) {
+                        staleWarned.add(msg.from);
+                        console.log(`  [Overlay] Bỏ qua 1 overlay đang chạy cấu hình cũ (${msg.from}) — hãy refresh source đó trong OBS`);
+                    }
+                    sendBus('stale', { fingerprint: fp, target: msg.from });
+                    return json(res, 200, { ok: true, ignored: 'stale config' });
+                }
+                if (msg.payload.cam) { lastState = msg; watchCameras(msg.payload); }
+            }
             if (msg.type === 'event') onOverlayEvent(msg.payload);
             // Người dùng tự chọn cam → huỷ việc tự quay lại cam cũ
             if (msg.type === 'cmd' && msg.payload && msg.payload.fn === 'setCamLayout' && !(msg.payload.args && msg.payload.args[1] && msg.payload.args[1].auto)) {
@@ -337,10 +400,12 @@ const server = http.createServer(async (req, res) => {
         if (pathname === '/api/obs/connect' && req.method === 'POST') {
             const body = await readJson(req);
             const C = loadConfig();
+            saveObsConnection(body);
             obs.connect(Object.assign({}, C.obs || {}, { cameras: (C.cameras || {}).sources }, body));
             return json(res, 200, { ok: true });
         }
         if (pathname === '/api/obs/disconnect' && req.method === 'POST') {
+            saveObsConnection(null);            // chủ động ngắt → lần sau không tự kết nối lại
             obs.disconnect();
             return json(res, 200, { ok: true });
         }
@@ -354,6 +419,20 @@ const server = http.createServer(async (req, res) => {
         if (pathname === '/api/obs/reapply' && req.method === 'POST') {
             if (lastState) watchCameras(lastState.payload, true);
             return json(res, 200, { ok: true });
+        }
+
+        /* ----- Khung ảnh trận đấu ----- */
+        if (pathname === '/api/photo/upload' && req.method === 'POST') {
+            const body = await readJson(req);
+            return json(res, 200, { ok: true, url: savePhoto(body.data) });
+        }
+        if (pathname === '/api/obs/snapshot' && req.method === 'POST') {
+            const body = await readJson(req);
+            const role = body.camera === 'wide' ? 'wide' : 'close';
+            const sourceName = body.source || (obs.cfg.cameras || {})[role] || ((loadConfig().cameras || {}).sources || {})[role];
+            if (!sourceName) throw new Error('Chưa đặt tên source camera trong OBS');
+            const r = await obs.request('GetSourceScreenshot', { sourceName, imageFormat: 'jpg', imageWidth: 1600, imageCompressionQuality: 88 });
+            return json(res, 200, { ok: true, url: savePhoto(r.imageData) });
         }
     } catch (e) {
         return json(res, 400, { ok: false, error: e.message });
@@ -384,5 +463,9 @@ server.listen(PORT, '0.0.0.0', () => {
     if (C.youtube && C.youtube.autoConnect && C.youtube.source) {
         yt.start(C.youtube.source, { apiKey: C.youtube.apiKey, maxPerPoll: C.youtube.maxPerPoll });
     }
-    if (C.obs && C.obs.enabled) obs.connect(Object.assign({}, C.obs, { cameras: (C.cameras || {}).sources }));
+    const saved = loadObsConnection();
+    if (saved) {
+        console.log('  [OBS] tự kết nối lại theo lần kết nối trước');
+        obs.connect(Object.assign({}, C.obs || {}, { cameras: (C.cameras || {}).sources }, saved));
+    } else if (C.obs && C.obs.enabled) obs.connect(Object.assign({}, C.obs, { cameras: (C.cameras || {}).sources }));
 });

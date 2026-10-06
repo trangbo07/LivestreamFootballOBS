@@ -9,6 +9,7 @@
 (function () {
     'use strict';
     const { esc } = window.Util;
+    const { L } = window.I18N;
 
     const PITCH_SVG = `
     <svg class="lu-lines" viewBox="0 0 105 68" preserveAspectRatio="none" fill="none" stroke="#fff" stroke-width=".35">
@@ -130,10 +131,10 @@
     function listBoth(side, team, data) {
         const subs = parseList(data.subs);
         return `<div class="lu-list ${side === 'away' ? 'right' : ''}" style="${teamVars(team)}">
-            <div class="lu-lh">ĐÁ CHÍNH</div>
+            <div class="lu-lh">${L('ĐÁ CHÍNH')}</div>
             ${rows(data.players, false, 0.4)}
-            ${subs.length ? `<div class="lu-subs">DỰ BỊ: ${subs.map((p) => `<b>${esc(p.n)}</b> ${esc(shortName(p))}`).join(' · ')}</div>` : ''}
-            ${data.coach ? `<div class="lu-coach"><span>HLV</span>${esc(data.coach)}</div>` : ''}
+            ${subs.length ? `<div class="lu-subs">${L('DỰ BỊ: ')}${subs.map((p) => `<b>${esc(p.n)}</b> ${esc(shortName(p))}`).join(' · ')}</div>` : ''}
+            ${data.coach ? `<div class="lu-coach"><span>${L('HLV')}</span>${esc(data.coach)}</div>` : ''}
         </div>`;
     }
 
@@ -145,15 +146,15 @@
             const team = view === 'home' ? home : away;
             const data = view === 'home' ? H : A;
             head = `<div class="lu-hteam">${img(team.logo)}<span>${esc(team.short || team.name)}</span><span class="lu-form">${esc(data.formation || '')}</span></div>
-                <div class="lu-title"><small>ĐỘI HÌNH RA SÂN</small><b>STARTING XI</b></div>
-                <div class="lu-hteam right">${data.coach ? `<span class="lu-coach-h">HLV <b>${esc(data.coach)}</b></span>` : ''}</div>`;
-            body = `<div class="lu-list" style="${teamVars(team)}"><div class="lu-lh">ĐÁ CHÍNH</div>${rows(data.players, false, 0.4)}</div>
+                <div class="lu-title"><small>${L('ĐỘI HÌNH RA SÂN')}</small><b>STARTING XI</b></div>
+                <div class="lu-hteam right">${data.coach ? `<span class="lu-coach-h">${L('HLV')} <b>${esc(data.coach)}</b></span>` : ''}</div>`;
+            body = `<div class="lu-list" style="${teamVars(team)}"><div class="lu-lh">${L('ĐÁ CHÍNH')}</div>${rows(data.players, false, 0.4)}</div>
                 <div class="lu-pitch-wrap"><div class="lu-pitch">${PITCH_SVG}${markers(view, team, data, true, 0)}</div></div>
-                <div class="lu-list right" style="${teamVars(team)}"><div class="lu-lh">DỰ BỊ</div>${rows(data.subs, true, 0.9)}
-                    ${data.coach ? `<div class="lu-coach"><span>HLV</span>${esc(data.coach)}</div>` : ''}</div>`;
+                <div class="lu-list right" style="${teamVars(team)}"><div class="lu-lh">${L('DỰ BỊ')}</div>${rows(data.subs, true, 0.9)}
+                    ${data.coach ? `<div class="lu-coach"><span>${L('HLV')}</span>${esc(data.coach)}</div>` : ''}</div>`;
         } else {
             head = `<div class="lu-hteam">${img(home.logo)}<span>${esc(home.short || home.name)}</span><span class="lu-form">${esc(H.formation || '')}</span></div>
-                <div class="lu-title"><small>ĐỘI HÌNH RA SÂN</small><b>STARTING XI</b></div>
+                <div class="lu-title"><small>${L('ĐỘI HÌNH RA SÂN')}</small><b>STARTING XI</b></div>
                 <div class="lu-hteam right"><span class="lu-form">${esc(A.formation || '')}</span><span>${esc(away.short || away.name)}</span>${img(away.logo)}</div>`;
             body = `${listBoth('home', home, H)}
                 <div class="lu-pitch-wrap"><div class="lu-pitch">${PITCH_SVG}${markers('home', home, H, false, 0)}${markers('away', away, A, false, 0.25)}</div></div>

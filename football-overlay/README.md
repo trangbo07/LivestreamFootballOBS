@@ -187,3 +187,10 @@ curl.exe -X POST http://localhost:3000/api/cmd -H "Content-Type: application/jso
 - Animation chỉ dùng `transform` + `opacity`; ticker chạy bằng Web Animations API trên compositor.
 - Không dùng `filter: blur`/`backdrop-filter`; glow được làm bằng cách animate opacity của lớp shadow tĩnh.
 - Đồng hồ cập nhật DOM tối đa 1 lần/giây; tên đội chỉ đo lại khi thay đổi.
+
+## Bản tiếng Anh (khán giả nước ngoài)
+
+- Thêm 1 Browser Source với URL: `http://localhost:3000/?demo=0&lang=en`
+- Dùng chung control panel, tỷ số, đồng hồ với bản tiếng Việt — bấm 1 lần, cả 2 bản cùng đổi.
+- Nhãn giao diện dịch sẵn trong `js/i18n.js`; nội dung (ticker, banner tri ân, tên giải…) dịch trong khối `english` của `js/config.js`.
+- Chữ tự gõ trong control panel (chú thích ảnh, tin ticker mới, lower third) hiện đúng như bạn gõ ở cả 2 bản.

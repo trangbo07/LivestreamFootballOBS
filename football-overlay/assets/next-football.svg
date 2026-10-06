@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 120" width="480" height="240">
+<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9cc8f0"/><stop offset="1" stop-color="#4f8dcb"/></linearGradient></defs>
+<path d="M14 6h226l-9 60H5z" fill="url(#g)"/>
+<path d="M4 72h226l-7 44H0z" fill="#ffffff"/>
+<circle cx="200" cy="36" r="17" fill="#f6b40e"/>
+<text x="96" y="58" text-anchor="middle" font-family="Impact,'Arial Black',sans-serif" font-size="56" font-style="italic" fill="#fff">NEXT</text>
+<text x="115" y="108" text-anchor="middle" font-family="Impact,'Arial Black',sans-serif" font-size="38" font-style="italic" letter-spacing="3" fill="#0a1f44">FOOTBALL</text>
+</svg>

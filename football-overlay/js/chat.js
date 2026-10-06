@@ -57,7 +57,7 @@
      *          badge?:'owner'|'mod'|'member'|'verified', amount?:string, kind?:string}} msg
      *  parts: [{text}] hoặc [{img, alt}] (emoji riêng của YouTube)
      */
-    const BADGE_LABEL = { owner: 'CHỦ KÊNH', mod: 'MOD', member: 'HỘI VIÊN', verified: '✓' };
+    const BADGE_LABEL = { owner: window.I18N.L('CHỦ KÊNH'), mod: 'MOD', member: window.I18N.L('HỘI VIÊN'), verified: '✓' };
     const safeUrl = (u) => /^https:\/\//i.test(String(u || '')) ? String(u) : '';
 
     /** Lọc từ cấm (CONFIG.chat.bannedWords). Trả về null nếu tin bị ẩn. */
@@ -100,7 +100,7 @@
         el.innerHTML =
             `<span class="cm-av" style="background:${esc(color)}">${esc(user.charAt(0).toUpperCase())}${avatar ? `<img src="${esc(avatar)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}</span>` +
             `<div class="cm-body">${amount}${badge}<span class="cm-user" style="color:${esc(color)}">@${esc(user)}:</span>` +
-            `<span class="cm-text">${body || (msg.kind === 'member' ? 'vừa trở thành hội viên!' : '')}</span></div>`;
+            `<span class="cm-text">${body || (msg.kind === 'member' ? window.I18N.L('vừa trở thành hội viên!') : '')}</span></div>`;
         el.addEventListener('animationend', (e) => {
             if (e.animationName === 'cmIn') el.classList.add('cm-done');
         });

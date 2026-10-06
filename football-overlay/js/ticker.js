@@ -9,6 +9,7 @@
 (function () {
     'use strict';
     const { esc } = window.Util;
+    const { L } = window.I18N;
 
     const BASE_SPEED = 100;     // px/s ứng với playbackRate = 1
     let root, viewport, track;
@@ -32,7 +33,7 @@
     function itemHTML(m) {
         const slug = m.tag.toLowerCase().replace(/[^a-z0-9]+/g, '-');
         const tag = m.tag ? `<span class="tk-tag tag-${slug}">${esc(m.tag)}</span>` : '';
-        return `<span class="tk-item">${tag}<span class="tk-text">${esc(m.text)}</span><span class="tk-sep"></span></span>`;
+        return `<span class="tk-item">${tag}<span class="tk-text">${esc(L(m.text))}</span><span class="tk-sep"></span></span>`;
     }
 
     function progress() {
@@ -102,8 +103,12 @@
         }
     }
 
+    /** Tốc độ được làm tròn về bội số của 30 px/s: ở 30 hoặc 60 fps mỗi khung hình
+     *  dịch đúng một số nguyên pixel → chữ trôi đều, không lúc nhanh lúc chậm. */
     function setSpeed(v) {
-        speed = Math.max(5, Number(v) || 90);
+        const next = Math.max(30, Math.round((Number(v) || 90) / 30) * 30);
+        if (next === speed && anim) return;          // tránh đặt lại tốc độ mỗi lần overlay cập nhật
+        speed = next;
         if (anim) anim.updatePlaybackRate ? anim.updatePlaybackRate(speed / BASE_SPEED) : (anim.playbackRate = speed / BASE_SPEED);
     }
 

@@ -471,6 +471,123 @@
     document.querySelectorAll('[data-cd]').forEach((b) => { b.onclick = () => { $('cd-min').value = b.dataset.cd; }; });
     $('btn-cd-start').onclick = () => cmd('startCountdown', Number(val('cd-min')) || 10, val('cd-title') || undefined);
 
+    /* ------------------------------------------------------------------
+     * KHUNG ẢNH TRẬN ĐẤU — ảnh được thu nhỏ (JPG ≤1600px), lưu vào
+     * uploads/ trên server; overlay chỉ nhận đường dẫn.
+     * ------------------------------------------------------------------ */
+    const photoDur = () => Math.max(0, parseFloat(val('ph-dur')) || 0) * 1000;
+
+    function toJpeg(file, maxDim) {
+        return new Promise((resolve, reject) => {
+            const url = URL.createObjectURL(file);
+            const img = new Image();
+            img.onload = () => {
+                const s = Math.min(1, maxDim / Math.max(img.width, img.height));
+                const c = document.createElement('canvas');
+                c.width = Math.round(img.width * s);
+                c.height = Math.round(img.height * s);
+                c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+                URL.revokeObjectURL(url);
+                resolve(c.toDataURL('image/jpeg', 0.88));
+            };
+            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('bad image')); };
+            img.src = url;
+        });
+    }
+
+    function publishPhoto(src) {
+        cmd('addPhoto', { src, caption: val('ph-caption'), show: $('ph-show').checked, duration: photoDur() });
+        $('ph-caption').value = '';
+    }
+
+    async function uploadPhotos(files) {
+        files = Array.from(files || []).filter((f) => /^image\//.test(f.type));
+        if (!files.length) return;
+        const drop = $('ph-drop');
+        drop.classList.add('busy');
+        try {
+            for (const f of files) {
+                // Không có server (file://): gửi thẳng ảnh nhỏ hơn qua BroadcastChannel
+                const data = await toJpeg(f, window.Bus.status().server ? 1600 : 960);
+                if (window.Bus.status().server) {
+                    const r = await api('/api/photo/upload', { data });
+                    if (!r || !r.ok) { toast('Lỗi lưu ảnh: ' + ((r && r.error) || 'server')); continue; }
+                    publishPhoto(r.url);
+                } else publishPhoto(data);
+            }
+            toast(`✓ Đã đăng ${files.length} ảnh`);
+        } catch (e) {
+            toast('Không đọc được ảnh');
+        }
+        drop.classList.remove('busy');
+    }
+
+    $('ph-file').addEventListener('change', () => { uploadPhotos($('ph-file').files); $('ph-file').value = ''; });
+    ['dragenter', 'dragover'].forEach((ev) => $('ph-drop').addEventListener(ev, (e) => { e.preventDefault(); $('ph-drop').classList.add('over'); }));
+    ['dragleave', 'drop'].forEach((ev) => $('ph-drop').addEventListener(ev, () => $('ph-drop').classList.remove('over')));
+    $('ph-drop').addEventListener('drop', (e) => { e.preventDefault(); uploadPhotos(e.dataTransfer.files); });
+    // Ctrl+V ở bất kỳ đâu trên trang (trừ khi đang dán chữ vào ô nhập)
+    document.addEventListener('paste', (e) => {
+        const files = Array.from((e.clipboardData && e.clipboardData.files) || []).filter((f) => /^image\//.test(f.type));
+        if (!files.length) return;
+        e.preventDefault();
+        uploadPhotos(files);
+    });
+
+    document.querySelectorAll('[data-snap]').forEach((b) => {
+        b.onclick = async () => {
+            if (needServer()) return;
+            b.disabled = true;
+            const r = await api('/api/obs/snapshot', { camera: b.dataset.snap });
+            b.disabled = false;
+            if (r && r.ok) { publishPhoto(r.url); toast('✓ Đã chụp từ OBS'); }
+            else if (r) toast('Không chụp được: ' + r.error);
+        };
+    });
+
+    let slideOn = false;
+    $('btn-ph-slide').onclick = () => {
+        slideOn = !slideOn;
+        cmd('setPhotoSlideshow', slideOn ? (Number(val('ph-slide-sec')) || 8) : 0);
+        $('btn-ph-slide').textContent = slideOn ? '❚❚ Dừng trình chiếu' : '▶ Trình chiếu';
+        $('btn-ph-slide').classList.toggle('on', slideOn);
+    };
+    $('btn-ph-clear').onclick = () => { if (confirm('Xoá tất cả ảnh khỏi khung ảnh?')) cmd('clearPhotos'); };
+    // Các nút ẩn / hiện bằng tay thì trình chiếu dừng ở overlay → đồng bộ nút
+    document.querySelectorAll('[data-cmd="hidePhoto"]').forEach((b) => b.addEventListener('click', () => {
+        slideOn = false;
+        $('btn-ph-slide').textContent = '▶ Trình chiếu';
+        $('btn-ph-slide').classList.remove('on');
+    }));
+
+    let photoSig = '';
+    function renderPhotos(s) {
+        const list = s.photos || [];
+        const sig = JSON.stringify(list);
+        if (sig === photoSig) return;
+        photoSig = sig;
+        $('ph-total').textContent = list.length ? `(${list.length})` : '';
+        const g = $('ph-gallery');
+        if (!list.length) { g.innerHTML = '<span class="muted">Chưa có ảnh nào.</span>'; return; }
+        g.innerHTML = list.map((p, i) => `<div class="ph-thumb" data-i="${i}" title="Bấm để hiện ảnh này" style="background-image:url('${String(p.src).replace(/'/g, '%27')}')">
+            <button data-del="${i}" title="Xoá">×</button><button data-cap="${i}" title="Sửa chú thích">✎</button>
+            <span>${p.minute ? p.minute + ' · ' : ''}${window.Util.esc(p.caption || '—')}</span></div>`).join('');
+    }
+    $('ph-gallery').addEventListener('click', (e) => {
+        const del = e.target.closest('[data-del]');
+        if (del) { cmd('removePhoto', Number(del.dataset.del)); return; }
+        const cap = e.target.closest('[data-cap]');
+        if (cap) {
+            const i = Number(cap.dataset.cap);
+            const cur = (state && state.photos && state.photos[i] && state.photos[i].caption) || '';
+            const text = prompt('Chú thích ảnh:', cur);
+            if (text !== null) cmd('setPhotoCaption', i, text);
+            return;
+        }
+        const t = e.target.closest('.ph-thumb');
+        if (t) cmd('showPhoto', Number(t.dataset.i), photoDur());
+    });
+
     /** Phần state mới (theme, phân tích, thống kê, heatmap). */
     function applyExtra(s) {
         document.querySelectorAll('.theme-sw').forEach((b) => b.classList.toggle('on', b.dataset.theme === s.theme));
@@ -486,6 +603,7 @@
         $('poss-away-name').textContent = s.away.short || 'Đội khách';
         document.querySelectorAll('[data-poss]').forEach((b) => b.classList.toggle('on', s.possession && s.possession.side === b.dataset.poss));
         renderPossession();
+        renderPhotos(s);
         applyCamAuto(s);
         if (s.heat) {
             if (document.activeElement !== $('heat-view')) $('heat-view').value = s.heat.view || 'auto';
@@ -503,8 +621,11 @@
         KeyW: () => cmd('setCamLayout', 'wide'),
         KeyE: (e) => cmd('setCamLayout', e.shiftKey ? 'pip2' : 'pip'),
         KeyZ: () => cmd('setCamLayout', 'split'),
+        KeyX: (e) => cmd('photoSplit', null, e.shiftKey ? 'wide' : 'close'),
         KeyU: (e) => cmd('toggleLineup', e.shiftKey ? 'away' : 'both'),
         KeyK: () => cmd('showStats'),
+        KeyM: () => cmd('toggleTribute', 'card'),
+        KeyP: () => cmd('togglePhoto'),
         Digit1: () => cmd('setPossession', 'home'),
         Digit2: () => cmd('setPossession', 'away'),
         Digit0: () => cmd('setPossession', null),

@@ -6,15 +6,16 @@
  * ===================================================================== */
 window.CONFIG = {
 
-    channelName: "KÊNH THỂ THAO 24H",
+    channelName: "NEXT FOOTBALL",
 
     /* ---------------- GIAO DIỆN ----------------
      * "neon"    — kính tối + cyan/hồng neon (mặc định)
      * "premier" — tím đậm + xanh neon kiểu Ngoại hạng Anh
      * "gold"    — đen nhám + vàng kim
      * "classic" — navy + đỏ + viền trắng (bản cũ)
+     * "albiceleste" — xanh da trời + trắng + vàng (Argentina)
      * Đổi nhanh trong control panel, không cần sửa file.                 */
-    theme: "neon",
+    theme: "albiceleste",
 
     /* ---------------- YOUTUBE LIVE CHAT ----------------
      * Bình luận thật trên YouTube hiện lên khung chat (cần chạy server.js).
@@ -46,6 +47,7 @@ window.CONFIG = {
      * sources: TÊN 2 source camera trong OBS (đúng chữ hoa/thường), cả 2
      *          phải nằm trong cùng scene, dưới source overlay.
      * start: bố cục lúc đầu — close | wide | pip | pip2 | split
+     *        (photo / photo2 = cam cận / toàn cảnh bên trái + ảnh trận đấu bên phải)
      * auto: tự chuyển cam theo diễn biến ("" = không đổi)
      *       lineup: khi hiện đội hình (trả lại cam cũ khi ẩn)
      *       goal: khi có bàn thắng, giữ goalHold giây rồi trả lại
@@ -62,8 +64,8 @@ window.CONFIG = {
         },
         rects: {
             pip: { x: 1452, y: 64, w: 408, h: 230 },
-            left: { x: 40, y: 150, w: 912, h: 513 },
-            right: { x: 968, y: 150, w: 912, h: 513 }
+            left: { x: 68, y: 250, w: 880, h: 495 },     // nằm dưới logo kênh, trên scoreboard
+            right: { x: 972, y: 250, w: 880, h: 495 }
         }
     },
 
@@ -82,77 +84,64 @@ window.CONFIG = {
      *          tiền vệ, tiền đạo. Dạng "số|họ tên|tên ngắn".               */
     lineups: {
         home: {
-            formation: "3-4-3",
-            coach: "KIM SANG-SIK",
+            formation: "4-4-2",
+            coach: "LIONEL SCALONI",
             players: [
-                "1|NGUYỄN FILIP|FILIP",
-                "4|BÙI TIẾN DŨNG|TIẾN DŨNG",
-                "3|NGUYỄN THÀNH CHUNG|THÀNH CHUNG",
-                "2|ĐỖ DUY MẠNH|DUY MẠNH",
-                "17|VŨ VĂN THANH|VĂN THANH",
-                "8|NGUYỄN HOÀNG ĐỨC|HOÀNG ĐỨC",
-                "14|NGUYỄN HAI LONG|HAI LONG",
-                "7|ĐOÀN VĂN HẬU|VĂN HẬU",
-                "19|NGUYỄN QUANG HẢI|QUANG HẢI",
-                "12|NGUYỄN XUÂN SON|XUÂN SON",
-                "9|NGUYỄN TIẾN LINH|TIẾN LINH"
+                "23|EMILIANO MARTÍNEZ|E. MARTÍNEZ",
+                "4|AGUSTÍN GIAY|GIAY",
+                "13|CRISTIAN ROMERO|ROMERO",
+                "6|LISANDRO MARTÍNEZ|L. MARTÍNEZ",
+                "33|VEGA|VEGA",
+                "18|NICO PAZ|PAZ",
+                "8|ENZO FERNÁNDEZ|FERNÁNDEZ",
+                "20|ALEXIS MAC ALLISTER|MAC ALLISTER",
+                "16|GIANLUCA PRESTIANNI|PRESTIANNI",
+                "9|JULIÁN ÁLVAREZ|ÁLVAREZ",
+                "10|LIONEL MESSI (C)|MESSI"
             ],
-            subs: [
-                "23|TRẦN TRUNG KIÊN|TRUNG KIÊN",
-                "6|NGUYỄN VĂN VĨ|VĂN VĨ",
-                "11|PHẠM TUẤN HẢI|TUẤN HẢI",
-                "16|KHUẤT VĂN KHANG|VĂN KHANG",
-                "21|LÊ PHẠM THÀNH LONG|THÀNH LONG",
-                "5|PHAN TUẤN TÀI|TUẤN TÀI"
-            ]
+            subs: []
         },
         away: {
-            formation: "4-2-3-1",
-            coach: "PETER CKLAMOVSKI",
+            formation: "4-1-4-1",
+            coach: "",
             players: [
-                "1|SYIHAN HAZMI|HAZMI",
-                "2|MATTHEW DAVIES|DAVIES",
-                "4|DION COOLS|COOLS",
-                "15|FERGUS TIERNEY|TIERNEY",
-                "3|SHAHRUL SAAD|SHAHRUL",
-                "6|BRENDAN GAN|GAN",
-                "8|STUART WILKIN|WILKIN",
-                "7|ARIF AIMAN|ARIF",
-                "10|PAULO JOSUÉ|JOSUÉ",
-                "11|FAISAL HALIM|FAISAL",
-                "9|SAFAWI RASID|SAFAWI"
+                "1|MARCEL DANDJINOU|DANDJINOU",
+                "12|AZONGNI|AZONGNI",
+                "5|YOHAN ROCHE|ROCHE",
+                "13|MOHAMED TIJANI|TIJANI",
+                "3|TAMIMOU OUOROU|T. OUOROU",
+                "15|SESSI D'ALMEIDA|D'ALMEIDA",
+                "6|Y. OUOROU|Y. OUOROU",
+                "8|HASSANE IMOURANE|IMOURANE",
+                "18|OLAITAN|OLAITAN",
+                "17|ALOKO|ALOKO",
+                "10|TOSIN AIYEGUN|TOSIN"
             ],
-            subs: [
-                "21|AZRI GHANI|AZRI",
-                "12|LA'VEN HAU|LA'VEN",
-                "14|ROMEL MORALES|MORALES",
-                "13|NOOA LAINE|LAINE",
-                "19|CORBIN-ONG|CORBIN"
-            ]
+            subs: []
         }
     },
 
     /* ---------------- ĐẾM NGƯỢC TRƯỚC TRẬN ---------------- */
     countdown: {
-        title: "TRẬN ĐẤU SẮP BẮT ĐẦU",
-        sub: "ĐĂNG KÝ KÊNH & BẬT CHUÔNG ĐỂ KHÔNG BỎ LỠ"
+        title: "ARGENTINA - BENIN • ĐÊM TRI ÂN MESSI",
+        sub: "#GRACIASLEO — ĐĂNG KÝ KÊNH & BẬT CHUÔNG ĐỂ KHÔNG BỎ LỠ"
     },
 
     /* ---------------- ĐỘI BÓNG ----------------
      * logo: đường dẫn PNG/SVG/JPG (tương đối với index.html) hoặc URL.
      * color: màu chủ đạo (vạch màu dưới scoreboard, popup).            */
     homeTeam: {
-        name: "ĐT VIỆT NAM",
-        short: "VIỆT NAM",
-        logo: "./assets/vietnam.svg",
-        color: "#da251d"
+        name: "ĐT ARGENTINA",
+        short: "ARGENTINA",
+        logo: "./assets/argentina.svg",
+        color: "#75aadb"
     },
 
     awayTeam: {
-        name: "ĐT MALAYSIA",
-        short: "MALAYSIA",
-        logo: "./assets/malaysia.svg",
-        color: "#f5c400"
+        name: "ĐT BENIN",
+        short: "BENIN",
+        logo: "./assets/benin.svg",
+        color: "#008751"
     },
 
     score: {
@@ -162,8 +151,8 @@ window.CONFIG = {
 
     /* period: "1H" | "HT" | "2H" | "ET1" | "ET2" | "FT" | "PEN"          */
     match: {
-        minute: 34,
-        second: 15,
+        minute: 0,
+        second: 0,
         period: "1H",
         addedTime: 0,        // bù giờ (phút) — 0 = ẩn
         autoStart: false     // tự chạy đồng hồ khi mở overlay
@@ -190,9 +179,9 @@ window.CONFIG = {
     /* ---------------- LOGO / WATERMARK (góc trên trái) ---------------- */
     watermark: {
         enabled: true,
-        logo: "./assets/logo.svg",   // để "" nếu chỉ muốn hiện chữ
-        title: "KÊNH THỂ THAO 24H",  // hiện khi không có logo
-        line1: "HƠN 500K",
+        logo: "./assets/next-football.svg",   // để "" nếu chỉ muốn hiện chữ
+        title: "NEXT FOOTBALL",  // hiện khi không có logo
+        line1: "HƠN 350K",
         line2: "NGƯỜI ĐĂNG KÝ",
         opacity: 0.95
     },
@@ -206,22 +195,21 @@ window.CONFIG = {
     },
 
     /* ---------------- TICKER / CHẠY CHỮ -------------------------------
-     * speed: pixel / giây (40 = chậm, 90 = vừa, 160 = nhanh)
+     * speed: pixel / giây, bội số của 30 cho mượt (60 = vừa, 90 = hơi nhanh, 120 = nhanh)
      * direction: "left" (phải → trái) | "right"
      * messages: chuỗi, "TAG|nội dung", hoặc { tag, text }
      * TAG hỗ trợ: LIVE, BREAKING, NEWS, FULL TIME, TRANSFER, UPDATE      */
     ticker: {
         enabled: true,
-        speed: 90,
+        speed: 60,
         direction: "left",
         autoGoalNews: true,          // tự thêm tin khi có bàn thắng
         messages: [
-            { tag: "BREAKING", text: "VIỆT NAM ĐANG KIỂM SOÁT THẾ TRẬN" },
-            { tag: "LIVE", text: "MALAYSIA PHẢN CÔNG NGUY HIỂM" },
-            { tag: "UPDATE", text: "CẬP NHẬT TỶ SỐ TRỰC TIẾP MỖI PHÚT" },
-            { tag: "NEWS", text: "AFF CUP 2026 — VÒNG BẢNG LƯỢT TRẬN THỨ 3" },
-            { tag: "TRANSFER", text: "CLB HÀ NỘI CHÍNH THỨC CHIÊU MỘ TIỀN ĐẠO MỚI" },
-            "KÊNH THỂ THAO 24H — ĐĂNG KÝ KÊNH ĐỂ XEM TRỰC TIẾP MỌI TRẬN ĐẤU"
+            { tag: "LIVE", text: "ARGENTINA - BENIN • GIAO HỮU QUỐC TẾ • 07.10.2026" },
+            { tag: "BREAKING", text: "ĐÊM TRI ÂN LIONEL MESSI — #GRACIASLEO" },
+            { tag: "NEWS", text: "MESSI: 8 QUẢ BÓNG VÀNG • VÔ ĐỊCH WORLD CUP 2022 • 2 COPA AMÉRICA (2021, 2024)" },
+            { tag: "UPDATE", text: "ARGENTINA (FIFA #2) ĐỐI ĐẦU BENIN (FIFA #93)" },
+            "NEXT FOOTBALL — GỬI LỜI TRI ÂN TỚI MESSI Ở KHUNG CHAT NHÉ!"
         ]
     },
 
@@ -250,18 +238,18 @@ window.CONFIG = {
             "lehoang.k", "fanbongda_hn", "cr7fan_vn", "gooner1886"
         ],
         fakeMessages: [
-            "Việt Nam cố lên! 🇻🇳", "VN cố lên hãy đá vì màu cờ sắc áo", "hello mọi người",
-            "Pha bóng vừa rồi tiếc quá!", "Thủ môn bắt hay quá", "Trọng tài thổi kỳ vậy",
-            "Hôm nay đá hay ghê", "Tấn công biên phải đi anh em ơi", "GOOOOOAL sắp tới rồi",
-            "Xem từ Đà Nẵng nè", "Malaysia chơi rát quá", "Ai dự đoán tỷ số đi",
-            "2-1 cho Việt Nam nhé", "Hàng thủ chắc chắn ghê", "Bình luận viên nhiệt quá 🔥"
+            "Gracias Leo! 🐐", "Vamos Argentina 🇦🇷", "hello mọi người",
+            "Messi đá phạt đi anh ơi", "Thủ môn Benin bắt hay quá", "Cảm ơn Messi vì tất cả ❤️",
+            "Số 10 vĩ đại nhất", "Julián Álvarez nhanh ghê", "GOOOOOAL sắp tới rồi",
+            "Xem từ Đà Nẵng nè", "Benin chơi rát quá", "Ai dự đoán tỷ số đi",
+            "3-0 cho Argentina nhé", "#GraciasLeo", "Bình luận viên nhiệt quá 🔥"
         ]
     },
 
     /* ---------------- LOWER THIRD -------------------------------------- */
     lowerThird: {
         duration: 5000,    // ms tự ẩn. 0 = giữ đến khi bấm Hide
-        default: { name: "NGUYỄN VĂN A", role: "FORWARD", team: "VIỆT NAM" }
+        default: { name: "LIONEL MESSI", role: "ĐỘI TRƯỞNG", team: "ARGENTINA" }
     },
 
     /* ---------------- POPUP (thời gian hiển thị, ms) -------------------- */
@@ -304,10 +292,138 @@ window.CONFIG = {
 
     /* ---------------- PHÍM TẮT (dùng trong overlay khi nhấn G/Y/R/S...) -- */
     shortcuts: {
-        goalPlayer: { home: "NGUYỄN VĂN A", away: "SAFAWI RASID" },
+        goalPlayer: { home: "", away: "" },
         cardPlayer: "PLAYER NAME",
         subOut: "PLAYER A",
         subIn: "PLAYER B"
+    },
+
+    /* ---------------- KHUNG ẢNH TRẬN ĐẤU (phía trên khung chat) ----------
+     * Đăng ảnh trong control panel → mục "Khung ảnh trận đấu", phím tắt P.
+     * duration: ms tự ẩn mỗi lần hiện ảnh, 0 = giữ đến khi bấm Ẩn.          */
+    photo: {
+        title: "KHOẢNH KHẮC TRẬN ĐẤU",
+        defaultCaption: "ARGENTINA - BENIN • NEXT FOOTBALL",
+        duration: 15000
+    },
+
+    /* ---------------- TRI ÂN HUYỀN THOẠI (banner Messi) ----------------
+     * Điều khiển trong control panel → mục "Tri ân Messi", phím tắt M = thẻ Messi.
+     * player.photo: ảnh PNG đã tách nền, đặt vào assets/messi.png.
+     *               Không có ảnh → tự vẽ lưng áo MESSI 10.
+     * matchName: tên cầu thủ khớp (regex) → bàn thắng dùng màn GOLAZO
+     *            (autoGoal), bị thay ra dùng màn standing ovation (autoOvation).
+     * durations: ms tự ẩn mỗi cảnh, 0 = giữ đến khi bấm Ẩn.                  */
+    tribute: {
+        badge: true,
+        hashtag: "#GRACIASLEO",
+        badgeText: "ĐÊM TRI ÂN MESSI",
+        eventTitle: "ĐÊM TRI ÂN HUYỀN THOẠI",
+        legendKicker: "HUYỀN THOẠI SỐ 10",
+        matchName: "MESSI",
+        autoGoal: true,
+        autoOvation: true,
+        player: {
+            name: "LIONEL MESSI",
+            fullName: "LIONEL ANDRÉS MESSI",
+            shirtName: "MESSI",
+            number: 10,
+            nickname: "LA PULGA",
+            role: "ĐỘI TRƯỞNG ARGENTINA",
+            badge: "CAPTAIN",
+            photo: "./assets/messi.png"
+        },
+        match: {
+            competition: "GIAO HỮU QUỐC TẾ",
+            date: "07.10.2026",
+            time: "06:00",
+            venue: "",
+            homeRank: 2,
+            awayRank: 93
+        },
+        honours: [
+            { n: "8", label: "QUẢ BÓNG VÀNG", sub: "KỶ LỤC MỌI THỜI ĐẠI" },
+            { n: "1", label: "WORLD CUP", sub: "QATAR 2022" },
+            { n: "2", label: "COPA AMÉRICA", sub: "2021 • 2024" },
+            { n: "1", label: "FINALISSIMA", sub: "WEMBLEY 2022" },
+            { n: "1", label: "HCV OLYMPIC", sub: "BẮC KINH 2008" },
+            { n: "6", label: "CHIẾC GIÀY VÀNG", sub: "CHÂU ÂU" }
+        ],
+        timeline: [
+            { year: "2005", text: "Vô địch U20 thế giới, ra mắt ĐT Argentina" },
+            { year: "2008", text: "Huy chương vàng Olympic Bắc Kinh" },
+            { year: "2021", text: "Copa América — danh hiệu đầu tiên cùng ĐT" },
+            { year: "2022", text: "Nâng cúp vàng World Cup tại Qatar" },
+            { year: "2024", text: "Bảo vệ thành công Copa América" }
+        ],
+        cardFacts: ["8× QUẢ BÓNG VÀNG", "VÔ ĐỊCH WORLD CUP 2022", "2× COPA AMÉRICA"],
+        ovationTitle: "CẢM ƠN, LEO!",
+        ovationText: "KHÁN GIẢ ĐỨNG DẬY TRI ÂN SỐ 10 HUYỀN THOẠI",
+        thanks: {
+            script: "Gracias, Leo",
+            title: "CẢM ƠN VÌ NHỮNG KÝ ỨC ĐẸP NHẤT CỦA BÓNG ĐÁ",
+            sub: "MÃI MÃI LÀ SỐ 10"
+        },
+        durations: { matchday: 0, legend: 0, card: 9000, goal: 9000, ovation: 9000, thanks: 0 }
+    },
+
+    /* ---------------- BẢN TIẾNG ANH ----------------------------------------
+     * Mở overlay bằng  http://localhost:3000/?demo=0&lang=en  để hiện tiếng Anh
+     * (dùng chung control panel, tỷ số, đồng hồ với bản tiếng Việt).
+     * Khối dưới đây có CÙNG CẤU TRÚC với phần trên: mỗi chuỗi là bản dịch của
+     * chuỗi ở đúng vị trí đó. Thiếu bản dịch → giữ nguyên chữ gốc.
+     * Nhãn giao diện cố định (THỐNG KÊ, ĐỘI HÌNH…) đã có sẵn trong js/i18n.js. */
+    english: {
+        homeTeam: { name: "ARGENTINA" },
+        awayTeam: { name: "BENIN" },
+        periodLabels: {
+            "1H": "1ST HALF", "HT": "HALF-TIME", "2H": "2ND HALF",
+            "ET1": "EXTRA TIME 1", "ET2": "EXTRA TIME 2", "FT": "FULL-TIME", "PEN": "PENALTIES"
+        },
+        watermark: { line1: "350K+", line2: "SUBSCRIBERS" },
+        countdown: {
+            title: "ARGENTINA - BENIN • MESSI TRIBUTE NIGHT",
+            sub: "#GRACIASLEO — SUBSCRIBE & TURN ON NOTIFICATIONS"
+        },
+        ticker: {
+            messages: [
+                { text: "ARGENTINA - BENIN • INTERNATIONAL FRIENDLY • 07.10.2026" },
+                { text: "A TRIBUTE NIGHT FOR LIONEL MESSI — #GRACIASLEO" },
+                { text: "MESSI: 8 BALLON D'ORS • 2022 WORLD CUP WINNER • 2 COPA AMÉRICAS (2021, 2024)" },
+                { text: "ARGENTINA (FIFA #2) TAKE ON BENIN (FIFA #93)" },
+                "NEXT FOOTBALL — SEND YOUR TRIBUTE TO MESSI IN THE CHAT!"
+            ]
+        },
+        lowerThird: { default: { role: "CAPTAIN" } },
+        tribute: {
+            badgeText: "MESSI TRIBUTE NIGHT",
+            eventTitle: "A TRIBUTE TO A LEGEND",
+            legendKicker: "THE NUMBER 10 LEGEND",
+            player: { role: "ARGENTINA CAPTAIN" },
+            match: { competition: "INTERNATIONAL FRIENDLY" },
+            honours: [
+                { label: "BALLON D'OR", sub: "ALL-TIME RECORD" },
+                { label: "WORLD CUP", sub: "QATAR 2022" },
+                { label: "COPA AMÉRICA", sub: "2021 • 2024" },
+                { label: "FINALISSIMA", sub: "WEMBLEY 2022" },
+                { label: "OLYMPIC GOLD", sub: "BEIJING 2008" },
+                { label: "GOLDEN SHOES", sub: "EUROPEAN" }
+            ],
+            timeline: [
+                { text: "U-20 World Cup winner, senior Argentina debut" },
+                { text: "Olympic gold medal in Beijing" },
+                { text: "Copa América — first major title with Argentina" },
+                { text: "Lifts the World Cup in Qatar" },
+                { text: "Retains the Copa América" }
+            ],
+            cardFacts: ["8× BALLON D'OR", "2022 WORLD CUP WINNER", "2× COPA AMÉRICA"],
+            ovationTitle: "THANK YOU, LEO!",
+            ovationText: "THE CROWD RISES FOR THE NUMBER 10 LEGEND",
+            thanks: {
+                title: "THANK YOU FOR FOOTBALL'S MOST BEAUTIFUL MEMORIES",
+                sub: "FOREVER NUMBER 10"
+            }
+        }
     },
 
     /* ---------------- DEMO MODE ---------------------------------------
@@ -315,11 +431,11 @@ window.CONFIG = {
      * Khi livestream thật: tắt DEMO trong control panel (được ghi nhớ),
      * hoặc dùng URL index.html?demo=0                                    */
     demo: {
-        autoStart: true,
+        autoStart: false,
         players: {
-            home: ["NGUYỄN TIẾN LINH", "NGUYỄN QUANG HẢI", "NGUYỄN HOÀNG ĐỨC", "PHẠM TUẤN HẢI"],
-            away: ["SAFAWI RASID", "ARIF AIMAN", "FAISAL HALIM", "DION COOLS"]
+            home: ["LIONEL MESSI", "JULIÁN ÁLVAREZ", "ALEXIS MAC ALLISTER", "NICO PAZ"],
+            away: ["TOSIN AIYEGUN", "HASSANE IMOURANE", "SESSI D'ALMEIDA", "YOHAN ROCHE"]
         },
-        commentator: { name: "NEXT FOOTBALL", role: "BÌNH LUẬN VIÊN", team: "KÊNH THỂ THAO 24H" }
+        commentator: { name: "NEXT FOOTBALL", role: "BÌNH LUẬN VIÊN", team: "NEXT FOOTBALL" }
     }
 };

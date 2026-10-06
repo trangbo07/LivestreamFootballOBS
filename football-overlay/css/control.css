@@ -227,7 +227,8 @@ details label { margin-top: 6px; }
 .pad-dir { position: absolute; left: 50%; bottom: 6px; transform: translateX(-50%); padding: 1px 10px; border-radius: 99px; background: rgba(0,0,0,.5); font: 600 12px var(--display); letter-spacing: 1px; pointer-events: none; }
 
 /* ---------- Camera ---------- */
-.cam-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+.cam-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+@media (max-width: 1300px) { .cam-grid { grid-template-columns: repeat(4, 1fr); } }
 @media (max-width: 900px) { .cam-grid { grid-template-columns: repeat(2, 1fr); } }
 .cam-btn {
     position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px;
@@ -247,6 +248,71 @@ details label { margin-top: 6px; }
 .cam-ico i.pip { right: 4px; top: 4px; width: 36px; height: 20px; box-shadow: 0 0 0 1.5px #fff; }
 .cam-ico i.left { left: 3px; top: 12px; width: 44px; height: 30px; }
 .cam-ico i.right { right: 3px; top: 12px; width: 44px; height: 30px; }
+.cam-ico i.p { background: linear-gradient(135deg, #ffd86b, #f0a500); }
+.cam-ico i.p::after { content: '📷'; position: absolute; inset: 0; display: grid; place-items: center; font-size: 14px; }
 .auto-grid { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; align-items: center; font-size: 13px; color: var(--muted); font-weight: 700; margin: 6px 0; }
 .scene-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
 .scene-list .btn.on { background: var(--red); border-color: #ff8a9b; }
+
+/* ---------- Khung ảnh trận đấu ---------- */
+.ph-drop {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 22px 12px;
+    margin-bottom: 10px;
+    border: 2px dashed var(--line);
+    border-radius: var(--radius);
+    background: var(--panel-2);
+    text-align: center;
+    color: var(--muted);
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+}
+.ph-drop b { color: var(--text); font: 600 16px var(--display); letter-spacing: .5px; }
+.ph-drop.over, .ph-drop:hover { border-color: var(--cyan); background: #18205a; }
+.ph-drop.busy { opacity: .6; pointer-events: none; }
+.ph-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.ph-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 8px;
+    max-height: 260px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+.ph-thumb {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #05081a center / cover no-repeat;
+    box-shadow: inset 0 0 0 1px var(--line);
+    cursor: pointer;
+}
+.ph-thumb:hover { box-shadow: inset 0 0 0 2px var(--cyan); }
+.ph-thumb.on { box-shadow: inset 0 0 0 3px var(--gold); }
+.ph-thumb span {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 2px 5px;
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background: rgba(0, 0, 0, .65);
+}
+.ph-thumb button {
+    position: absolute;
+    top: 3px; right: 3px;
+    width: 22px; height: 22px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 61, 110, .9);
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+}
+.ph-thumb button + button { right: 28px; background: rgba(79, 99, 255, .9); }

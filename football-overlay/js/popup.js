@@ -7,6 +7,7 @@
 (function () {
     'use strict';
     const { esc } = window.Util;
+    const { L } = window.I18N;
 
     const ICON_BALL = '<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#fff"/><path d="M20 12.5l6.6 4.8-2.5 7.8h-8.2l-2.5-7.8z" fill="#0b1a4a"/><path d="M20 2v10.5M26.6 17.3l9.3-3.6M24.1 25.1l5.8 8.6M15.9 25.1l-5.8 8.6M13.4 17.3L4.1 13.7" stroke="#0b1a4a" stroke-width="2"/></svg>';
     const ICON_SWAP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h13l-4-4M20 15H7l4 4"/></svg>';
@@ -142,7 +143,7 @@
                 <div class="pstat pp-panel">
                     <div class="pstat-head">
                         <div class="pstat-team home">${img(h.logo)}<span>${esc(h.short || h.name)}</span></div>
-                        <div class="pstat-title"><small>THỐNG KÊ TRẬN ĐẤU</small><b>${esc(d.score.home)} - ${esc(d.score.away)}</b></div>
+                        <div class="pstat-title"><small>${L('THỐNG KÊ TRẬN ĐẤU')}</small><b>${esc(d.score.home)} - ${esc(d.score.away)}</b></div>
                         <div class="pstat-team away"><span>${esc(a.short || a.name)}</span>${img(a.logo)}</div>
                     </div>
                     <div class="st-list">${StatsView.rowsHTML(d.rows || [], true)}</div>
@@ -231,12 +232,12 @@
                 `?addInfo=${encodeURIComponent(d.content || '')}&accountName=${encodeURIComponent(d.accountName || '')}`;
         }
         function render(d) {
-            root.querySelector('#dn-title').textContent = d.title || 'ỦNG HỘ CHÚNG TÔI';
+            root.querySelector('#dn-title').textContent = L(d.title || 'ỦNG HỘ CHÚNG TÔI');
             const rows = [
-                ['NGÂN HÀNG', d.bankName, ''],
+                [L('NGÂN HÀNG'), d.bankName, ''],
                 ['STK', d.accountNo, 'big'],
-                ['CHỦ TK', d.accountName, ''],
-                ['NỘI DUNG', d.content, '']
+                [L('CHỦ TK'), d.accountName, ''],
+                [L('NỘI DUNG'), d.content, '']
             ].filter((r) => r[1]);
             root.querySelector('#dn-info').innerHTML = rows
                 .map(([k, v, c]) => `<div class="dn-row ${c}"><b>${k}</b><span>${esc(v)}</span></div>`).join('');
@@ -323,7 +324,7 @@
             if (t !== last) { root.querySelector('.cd-time').innerHTML = digits(t); last = t; }
             if (left <= 0 && !root.classList.contains('done')) {
                 root.classList.add('done');
-                root.querySelector('.cd-sub').textContent = cfg.doneText || 'TRẬN ĐẤU BẮT ĐẦU!';
+                root.querySelector('.cd-sub').textContent = L(cfg.doneText || 'TRẬN ĐẤU BẮT ĐẦU!');
                 clearInterval(timer);
                 setTimeout(() => { if (onDone) onDone(); }, 6000);
             }
@@ -341,13 +342,13 @@
                 const h = c.home || {}, a = c.away || {};
                 root.classList.remove('done');
                 root.innerHTML =
-                    '<div class="cd-title">' + esc(c.title || 'TRẬN ĐẤU SẮP BẮT ĐẦU') + '</div>' +
+                    '<div class="cd-title">' + esc(L(c.title || 'TRẬN ĐẤU SẮP BẮT ĐẦU')) + '</div>' +
                     '<div class="cd-teams">' +
                     '<div class="cd-team">' + img(h.logo) + '<span>' + esc(h.short || h.name || '') + '</span></div>' +
                     '<div class="cd-time"></div>' +
                     '<div class="cd-team">' + img(a.logo) + '<span>' + esc(a.short || a.name || '') + '</span></div>' +
                     '</div>' +
-                    '<div class="cd-sub">' + esc(c.sub || 'ĐĂNG KÝ KÊNH & BẬT CHUÔNG ĐỂ KHÔNG BỎ LỠ') + '</div>';
+                    '<div class="cd-sub">' + esc(L(c.sub || 'ĐĂNG KÝ KÊNH & BẬT CHUÔNG ĐỂ KHÔNG BỎ LỠ')) + '</div>';
                 tick();
                 root.classList.add('on');
                 timer = setInterval(tick, 250);

@@ -159,7 +159,7 @@ class OBSBridge extends EventEmitter {
 
     /**
      * Áp bố cục camera.
-     * @param layout  close | wide | pip | pip2 | split | analysis
+     * @param layout  close | wide | pip | pip2 | split | photo | photo2 | analysis
      * @param active  cam chính khi ở chế độ analysis ('close' | 'wide')
      * @param R       { pip, left, right, analysis } — các khung (x,y,w,h)
      */
@@ -206,6 +206,8 @@ class OBSBridge extends EventEmitter {
                 pip: { wide: F, close: R.pip },
                 pip2: { close: F, wide: R.pip },
                 split: { close: R.left, wide: R.right },
+                photo: { close: R.left, wide: null },          // cam cận bên trái, ảnh (overlay) bên phải
+                photo2: { wide: R.left, close: null },         // toàn cảnh bên trái, ảnh bên phải
                 analysis: active === 'wide' ? { wide: R.analysis, close: null } : { close: R.analysis, wide: null }
             };
             let plan = Object.assign({}, plans[layout] || plans.close);
@@ -254,7 +256,7 @@ class OBSBridge extends EventEmitter {
                     await this.request('SetSceneItemEnabled', Object.assign({}, items[role], { sceneItemEnabled: false }));
                 }
             }
-            const label = { close: 'Cam cận', wide: 'Cam toàn cảnh', pip: 'PiP (toàn cảnh + cam cận)', pip2: 'PiP (cam cận + toàn cảnh)', split: 'Chia đôi 2 cam', analysis: 'Chế độ phân tích' }[layout] || layout;
+            const label = { close: 'Cam cận', wide: 'Cam toàn cảnh', pip: 'PiP (toàn cảnh + cam cận)', pip2: 'PiP (cam cận + toàn cảnh)', split: 'Chia đôi 2 cam', photo: 'Cam cận + ảnh', photo2: 'Toàn cảnh + ảnh', analysis: 'Chế độ phân tích' }[layout] || layout;
             this.note('Camera: ' + label);
         } catch (e) {
             this.note('Lỗi camera: ' + e.message);

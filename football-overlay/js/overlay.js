@@ -18,6 +18,9 @@
     'use strict';
     const C = window.CONFIG;
     const { pick, hash } = window.Util;
+    const { L } = window.I18N;
+    /** Bản sao state với tên đội đã dịch (bản tiếng Anh) — chỉ dùng để hiển thị. */
+    const view = () => window.I18N.lang === 'en' ? Object.assign({}, state, { home: window.I18N.team(state.home), away: window.I18N.team(state.away) }) : state;
     const $ = (id) => document.getElementById(id);
 
     const STORE_KEY = 'football-overlay-state-v1';
@@ -37,14 +40,28 @@
         return { name: t.name || '', short: t.short || t.name || '', logo: t.logo || '', color: t.color || '' };
     }
 
-    const THEMES = ['neon', 'premier', 'gold', 'classic'];
+    const THEMES = ['neon', 'premier', 'gold', 'classic', 'albiceleste'];
     const STAT_KEYS = ['shots', 'onTarget', 'corners', 'fouls', 'offsides', 'yellow', 'red', 'saves'];
     const STAT_LABELS = {
         possession: 'KIỂM SOÁT BÓNG', shots: 'SỐ CÚ SÚT', onTarget: 'SÚT TRÚNG ĐÍCH', corners: 'PHẠT GÓC',
         fouls: 'PHẠM LỖI', offsides: 'VIỆT VỊ', yellow: 'THẺ VÀNG', red: 'THẺ ĐỎ', saves: 'CỨU THUA'
     };
     const HEAT_MAX = 400;
-    const CAM_LAYOUTS = ['close', 'wide', 'pip', 'pip2', 'split'];
+    const CAM_LAYOUTS = ['close', 'wide', 'pip', 'pip2', 'split', 'photo', 'photo2'];
+    const PHOTO_LAYOUTS = ['photo', 'photo2'];          // cam bên trái + ảnh trận đấu bên phải
+
+    /* Khung ảnh: vị trí ảnh đang hiện + bộ hẹn giờ trình chiếu (không lưu) */
+    const PHOTO_MAX = 30;
+    let photoIdx = 0;
+    let slideTimer = null;
+    let camBeforeSplit = 'close';
+    const inPhotoSplit = () => PHOTO_LAYOUTS.includes(state.cam.layout);
+    const photoIndexOf = (src) => Math.max(0, state.photos.findIndex((p) => p.src === src));
+    /** Phút hiện tại để gắn lên ảnh — trước trận / nghỉ / hết trận thì để trống. */
+    const photoMinute = () => (state.clock.running || ['1H', '2H', 'ET1', 'ET2'].includes(state.period) && clockSeconds() > 0) ? currentMinute() : '';
+
+    /** Cầu thủ là nhân vật được tri ân và tính năng tự động (autoGoal / autoOvation) đang bật. */
+    const tributeAuto = (key, name) => !!(C.tribute && C.tribute[key] && window.Tribute.matches(name));
 
     /** Báo sự kiện cho server (tự chuyển camera). */
     const emitEvent = (name) => window.Bus.send('event', { name });
@@ -109,6 +126,9 @@
             countdown: null,                         // { target, title, sub }
             cam: { layout: CAM_LAYOUTS.includes((C.cameras || {}).start) ? C.cameras.start : 'close' },
             camAuto: Object.assign({ enabled: true, lineup: 'wide', goal: 'close', goalHold: 8, halfTime: 'close', fullTime: 'close', matchStart: 'wide', sceneAnalysis: '', sceneNormal: '' }, (C.cameras || {}).auto || {}),
+            tributeBadge: !!(C.tribute && C.tribute.badge),
+            photos: [],                              // [{ src, caption, minute }] — ảnh trận đấu đã đăng
+            splitPhoto: null,                        // ảnh đang hiện ở bố cục cam + ảnh
             demo: !!(C.demo && C.demo.autoStart),
             savedAt: 0
         };
@@ -196,18 +216,18 @@
         keys = keys || (C.analysis && C.analysis.statKeys) || ['possession', 'shots', 'onTarget', 'corners', 'fouls', 'yellow', 'red'];
         const pos = possessionPct();
         return keys.map((k) => k === 'possession'
-            ? { key: k, label: STAT_LABELS[k], home: pos.home, away: pos.away, suffix: '%' }
-            : { key: k, label: STAT_LABELS[k] || k.toUpperCase(), home: state.stats.home[k] || 0, away: state.stats.away[k] || 0 });
+            ? { key: k, label: L(STAT_LABELS[k]), home: pos.home, away: pos.away, suffix: '%' }
+            : { key: k, label: L(STAT_LABELS[k]) || k.toUpperCase(), home: state.stats.home[k] || 0, away: state.stats.away[k] || 0 });
     }
 
     function possessionText() {
         const s = state.possession.side;
         if (!s) return '';
-        return 'BÓNG: ' + (state[s].short || state[s].name);
+        return L('BÓNG: ') + L(state[s].short || state[s].name);
     }
 
     function renderAnalysis() {
-        window.Analysis.apply(state, statRows(), possessionText());
+        window.Analysis.apply(view(), statRows(), possessionText());
     }
 
     /* ------------------------------------------------------------------
@@ -215,7 +235,7 @@
      * ------------------------------------------------------------------ */
     let lastWmLogo = null;
     let lastDateKey = '';
-    const MONTHS_VI = 'THÁNG';
+    const PERIOD_LABELS = window.I18N.deep(C.periodLabels);
 
     function renderWatermark() {
         const w = state.watermark;
@@ -224,7 +244,7 @@
         el.style.opacity = w.visible ? w.opacity : '';
         const img = $('wm-logo');
         const title = $('wm-title');
-        title.textContent = w.title || '';
+        title.textContent = L(w.title || '');
         if (w.logo !== lastWmLogo) {
             lastWmLogo = w.logo;
             if (w.logo) {
@@ -238,8 +258,8 @@
                 title.style.display = '';
             }
         }
-        $('wm-line1').textContent = w.line1 || '';
-        $('wm-line2').textContent = w.line2 || '';
+        $('wm-line1').textContent = L(w.line1 || '');
+        $('wm-line2').textContent = L(w.line2 || '');
     }
 
     function renderDate() {
@@ -254,7 +274,7 @@
         }
         const key = `${day}-${month}-${year}`;
         if (key === lastDateKey) return;
-        $('db-month').textContent = `${MONTHS_VI} ${month}`;
+        $('db-month').textContent = window.I18N.month(month);
         $('db-day').textContent = String(day).padStart(2, '0');
         $('db-year').textContent = year;
         if (lastDateKey) {
@@ -267,7 +287,7 @@
     }
 
     function renderAll() {
-        window.Scoreboard.render(state, C.periodLabels);
+        window.Scoreboard.render(view(), PERIOD_LABELS);
         tick();
         window.Ticker.apply(state.ticker);
         window.Ticker.setLiveOffset(state.live);
@@ -279,8 +299,9 @@
         renderDate();
         if (document.documentElement.dataset.theme !== state.theme) document.documentElement.dataset.theme = state.theme;
         renderAnalysis();
-        window.CamFx.apply(state.cam.layout, state.layout === 'analysis');
-        window.Countdown.set(state.countdown ? Object.assign({ home: state.home, away: state.away }, state.countdown) : null);
+        window.CamFx.apply(state.cam.layout, state.layout === 'analysis', state.splitPhoto);
+        window.Tribute.setBadge(state.tributeBadge);
+        window.Countdown.set(state.countdown ? Object.assign({}, state.countdown, { home: view().home, away: view().away, title: L(state.countdown.title), sub: L(state.countdown.sub) }) : null);
         const demoBtn = $('dev-demo');
         if (demoBtn) {
             demoBtn.textContent = 'DEMO MODE: ' + (state.demo ? 'ON' : 'OFF');
@@ -303,7 +324,10 @@
     }
 
     function ctx(extra) {
-        return Object.assign({ home: state.home, away: state.away, score: Object.assign({}, state.score) }, extra || {});
+        const v = view();
+        const out = Object.assign({ home: v.home, away: v.away, score: Object.assign({}, state.score) }, extra || {});
+        if (out.team && typeof out.team === 'object') out.team = window.I18N.team(out.team);
+        return out;
     }
 
     /** Thẻ phạt tự cộng vào thống kê khi biết đội (home/away). */
@@ -433,7 +457,9 @@
             }
             commit();
             window.Scoreboard.flash(side);
-            window.Popup.show('GOAL', ctx({ side, team: state[side], player: opts.player || '', minute }), opts.duration);
+            const goalCtx = ctx({ side, team: state[side], player: opts.player || '', minute });
+            if (tributeAuto('autoGoal', opts.player)) window.Tribute.show('goal', goalCtx, opts.duration);
+            else window.Popup.show('GOAL', goalCtx, opts.duration);
             emitEvent('goal');
         },
         yellowCard(opts) {
@@ -448,6 +474,7 @@
         },
         substitution(opts) {
             opts = opts || {};
+            if (tributeAuto('autoOvation', opts.out)) return API.showTribute('ovation', { in: opts.in });
             window.Popup.show('SUBSTITUTION', ctx({ out: opts.out, in: opts.in, team: teamObj(opts.team) }), opts.duration);
         },
         /** Bắt đầu trận: hiệp 1, 00:00, chạy đồng hồ + popup. */
@@ -526,7 +553,7 @@
         setChatMax(n) { state.chat.max = Math.max(1, Math.min(12, int(n, 5))); commit(); },
 
         /* ---------- LOWER THIRD ---------- */
-        showLowerThird(data) { window.LowerThird.show(Object.assign({}, data || (C.lowerThird && C.lowerThird.default))); },
+        showLowerThird(data) { window.LowerThird.show(Object.assign({}, data || window.I18N.deep(C.lowerThird && C.lowerThird.default))); },
         hideLowerThird() { window.LowerThird.hide(); },
         toggleLowerThird(data) { window.LowerThird.isVisible() ? API.hideLowerThird() : API.showLowerThird(data); },
 
@@ -660,7 +687,7 @@
         /** view: both | home | away */
         showLineup(view) {
             const was = window.Lineup.isVisible();
-            window.Lineup.show(view || 'both', state.lineups, state.home, state.away);
+            window.Lineup.show(view || 'both', state.lineups, window.I18N.team(state.home), window.I18N.team(state.away));
             if (!was) emitEvent('lineup-show');
         },
         hideLineup() {
@@ -672,6 +699,11 @@
         /** layout: close (cam cận) | wide (toàn cảnh) | pip | pip2 | split */
         setCamLayout(layout) {
             if (!CAM_LAYOUTS.includes(layout)) return;
+            if (PHOTO_LAYOUTS.includes(layout) && !PHOTO_LAYOUTS.includes(state.cam.layout)) {
+                camBeforeSplit = state.cam.layout;
+                window.Photo.hide();
+                if (!state.splitPhoto && state.photos[0]) state.splitPhoto = Object.assign({}, state.photos[0]);
+            }
             state.cam = { layout };
             commit();
         },
@@ -680,6 +712,103 @@
         toggleLineup(view) {
             const v = view || 'both';
             if (window.Lineup.isVisible() && window.Lineup.view() === v) API.hideLineup(); else API.showLineup(v);
+        },
+
+        /* ---------- TRI ÂN HUYỀN THOẠI ---------- */
+        /** scene: matchday | legend | card | goal | ovation | thanks.  data.duration (ms, 0 = giữ) */
+        showTribute(scene, data) {
+            data = data || {};
+            window.Popup.skip();
+            window.Tribute.show(scene, ctx(Object.assign({ minute: currentMinute(), channel: C.channelName }, data)), data.duration);
+        },
+        hideTribute() { window.Tribute.hide(); },
+        toggleTribute(scene) {
+            if (window.Tribute.current() === scene) API.hideTribute(); else API.showTribute(scene);
+        },
+        setTributeBadge(v) { state.tributeBadge = !!v; commit(); },
+        toggleTributeBadge() { state.tributeBadge = !state.tributeBadge; commit(); },
+
+        /* ---------- KHUNG ẢNH TRẬN ĐẤU ---------- */
+        /** data: { src, caption, show = true, duration } — thêm ảnh vào bộ sưu tập (ảnh mới nhất đứng đầu). */
+        addPhoto(data) {
+            data = data || {};
+            if (!data.src) return;
+            const item = { src: String(data.src), caption: String(data.caption || ''), minute: data.minute != null ? String(data.minute) : photoMinute() };
+            state.photos = [item].concat(state.photos.filter((p) => p.src !== item.src)).slice(0, PHOTO_MAX);
+            commit();
+            if (data.show !== false) API.showPhoto(0, data.duration);
+        },
+        /** index trong bộ sưu tập (0 = mới nhất). duration ms, 0 = giữ. */
+        showPhoto(index, duration) {
+            const i = Math.max(0, Math.min(state.photos.length - 1, int(index, 0)));
+            const item = state.photos[i];
+            if (!item) return;
+            photoIdx = i;
+            const pos = state.photos.length > 1 ? `${i + 1}/${state.photos.length}` : '';
+            if (inPhotoSplit()) {                    // đang chia đôi cam + ảnh → đổi ảnh ở nửa phải
+                state.splitPhoto = Object.assign({ pos }, item);
+                commit();
+                return;
+            }
+            window.Photo.show(item, state.photos.length > 1 ? `${i + 1}/${state.photos.length}` : '', slideTimer ? 0 : duration);
+        },
+        nextPhoto() { API.showPhoto(photoIdx + 1 < state.photos.length ? photoIdx + 1 : 0); },
+        prevPhoto() { API.showPhoto(photoIdx > 0 ? photoIdx - 1 : state.photos.length - 1); },
+        hidePhoto() {
+            API.setPhotoSlideshow(0);
+            if (inPhotoSplit()) API.exitPhotoSplit();
+            window.Photo.hide();
+        },
+        togglePhoto() { (window.Photo.isVisible() || inPhotoSplit()) ? API.hidePhoto() : API.showPhoto(0); },
+        /** Chia đôi màn hình: camera bên trái, ảnh trận đấu bên phải.
+         *  index: ảnh trong bộ sưu tập (bỏ trống = ảnh đang chọn / mới nhất). cam: "close" | "wide" */
+        photoSplit(index, cam) {
+            const layout = cam === 'wide' ? 'photo2' : 'photo';
+            if (!inPhotoSplit()) camBeforeSplit = state.cam.layout;
+            const i = index == null ? (state.splitPhoto ? photoIndexOf(state.splitPhoto.src) : 0) : int(index, 0);
+            window.Photo.hide();
+            state.cam = { layout };
+            commit();
+            if (state.photos.length) API.showPhoto(Math.max(0, i));
+        },
+        /** Thoát chia đôi → quay lại bố cục camera trước đó. */
+        exitPhotoSplit() {
+            if (!inPhotoSplit()) return;
+            API.setCamLayout(PHOTO_LAYOUTS.includes(camBeforeSplit) ? 'close' : (camBeforeSplit || 'close'));
+        },
+        setPhotoCaption(index, caption) {
+            const item = state.photos[int(index, -1)];
+            if (!item) return;
+            item.caption = String(caption || '');
+            if (state.splitPhoto && state.splitPhoto.src === item.src) state.splitPhoto = Object.assign({}, state.splitPhoto, { caption: item.caption });
+            commit();
+            if (window.Photo.current() && window.Photo.current().src === item.src) API.showPhoto(index);
+        },
+        removePhoto(index) {
+            const i = int(index, -1);
+            const item = state.photos[i];
+            if (!item) return;
+            state.photos.splice(i, 1);
+            if (state.splitPhoto && state.splitPhoto.src === item.src) {
+                const next = state.photos[Math.min(i, state.photos.length - 1)];
+                state.splitPhoto = next ? Object.assign({}, next) : null;
+            }
+            commit();
+            if (window.Photo.current() && window.Photo.current().src === item.src) {
+                if (state.photos.length) API.showPhoto(Math.min(i, state.photos.length - 1)); else API.hidePhoto();
+            }
+        },
+        clearPhotos() { state.photos = []; state.splitPhoto = null; API.hidePhoto(); commit(); },
+        /** Trình chiếu: đổi ảnh mỗi `seconds` giây. 0 = tắt. */
+        setPhotoSlideshow(seconds) {
+            clearInterval(slideTimer);
+            slideTimer = null;
+            const sec = Math.max(0, Number(seconds) || 0);
+            if (sec > 0 && state.photos.length) {
+                slideTimer = setInterval(() => API.nextPhoto(), Math.max(3, sec) * 1000);
+                if (!window.Photo.isVisible()) API.showPhoto(0);
+                else API.showPhoto(photoIdx);
+            }
         },
 
         /* ---------- ĐẾM NGƯỢC TRƯỚC TRẬN ---------- */
@@ -797,6 +926,9 @@
         KeyA: () => API.toggleAnalysis(),
         KeyU: (e) => API.toggleLineup(e.shiftKey ? 'away' : 'both'),
         KeyK: () => API.showStats(),
+        KeyM: () => API.toggleTribute('card'),
+        KeyP: () => API.togglePhoto(),
+        KeyX: (e) => API.photoSplit(null, e.shiftKey ? 'wide' : 'close'),
         Digit1: () => API.setPossession('home'),
         Digit2: () => API.setPossession('away'),
         Digit0: () => API.setPossession(null)
@@ -823,8 +955,20 @@
             persistNow();
         } else if (msg.type === 'yt-status') {
             window.Chat.setSource(msg.payload && msg.payload.state === 'live' ? 'youtube' : null);
-        } else if (msg.type === 'state' && syncWindow) {
-            // Lúc khởi động: lấy state mới nhất từ server (vd. OBS vừa refresh)
+        } else if (msg.type === 'stale') {
+            // Server báo config.js đã đổi mà overlay này chưa tải lại → tự refresh (tối đa 1 lần / 30 giây)
+            const p = msg.payload || {};
+            if (p.fingerprint && p.fingerprint !== FINGERPRINT && (!p.target || p.target === window.Bus.id)) {
+                let last = 0;
+                try { last = Number(sessionStorage.getItem('overlay-stale-reload')) || 0; } catch (e) { /* ignore */ }
+                if (Date.now() - last > 30000) {
+                    try { sessionStorage.setItem('overlay-stale-reload', String(Date.now())); } catch (e) { /* ignore */ }
+                    location.reload();
+                }
+            }
+        } else if (msg.type === 'state') {
+            // Nhiều overlay cùng chạy (OBS, bản tiếng Anh, tab xem thử): luôn theo state mới nhất
+            // để không overlay nào giữ trạng thái lệch (vd. 1 bên phân tích, 1 bên bình thường).
             const s = msg.payload;
             if (s && s.fingerprint === FINGERPRINT && s.savedAt > state.savedAt) {
                 state = mergeState(s);
@@ -879,7 +1023,9 @@
         window.Lineup.init($('lineup'));
         window.Analysis.init($('analysis'), C.analysis);
         window.Countdown.init($('countdown'), () => API.stopCountdown());
-        window.CamFx.init($('camfx'), C.cameras);
+        window.CamFx.init($('camfx'), window.I18N.deep(C.cameras));
+        window.Tribute.init($('tribute'), $('tribute-badge'), window.I18N.deep(C.tribute));
+        window.Photo.init($('photo'), window.I18N.deep(C.photo));
         document.documentElement.dataset.theme = state.theme;
         booted = true;
 

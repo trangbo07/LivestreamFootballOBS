@@ -119,10 +119,10 @@
                 <div class="an-card an-heat">
                     <div class="an-head"><span class="an-h-title">HEATMAP</span><span class="an-h-team"></span></div>
                     <div class="an-pitch"><canvas width="410" height="266"></canvas>${PITCH_LINES}<div class="an-dir"></div></div>
-                    <div class="an-legend"><span>ÍT</span><i></i><span>NHIỀU</span></div>
+                    <div class="an-legend"><span>${window.I18N.L('ÍT')}</span><i></i><span>${window.I18N.L('NHIỀU')}</span></div>
                 </div>
                 <div class="an-card an-stats">
-                    <div class="an-head"><span class="an-h-title">THỐNG KÊ</span><span class="an-poss"></span></div>
+                    <div class="an-head"><span class="an-h-title">${window.I18N.L('THỐNG KÊ')}</span><span class="an-poss"></span></div>
                     <div class="st-list"></div>
                 </div>
             </div>`;
@@ -154,12 +154,12 @@
         const paint = () => {
             Heat.draw(canvas, pts);
             if (side === 'both') {
-                teamEl.innerHTML = '<span>CẢ HAI ĐỘI</span>';
+                teamEl.innerHTML = '<span>' + window.I18N.L('CẢ HAI ĐỘI') + '</span>';
             } else {
                 const t = state[side];
                 teamEl.innerHTML = `${t.logo ? `<img src="${esc(t.logo)}" alt="">` : ''}<span>${esc(t.short || t.name)}</span>`;
             }
-            root.querySelector('.an-dir').textContent = side === 'away' ? '◀ HƯỚNG TẤN CÔNG' : side === 'home' ? 'HƯỚNG TẤN CÔNG ▶' : (state.home.short || 'ĐỘI NHÀ') + ' ▶';
+            root.querySelector('.an-dir').textContent = side === 'away' ? window.I18N.L('◀ HƯỚNG TẤN CÔNG') : side === 'home' ? window.I18N.L('HƯỚNG TẤN CÔNG ▶') : (state.home.short || window.I18N.L('ĐỘI NHÀ')) + ' ▶';
             canvas.classList.remove('swap');
             teamEl.classList.remove('swap');
         };

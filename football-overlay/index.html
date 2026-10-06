@@ -7,7 +7,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Roboto+Condensed:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Great+Vibes&family=Oswald:wght@500;600;700&family=Roboto+Condensed:wght@400;500;700;800&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/overlay.css">
@@ -17,6 +17,8 @@
     <link rel="stylesheet" href="css/popup.css">
     <link rel="stylesheet" href="css/lineup.css">
     <link rel="stylesheet" href="css/analysis.css">
+    <link rel="stylesheet" href="css/tribute.css">
+    <link rel="stylesheet" href="css/photo.css">
 </head>
 <body>
 <div id="stage">
@@ -130,6 +132,13 @@
     <!-- ĐẾM NGƯỢC TRƯỚC TRẬN -->
     <div class="cd pp-panel" id="countdown"></div>
 
+    <!-- KHUNG ẢNH TRẬN ĐẤU -->
+    <div class="ph" id="photo"></div>
+
+    <!-- TRI ÂN HUYỀN THOẠI: badge góc + các màn banner -->
+    <div class="tb-badge" id="tribute-badge"></div>
+    <div class="tb" id="tribute"></div>
+
     <!-- POPUPS (GOAL / CARD / SUB / STATUS / STATS) -->
     <div class="popup-layer" id="popup-layer"></div>
 </div>
@@ -144,6 +153,7 @@
 
 <script src="js/config.js"></script>
 <script src="js/bus.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/scoreboard.js"></script>
 <script src="js/ticker.js"></script>
 <script src="js/chat.js"></script>
@@ -151,6 +161,8 @@
 <script src="js/lineup.js"></script>
 <script src="js/analysis.js"></script>
 <script src="js/camfx.js"></script>
+<script src="js/tribute.js"></script>
+<script src="js/photo.js"></script>
 <script src="js/overlay.js"></script>
 </body>
 </html>

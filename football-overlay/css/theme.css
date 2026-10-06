@@ -124,3 +124,33 @@ html[data-theme="classic"] {
     --text: #ffffff;
     --text-dim: rgba(220, 230, 255, .7);
 }
+
+/* ---------- ALBICELESTE: xanh da trời + trắng + vàng Mặt trời tháng Năm ---------- */
+html[data-theme="albiceleste"] {
+    --accent: #75aadb;
+    --accent-2: #f6b40e;
+    --accent-ink: #061a33;
+    --accent-grad: linear-gradient(90deg, #75aadb 0%, #e9f3ff 50%, #f6b40e 100%);
+    --glow: rgba(117, 170, 219, .55);
+    --glow-2: rgba(246, 180, 14, .55);
+
+    --panel: linear-gradient(160deg, rgba(14, 40, 82, .95) 0%, rgba(5, 16, 38, .96) 100%);
+    --panel-strong: linear-gradient(180deg, #0f2b58 0%, #06142e 100%);
+    --panel-line: rgba(117, 170, 219, .38);
+    --line-w: 1.5px;
+    --panel-shadow: 0 14px 34px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .1);
+
+    --score-bg: linear-gradient(180deg, #ffffff 0%, #e3eefa 100%);
+    --score-ink: #0a1f44;
+    --clock-bg: linear-gradient(180deg, #a9d0f5 0%, #5b97d1 100%);
+    --clock-ink: #061a33;
+    --tab-bg: linear-gradient(180deg, #ffd86b, #f6b40e);
+    --tab-ink: #0a1f44;
+    --hi-bg: linear-gradient(180deg, #ffffff 0%, #e3eefa 100%);
+    --hi-ink: #0a1f44;
+
+    --frame: #071830;
+    --backdrop: rgba(5, 15, 34, .97);
+    --text: #ffffff;
+    --text-dim: rgba(220, 235, 255, .7);
+}
