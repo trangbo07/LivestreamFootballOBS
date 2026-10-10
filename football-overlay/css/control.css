@@ -105,6 +105,7 @@ textarea { resize: vertical; font-family: ui-monospace, Consolas, monospace; fon
 input[type=color] { padding: 2px; height: 36px; width: 56px; }
 input[type=range] { padding: 0; accent-color: var(--red); }
 .w60 { width: 70px; }
+.w120 { width: 120px; }
 .w80 { width: 90px; }
 .grow { flex: 1; }
 .spacer { flex: 1; }

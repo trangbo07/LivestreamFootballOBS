@@ -24,6 +24,12 @@
  *    GET  /api/obs/status
  *    POST /api/photo/upload    {"data":"data:image/jpeg;base64,..."} → {"url":"uploads/..."}
  *    POST /api/obs/snapshot    {"camera":"close"|"wide"} chụp camera trong OBS → {"url"}
+ *    POST /api/live/search     {"apiKey","q","date"} tìm trận (live-football-api.com)
+ *    POST /api/live/start      {"apiKey","matchId","league","interval","swap","popups"} tự cập nhật
+ *                              tỷ số, thống kê, sự kiện, đội, logo, đội hình, sa bàn
+ *    POST /api/live/stop ;  GET /api/live/status
+ *    POST /api/ai/config       {"apiKey","model","enabled","onlyQuestions"} trợ lý AI (OpenAI)
+ *    POST /api/ai/ask          {"user","text"} thử 1 câu ;  GET /api/ai/status ;  GET /api/ai/history
  * ===================================================================== */
 const http = require('http');
 const fs = require('fs');
@@ -32,6 +38,8 @@ const os = require('os');
 const vm = require('vm');
 const { YouTubeChat } = require('./lib/youtube-chat');
 const { OBSBridge } = require('./lib/obs-bridge');
+const { LiveStats } = require('./lib/live-stats');
+const { AIAssistant } = require('./lib/ai-assistant');
 
 const PORT = Number(process.env.PORT || 3000);
 const ROOT = __dirname;
@@ -102,7 +110,7 @@ function broadcast(msg) {
 
 function sendBus(type, payload) {
     const msg = { id: newId('srv'), from: 'server', type, payload, ts: Date.now() };
-    if (type === 'yt-status' || type === 'obs-status') retained[type] = msg;
+    if (type === 'yt-status' || type === 'obs-status' || type === 'live-status' || type === 'ai-status') retained[type] = msg;
     broadcast(msg);
 }
 
@@ -115,14 +123,41 @@ yt.on('status', (s) => {
     const txt = s.state === 'live' ? `đang nhận chat: ${s.title || s.videoId}` : s.message;
     console.log(`  [YouTube] ${txt}`);
 });
-yt.on('message', (m) => cmd('chat', {
-    user: m.user, avatar: m.avatar, parts: m.parts, text: m.text,
-    badge: m.badge, amount: m.amount, kind: m.kind, source: 'youtube'
-}));
+yt.on('message', (m) => {
+    cmd('chat', {
+        user: m.user, avatar: m.avatar, parts: m.parts, text: m.text,
+        badge: m.badge, amount: m.amount, kind: m.kind, source: 'youtube'
+    });
+    ai.push(m);
+});
 // Đếm số tin gửi lại cho control mỗi 5 giây
 setInterval(() => {
     if (yt.status.state === 'live') sendBus('yt-status', Object.assign({}, yt.status, { count: yt.count }));
 }, 5000);
+
+/* ---------------- TRỢ LÝ AI (OpenAI) ----------------
+ * Dịch bình luận YouTube sang tiếng Việt + gợi ý câu trả lời tiếng Anh đơn giản.
+ * Key lưu trong .ai-assistant.json (không đưa lên git, không gửi lại trình duyệt). */
+const AI_SAVE = path.join(ROOT, '.ai-assistant.json');
+const ai = new AIAssistant();
+function loadAiSettings() {
+    try { return JSON.parse(fs.readFileSync(AI_SAVE, 'utf8')); } catch (e) { return {}; }
+}
+ai.configure(loadAiSettings());
+ai.context = () => {
+    const C = loadConfig();
+    const p = (lastState && lastState.payload) || {};
+    const h = p.home || C.homeTeam || {}, a = p.away || C.awayTeam || {}, sc = p.score || { home: 0, away: 0 };
+    const c = p.clock || {};
+    const min = Math.floor(((c.base || 0) + (c.running && c.anchor ? (Date.now() - c.anchor) / 1000 : 0)) / 60);
+    const match = h.name && a.name ? `${h.name} ${sc.home} - ${sc.away} ${a.name}` + (p.period ? `, ${p.period} ${min}'` : '') : '';
+    return { channel: C.channelName || 'our channel', match };
+};
+ai.on('status', (s) => {
+    sendBus('ai-status', s);
+    if (s.state === 'error') console.log('  [AI] ' + s.message);
+});
+ai.on('reply', (item) => sendBus('ai-reply', item));
 
 /* ---------------- OBS ---------------- */
 const obs = new OBSBridge();
@@ -143,14 +178,16 @@ function camRects() {
         pip: R.pip || { x: 1452, y: 64, w: 408, h: 230 },
         left: R.left || { x: 40, y: 150, w: 912, h: 513 },
         right: R.right || { x: 968, y: 150, w: 912, h: 513 },
-        analysis: Object.assign({ x: 250, y: 64, w: 1100, h: 619 }, (C.analysis || {}).camera || {})
+        analysis: Object.assign({ x: 250, y: 64, w: 1100, h: 619 }, (C.analysis || {}).camera || {}),
+        heatbig: Object.assign({ x: 1390, y: 56, w: 470, h: 264 }, (C.analysis || {}).cameraSmall || {})
     };
 }
 
 function effectiveCam(state) {
     const camLayout = (state.cam && state.cam.layout) || 'close';
-    return state.layout === 'analysis'
-        ? { layout: 'analysis', active: MAIN_CAM[camLayout] || 'close' }
+    if (state.layout === 'trackbig') return { layout: 'heatbig', active: MAIN_CAM[camLayout] || 'close' };   // cùng khung cam nhỏ
+    return state.layout === 'analysis' || state.layout === 'heatbig'
+        ? { layout: state.layout, active: MAIN_CAM[camLayout] || 'close' }
         : { layout: camLayout, active: MAIN_CAM[camLayout] || 'close' };
 }
 
@@ -260,6 +297,57 @@ function loadObsConnection() {
     try { return JSON.parse(fs.readFileSync(OBS_SAVE, 'utf8')); } catch (e) { return null; }
 }
 
+/* ---------------- DỮ LIỆU TRẬN TỰ ĐỘNG (live-football-api.com) ----------------
+ * Lưu key + trận đang theo dõi vào .live-stats.json (không đưa lên git). */
+const LIVE_SAVE = path.join(ROOT, '.live-stats.json');
+const live = new LiveStats();
+
+function loadLiveSettings() {
+    try { return JSON.parse(fs.readFileSync(LIVE_SAVE, 'utf8')); } catch (e) { return {}; }
+}
+function saveLiveSettings(patch) {
+    const s = Object.assign(loadLiveSettings(), patch);
+    try { fs.writeFileSync(LIVE_SAVE, JSON.stringify(s, null, 2)); } catch (e) { console.log('  [Live] không lưu được cài đặt: ' + e.message); }
+    return s;
+}
+/** Nhận key mới (nếu có) rồi trả về key đã lưu. */
+function liveKey(body) {
+    if (body && body.apiKey) saveLiveSettings({ lfaKey: String(body.apiKey).trim() });
+    const k = loadLiveSettings().lfaKey;
+    if (!k) throw new Error('Chưa nhập key Live Football API');
+    return k;
+}
+/** Cài đặt gửi cho control — không bao giờ gửi lại key. */
+function livePublic() {
+    const s = loadLiveSettings();
+    return Object.assign({}, live.status, {
+        hasKey: !!s.lfaKey,
+        settings: { matchId: s.matchId || '', label: s.label || '', league: s.league || '', interval: s.interval || 15, swap: s.swap == null ? 'auto' : s.swap, popups: s.popups !== false }
+    });
+}
+live.on('status', (s) => {
+    if (s.state === 'done' && loadLiveSettings().running) saveLiveSettings({ running: false });   // hết trận → không tự chạy lại
+    sendBus('live-status', livePublic());
+    console.log('  [Live] ' + (s.message || s.state));
+});
+live.on('cmd', (fn, ...args) => cmd(fn, ...args));
+
+function startLive(s) {
+    const st = (lastState && lastState.payload) || {};
+    const C = loadConfig();   // overlay chưa gửi state (vừa bật server) → dùng tên đội trong config.js
+    const nameOf = (t) => (t && t.name) || '';
+    live.start(Object.assign({}, s, {
+        apiKey: s.lfaKey,
+        homeName: nameOf(st.home) || nameOf(C.homeTeam),
+        awayName: nameOf(st.away) || nameOf(C.awayTeam)
+    }));
+}
+// Server khởi động lại giữa trận → tự chạy tiếp (đợi overlay gửi state để nhận đúng đội nhà)
+setTimeout(() => {
+    const s = loadLiveSettings();
+    if (s.running && s.lfaKey && s.matchId) { console.log('  [Live] tự chạy tiếp trận ' + s.matchId); startLive(s); }
+}, 4000);
+
 /* ---------------- ẢNH TRẬN ĐẤU ----------------
  * Lưu ảnh (dataURL) vào thư mục uploads/ → overlay chỉ cần giữ đường dẫn ngắn. */
 const UPLOAD_DIR = path.join(ROOT, 'uploads');
@@ -306,7 +394,7 @@ function serveStatic(req, res, pathname) {
     const file = path.normalize(path.join(ROOT, rel));
     if (file !== ROOT && !file.startsWith(ROOT + path.sep)) { res.writeHead(403); return res.end('Forbidden'); }
     // Không phục vụ mã nguồn server / file lưu nội bộ
-    if (/^[\\/](lib[\\/]|\.obs-camera\.json$|\.obs-connection\.json$|server\.js$)/.test(file.slice(ROOT.length))) { res.writeHead(404); return res.end('Not found'); }
+    if (/^[\\/](lib[\\/]|\.obs-camera\.json$|\.obs-connection\.json$|\.live-stats\.json$|\.ai-assistant\.json$|server\.js$)/.test(file.slice(ROOT.length))) { res.writeHead(404); return res.end('Not found'); }
     fs.stat(file, (err, st) => {
         if (err || !st.isFile()) { res.writeHead(404); return res.end('Not found'); }
         res.writeHead(200, {
@@ -421,6 +509,58 @@ const server = http.createServer(async (req, res) => {
             return json(res, 200, { ok: true });
         }
 
+        /* ----- Dữ liệu trận tự động (live-football-api.com) ----- */
+        if (pathname === '/api/live/status') return json(res, 200, livePublic());
+        if (pathname === '/api/live/search' && req.method === 'POST') {
+            const body = await readJson(req);
+            const list = await live.search(liveKey(body), body.q || '', body.date || new Date().toISOString().slice(0, 10));
+            sendBus('live-status', livePublic());
+            return json(res, 200, { ok: true, list, credits: live.status.remaining });
+        }
+        if (pathname === '/api/live/start' && req.method === 'POST') {
+            const body = await readJson(req);
+            liveKey(body);
+            const matchId = String(body.matchId || '').trim();
+            if (!/^[a-z0-9]+$/i.test(matchId)) throw new Error('Chưa chọn trận');
+            const s = saveLiveSettings({
+                matchId, running: true,
+                label: String(body.label || ''), league: String(body.league || ''),
+                interval: Math.max(10, Number(body.interval) || 15),
+                swap: body.swap === true || body.swap === false ? body.swap : 'auto',
+                popups: body.popups !== false
+            });
+            startLive(s);
+            return json(res, 200, { ok: true });
+        }
+        if (pathname === '/api/live/stop' && req.method === 'POST') {
+            saveLiveSettings({ running: false });
+            live.stop();
+            return json(res, 200, { ok: true });
+        }
+
+        /* ----- Trợ lý AI ----- */
+        if (pathname === '/api/ai/status') return json(res, 200, ai.publicStatus());
+        if (pathname === '/api/ai/history') return json(res, 200, { ok: true, list: ai.history });
+        if (pathname === '/api/ai/config' && req.method === 'POST') {
+            const body = await readJson(req);
+            const patch = {};
+            if (typeof body.apiKey === 'string' && body.apiKey.trim()) patch.apiKey = body.apiKey.trim();
+            if (body.clearKey) patch.apiKey = '';
+            if (typeof body.model === 'string' && body.model.trim()) patch.model = body.model.trim();
+            if (typeof body.enabled === 'boolean') patch.enabled = body.enabled;
+            if (typeof body.onlyQuestions === 'boolean') patch.onlyQuestions = body.onlyQuestions;
+            const saved = Object.assign(loadAiSettings(), patch);
+            try { fs.writeFileSync(AI_SAVE, JSON.stringify(saved, null, 2)); } catch (e) { console.log('  [AI] không lưu được cài đặt: ' + e.message); }
+            ai.configure(saved);
+            return json(res, 200, Object.assign({ ok: true }, ai.publicStatus()));
+        }
+        if (pathname === '/api/ai/ask' && req.method === 'POST') {
+            const body = await readJson(req);
+            if (!ai.settings.apiKey) throw new Error('Chưa nhập OpenAI API key');
+            ai.push({ user: body.user || 'Test', text: body.text || '' }, true);
+            return json(res, 200, { ok: true });
+        }
+
         /* ----- Khung ảnh trận đấu ----- */
         if (pathname === '/api/photo/upload' && req.method === 'POST') {
             const body = await readJson(req);
@@ -454,6 +594,7 @@ server.listen(PORT, '0.0.0.0', () => {
     console.log('  ------------------------------------------------');
     console.log(`  Overlay (OBS):   http://localhost:${PORT}/`);
     console.log(`  Control panel:   http://localhost:${PORT}/control.html`);
+    console.log(`  Trợ lý AI:       http://localhost:${PORT}/assistant.html`);
     ips.forEach((ip) => console.log(`  Từ máy khác/điện thoại: http://${ip}:${PORT}/control.html`));
     console.log('  ------------------------------------------------');
     console.log('  Ctrl+C để dừng.');

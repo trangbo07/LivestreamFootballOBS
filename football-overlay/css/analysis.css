@@ -18,8 +18,10 @@
     border-radius: 18px;
     box-shadow: 0 0 0 4000px var(--backdrop);
     transform-origin: 0 0;
-    transition: transform .9s var(--ease-io), border-radius .9s var(--ease-io);
+    transition: transform .9s var(--ease-io), border-radius .9s var(--ease-io),
+                left .9s var(--ease-io), top .9s var(--ease-io), width .9s var(--ease-io), height .9s var(--ease-io);
 }
+.an-window.no-anim { transition: none; }
 .an-window::before {                     /* viền neon quanh camera */
     content: '';
     position: absolute;
@@ -157,6 +159,43 @@
 }
 .an-poss i { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: liveBlink 1.2s infinite; }
 
+/* --- Kiểu "heatmap lớn": heatmap chiếm chỗ camera, camera thu vào góc phải --- */
+.an-heat-side { max-height: 380px; }
+.an.on .an-heat-side {
+    transition: opacity .6s var(--ease-out) .55s, transform .8s var(--ease-out) .55s, max-height .9s var(--ease-io);
+}
+.an.on.heatbig .an-heat-side {          /* nhường đúng chiều cao khung camera nhỏ */
+    max-height: 264px;
+    opacity: 0;
+    transition: opacity .3s ease, max-height .9s var(--ease-io);
+}
+.an-big { position: absolute; display: flex; }
+.an-big .an-card { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+.an-heat-big .an-head { height: 48px; font-size: 24px; }
+.an-heat-big .an-h-team { font-size: 22px; }
+.an-heat-big .an-h-team img { width: 38px; height: 25px; }
+.an-heat-big .an-pitch { width: 820px; height: 531px; margin: 8px auto 4px; border-radius: 10px; }
+.an-heat-big .an-dir { font-size: 16px; line-height: 26px; bottom: 10px; }
+.an-heat-big .an-legend { font-size: 15px; }
+.an-heat-big .an-legend i { width: 240px; }
+.an.on:not(.heatbig) .an-heat-big { opacity: 0; transform: scale(.96); transition: opacity .35s ease, transform .4s var(--ease-in); }
+.an.on.heatbig .an-heat-big { transition: opacity .6s var(--ease-out) .5s, transform .8s var(--ease-out) .5s; }
+
+/* --- Kiểu "sa bàn lớn": sa bàn trực tiếp Sportradar thay cho heatmap lớn --- */
+.an-big .an-card { position: absolute; inset: 0; }
+.an.on.track .an-heat-big { opacity: 0; transform: scale(.96); transition: opacity .35s ease, transform .4s var(--ease-in); }
+.an.on:not(.track) .an-track { opacity: 0; transform: scale(.96); transition: opacity .35s ease, transform .4s var(--ease-in); }
+.an.on.track .an-track { transition: opacity .6s var(--ease-out) .5s, transform .8s var(--ease-out) .5s; }
+.an-track { justify-content: flex-start; }
+.an-track .an-head { height: 44px; font-size: 22px; }
+.an-track-live { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 18px; letter-spacing: 2px; }
+.an-track-live i { width: 9px; height: 9px; border-radius: 50%; background: var(--red); animation: liveBlink 1.4s infinite; }
+/* Chỉ giữ phần sân của sa bàn: iframe cao hơn khung rồi đẩy lên 86px để giấu thanh
+ * tên đội / tỷ số / nút thống kê phía trên; thanh dòng thời gian bên dưới cũng bị cắt.
+ * (Ở chiều rộng 1000px: thanh trên cao ~86px, sân cao ~558px.)                       */
+.an-track-pitch { width: 1000px; height: 554px; margin: 8px auto 0; border-radius: 10px; overflow: hidden; background: #1d3a12; }
+.an-track-pitch iframe { display: block; width: 1000px; height: 720px; margin-top: -88px; border: 0; }
+
 /* =====================================================================
  *  CAMFX — viền & nhãn cho bố cục 2 camera (PiP / chia đôi)
  * ===================================================================== */
@@ -260,3 +299,102 @@
 @keyframes camfxPhIn { from { opacity: 0; transform: scale(1.05); } to { opacity: 1; transform: none; } }
 @keyframes camfxPhZoom { from { transform: scale(1); } to { transform: scale(1.05); } }
 @keyframes camfxPhFlash { 0% { opacity: 0; } 12% { opacity: .85; } 100% { opacity: 0; } }
+
+/* =====================================================================
+ *  MÀN SA BÀN TRỰC TIẾP — cột trái: ảnh trận đấu tự chạy + timeline tình huống
+ *  Sa bàn thu nhỏ (zoom .85) dời sang phải để nhường chỗ cho cột trái.
+ * ===================================================================== */
+.an.on.track .an-big { left: 480px !important; width: 870px !important; height: 536px !important; }
+.an-big .an-track { justify-content: flex-start; }
+.an-track-pitch { zoom: .85; }
+.an.track .an-track-pitch { margin-top: 10px; }
+
+.an-left {
+    position: absolute;
+    left: 60px;
+    top: 245px;
+    width: 400px;
+    height: 525px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.an-left .an-card { transform: translateX(-60px); }
+.an.on:not(.track) .an-left .an-card { opacity: 0; transform: translateX(-60px); transition: opacity .3s ease, transform .4s var(--ease-in); }
+.an-left .an-head { font-size: 17px; letter-spacing: 2px; padding: 0 14px; }
+
+/* --- Ảnh trận đấu tự chạy --- */
+.an-photos { flex: 0 0 auto; }
+.an-ph-min { padding: 0 8px; border-radius: 999px; background: var(--tab-bg); color: var(--tab-ink); font-size: 15px; letter-spacing: 1px; }
+.an-ph-min:empty { display: none; }
+.an-ph-count { margin-left: auto; font-size: 15px; letter-spacing: 1px; color: var(--text-dim); }
+.an-ph-frame { position: relative; width: 100%; height: 225px; overflow: hidden; background: #05080f; }
+.an-ph-slide { position: absolute; inset: 0; animation: anPhIn .9s var(--ease-out) both; }
+.an-ph-slide.leaving { animation: anPhOut .9s ease both; }
+.an-ph-bg { position: absolute; inset: -20px; background-size: cover; background-position: center; filter: blur(18px) brightness(.5) saturate(1.2); }
+#stage .an-ph-slide img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; animation: anPhZoom 8s ease-out both; }
+.an-ph-empty { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; font: 600 17px var(--font-display); letter-spacing: 1px; color: var(--text-dim); }
+.an-ph-cap {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 26px 14px 9px;
+    background: linear-gradient(transparent, rgba(0, 0, 0, .85));
+    font: 700 17px/1.2 var(--font-body);
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.an-ph-cap:empty { display: none; }
+@keyframes anPhIn { from { opacity: 0; transform: scale(1.04); } to { opacity: 1; transform: none; } }
+@keyframes anPhOut { to { opacity: 0; } }
+@keyframes anPhZoom { from { transform: scale(1); } to { transform: scale(1.06); } }
+
+/* --- Timeline tình huống --- */
+.an-tl { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.an-tl-count { margin-left: auto; min-width: 26px; padding: 0 7px; border-radius: 999px; background: rgba(255, 255, 255, .12); text-align: center; font-size: 15px; letter-spacing: 0; color: var(--text); }
+.an-tl-count:empty { display: none; }
+.an-tl-list {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    padding: 6px 10px;
+    -webkit-mask-image: linear-gradient(#000 85%, transparent);
+    mask-image: linear-gradient(#000 85%, transparent);
+}
+.an-tl-empty { padding: 30px 10px; text-align: center; font: 600 17px var(--font-display); letter-spacing: 1px; color: var(--text-dim); }
+.tl-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 40px;
+    padding: 4px 8px;
+    margin-bottom: 5px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .05);
+    border-left: 3px solid var(--accent);
+}
+.tl-row.away { border-left-color: var(--accent-2); }
+.tl-row.is-goal { background: linear-gradient(90deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, .04)); }
+.tl-row.new { animation: tlNew 1.6s var(--ease-out) both; }
+.tl-min { flex: 0 0 auto; min-width: 46px; font: 700 19px var(--font-display); color: var(--accent); letter-spacing: .5px; }
+.tl-ic { flex: 0 0 22px; display: grid; place-items: center; font-size: 18px; line-height: 1; }
+.tl-ic.card { width: 14px; height: 19px; flex: 0 0 14px; margin: 0 4px; border-radius: 2px; box-shadow: 0 1px 4px rgba(0, 0, 0, .5); }
+.tl-ic.card.y { background: #ffd60a; }
+.tl-ic.card.r { background: #ff2d3d; }
+.tl-ic.sub { color: #1fd17b; font-weight: 800; }
+.tl-ic.miss { color: #ff4d6d; font-weight: 800; }
+.tl-ic.var { font: 700 11px var(--font-display); padding: 2px 3px; border-radius: 3px; background: #fff; color: #111; }
+.tl-ic.og { filter: hue-rotate(180deg); }
+.tl-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.1; }
+.tl-txt b { font: 700 17px var(--font-body); text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tl-txt b.in { color: #1fd17b; }
+.tl-txt small { font-size: 13px; font-weight: 700; letter-spacing: .5px; color: var(--text-dim); text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tl-txt small.out { color: #ff8095; }
+.tl-score { flex: 0 0 auto; padding: 1px 8px; border-radius: 6px; background: #fff; color: #0a0f1d; font: 700 16px var(--font-display); }
+#stage .tl-logo { flex: 0 0 auto; width: 28px; height: 28px; object-fit: contain; border-radius: 0; box-shadow: none; }
+.tl-team { flex: 0 0 auto; font: 700 13px var(--font-display); letter-spacing: 1px; color: var(--text-dim); }
+@keyframes tlNew {
+    0% { opacity: 0; transform: translateX(-30px); background: rgba(255, 200, 10, .5); }
+    40% { opacity: 1; transform: none; }
+}

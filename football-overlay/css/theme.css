@@ -154,3 +154,33 @@ html[data-theme="albiceleste"] {
     --text: #ffffff;
     --text-dim: rgba(220, 235, 255, .7);
 }
+
+/* ---------- AL-NASSR: vàng + xanh hoàng gia + navy (đêm của CR7) ---------- */
+html[data-theme="alnassr"] {
+    --accent: #ffc80a;
+    --accent-2: #2f6fe0;
+    --accent-ink: #0b2a5c;
+    --accent-grad: linear-gradient(90deg, #ffc80a 0%, #ffe066 50%, #2f6fe0 100%);
+    --glow: rgba(255, 200, 10, .55);
+    --glow-2: rgba(47, 111, 224, .55);
+
+    --panel: linear-gradient(160deg, rgba(14, 42, 92, .95) 0%, rgba(5, 18, 44, .96) 100%);
+    --panel-strong: linear-gradient(180deg, #0f2f66 0%, #061632 100%);
+    --panel-line: rgba(255, 200, 10, .42);
+    --line-w: 1.5px;
+    --panel-shadow: 0 14px 34px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .1);
+
+    --score-bg: linear-gradient(180deg, #ffffff 0%, #fff4c7 100%);
+    --score-ink: #0b2a5c;
+    --clock-bg: linear-gradient(180deg, #3d7ff0 0%, #1d4fb3 100%);
+    --clock-ink: #ffffff;
+    --tab-bg: linear-gradient(180deg, #ffe066, #ffc80a);
+    --tab-ink: #0b2a5c;
+    --hi-bg: linear-gradient(180deg, #ffffff 0%, #fff4c7 100%);
+    --hi-ink: #0b2a5c;
+
+    --frame: #071a3d;
+    --backdrop: rgba(5, 16, 40, .97);
+    --text: #ffffff;
+    --text-dim: rgba(255, 244, 205, .72);
+}

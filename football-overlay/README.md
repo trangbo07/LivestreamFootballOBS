@@ -114,6 +114,9 @@ Trạng thái (tỷ số, giờ, hiệp, logo…) được lưu lại: refresh O
 | **Lọc từ cấm** | `chat.bannedWords` + `chat.filterMode` (`mask` / `hide`) |
 | **Đội hình ra sân** | Control → *Đội hình* (cả 2 đội / từng đội), phím `U` |
 | **Chế độ phân tích** (camera nhỏ + heatmap + thống kê) | Control → *Phân tích & thống kê*, phím `A` |
+| **Heatmap lớn** (heatmap chiếm chỗ camera, camera thu nhỏ vào góc phải) | Control → *Heatmap lớn*, phím `Shift+A`. Vị trí cam nhỏ: `analysis.cameraSmall` trong config |
+| **Sa bàn trực tiếp lớn** (camera thu nhỏ góc phải) | Chọn trận ở *⚡ Dữ liệu trận tự động* → bấm *Sa bàn trực tiếp lớn*, phím `Shift+B` |
+| **Dữ liệu trận tự động** (tên đội, logo, tỷ số, đồng hồ, thống kê, sự kiện, đội hình, sa bàn) | Control → *⚡ Dữ liệu trận tự động*: nhập key live-football-api.com → *Tìm* → chọn trận → *Bắt đầu tự cập nhật*. 1 lượt / lần cập nhật |
 | **Heatmap** | Chạm/kéo lên sân trong control để ghi vị trí bóng, hoặc *Mô phỏng dữ liệu* |
 | **Kiểm soát bóng tự tính** | Bấm đội đang giữ bóng (phím `1` / `2`, `0` dừng) — chỉ tính khi đồng hồ chạy |
 | **Thống kê** (sút, phạt góc, phạm lỗi, thẻ…) | Nút +/− trong control; thẻ & bàn thắng tự cộng. Popup thống kê: phím `K` |

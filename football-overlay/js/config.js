@@ -6,7 +6,7 @@
  * ===================================================================== */
 window.CONFIG = {
 
-    channelName: "NEXT FOOTBALL",
+    channelName: "ME SPORT",
 
     /* ---------------- GIAO DIỆN ----------------
      * "neon"    — kính tối + cyan/hồng neon (mặc định)
@@ -14,8 +14,9 @@ window.CONFIG = {
      * "gold"    — đen nhám + vàng kim
      * "classic" — navy + đỏ + viền trắng (bản cũ)
      * "albiceleste" — xanh da trời + trắng + vàng (Argentina)
+     * "alnassr" — vàng + xanh hoàng gia + navy (Al-Nassr / CR7)
      * Đổi nhanh trong control panel, không cần sửa file.                 */
-    theme: "albiceleste",
+    theme: "alnassr",
 
     /* ---------------- YOUTUBE LIVE CHAT ----------------
      * Bình luận thật trên YouTube hiện lên khung chat (cần chạy server.js).
@@ -74,6 +75,7 @@ window.CONFIG = {
      * statKeys: thứ tự các dòng thống kê.                                  */
     analysis: {
         camera: { x: 250, y: 64, w: 1100, h: 619 },
+        cameraSmall: { x: 1390, y: 56, w: 470, h: 264 },   // kiểu "heatmap lớn": camera thu vào góc phải
         heatRotateSec: 10,
         statKeys: ["possession", "shots", "onTarget", "corners", "fouls", "yellow", "red"]
     },
@@ -84,38 +86,38 @@ window.CONFIG = {
      *          tiền vệ, tiền đạo. Dạng "số|họ tên|tên ngắn".               */
     lineups: {
         home: {
-            formation: "4-4-2",
-            coach: "LIONEL SCALONI",
+            formation: "4-3-3",
+            coach: "",
             players: [
-                "23|EMILIANO MARTÍNEZ|E. MARTÍNEZ",
-                "4|AGUSTÍN GIAY|GIAY",
-                "13|CRISTIAN ROMERO|ROMERO",
-                "6|LISANDRO MARTÍNEZ|L. MARTÍNEZ",
-                "33|VEGA|VEGA",
-                "18|NICO PAZ|PAZ",
-                "8|ENZO FERNÁNDEZ|FERNÁNDEZ",
-                "20|ALEXIS MAC ALLISTER|MAC ALLISTER",
-                "16|GIANLUCA PRESTIANNI|PRESTIANNI",
-                "9|JULIÁN ÁLVAREZ|ÁLVAREZ",
-                "10|LIONEL MESSI (C)|MESSI"
+                "|BENTO|BENTO",
+                "|NAWAF BOUSHAL|BOUSHAL",
+                "|MOHAMED SIMAKAN|SIMAKAN",
+                "|AYMERIC LAPORTE|LAPORTE",
+                "|SALEM AL-NAJDI|AL-NAJDI",
+                "|ABDULLAH AL-KHAIBARI|AL-KHAIBARI",
+                "|SAMU COSTA|SAMU COSTA",
+                "11|MARCELO BROZOVIĆ|BROZOVIĆ",
+                "10|SADIO MANÉ|MANÉ",
+                "|JOÃO FÉLIX|JOÃO FÉLIX",
+                "7|CRISTIANO RONALDO (C)|RONALDO"
             ],
             subs: []
         },
         away: {
-            formation: "4-1-4-1",
+            formation: "4-3-3",
             coach: "",
             players: [
-                "1|MARCEL DANDJINOU|DANDJINOU",
-                "12|AZONGNI|AZONGNI",
-                "5|YOHAN ROCHE|ROCHE",
-                "13|MOHAMED TIJANI|TIJANI",
-                "3|TAMIMOU OUOROU|T. OUOROU",
-                "15|SESSI D'ALMEIDA|D'ALMEIDA",
-                "6|Y. OUOROU|Y. OUOROU",
-                "8|HASSANE IMOURANE|IMOURANE",
-                "18|OLAITAN|OLAITAN",
-                "17|ALOKO|ALOKO",
-                "10|TOSIN AIYEGUN|TOSIN"
+                "|NIKOLA VASILJ|VASILJ",
+                "|ABDULAZIZ AL-FARAJ|AL-FARAJ",
+                "|CHANCEL MBEMBA|MBEMBA",
+                "|BERAT DJIMSITI|DJIMSITI",
+                "|HUSSAIN AL-SIBYANI|AL-SIBYANI",
+                "|IDRISSA GUEYE|GUEYE",
+                "|ABDULELAH AL-MALKI|AL-MALKI",
+                "|ENZO MILLOT|MILLOT",
+                "|ADIL BOULBINA|BOULBINA",
+                "|DARWIN NÚÑEZ|NÚÑEZ",
+                "|CLAYTON DIANDY|DIANDY"
             ],
             subs: []
         }
@@ -123,25 +125,25 @@ window.CONFIG = {
 
     /* ---------------- ĐẾM NGƯỢC TRƯỚC TRẬN ---------------- */
     countdown: {
-        title: "ARGENTINA - BENIN • ĐÊM TRI ÂN MESSI",
-        sub: "#GRACIASLEO — ĐĂNG KÝ KÊNH & BẬT CHUÔNG ĐỂ KHÔNG BỎ LỠ"
+        title: "AL-NASSR - AL-DIRIYAH • ĐÊM CỦA CR7",
+        sub: "#SIUUU — ĐĂNG KÝ KÊNH & BẬT CHUÔNG ĐỂ KHÔNG BỎ LỠ"
     },
 
     /* ---------------- ĐỘI BÓNG ----------------
      * logo: đường dẫn PNG/SVG/JPG (tương đối với index.html) hoặc URL.
      * color: màu chủ đạo (vạch màu dưới scoreboard, popup).            */
     homeTeam: {
-        name: "ĐT ARGENTINA",
-        short: "ARGENTINA",
-        logo: "./assets/argentina.svg",
-        color: "#75aadb"
+        name: "AL-NASSR",
+        short: "AL-NASSR",
+        logo: "./assets/alnassr.svg",
+        color: "#ffc80a"
     },
 
     awayTeam: {
-        name: "ĐT BENIN",
-        short: "BENIN",
-        logo: "./assets/benin.svg",
-        color: "#008751"
+        name: "AL-DIRIYAH",
+        short: "DIRIYAH",
+        logo: "./assets/diriyah.svg",
+        color: "#0d3b2e"
     },
 
     score: {
@@ -179,9 +181,9 @@ window.CONFIG = {
     /* ---------------- LOGO / WATERMARK (góc trên trái) ---------------- */
     watermark: {
         enabled: true,
-        logo: "./assets/next-football.svg",   // để "" nếu chỉ muốn hiện chữ
-        title: "NEXT FOOTBALL",  // hiện khi không có logo
-        line1: "HƠN 350K",
+        logo: "./assets/me-sport.svg",   // để "" nếu chỉ muốn hiện chữ
+        title: "ME SPORT",  // hiện khi không có logo
+        line1: "HƠN 206K",
         line2: "NGƯỜI ĐĂNG KÝ",
         opacity: 0.95
     },
@@ -205,11 +207,11 @@ window.CONFIG = {
         direction: "left",
         autoGoalNews: true,          // tự thêm tin khi có bàn thắng
         messages: [
-            { tag: "LIVE", text: "ARGENTINA - BENIN • GIAO HỮU QUỐC TẾ • 07.10.2026" },
-            { tag: "BREAKING", text: "ĐÊM TRI ÂN LIONEL MESSI — #GRACIASLEO" },
-            { tag: "NEWS", text: "MESSI: 8 QUẢ BÓNG VÀNG • VÔ ĐỊCH WORLD CUP 2022 • 2 COPA AMÉRICA (2021, 2024)" },
-            { tag: "UPDATE", text: "ARGENTINA (FIFA #2) ĐỐI ĐẦU BENIN (FIFA #93)" },
-            "NEXT FOOTBALL — GỬI LỜI TRI ÂN TỚI MESSI Ở KHUNG CHAT NHÉ!"
+            { tag: "LIVE", text: "AL-NASSR - AL-DIRIYAH • SAUDI PRO LEAGUE • VÒNG 8 • 01:00 NGÀY 10.10.2026 (GIỜ VN)" },
+            { tag: "BREAKING", text: "CRISTIANO RONALDO TRỞ LẠI ĐỘI HÌNH AL-NASSR — #SIUUU" },
+            { tag: "NEWS", text: "CR7: 5 QUẢ BÓNG VÀNG • 5 CHAMPIONS LEAGUE • VÔ ĐỊCH EURO 2016 • 2 NATIONS LEAGUE" },
+            { tag: "UPDATE", text: "AL-NASSR (HẠNG 3, 16 ĐIỂM) TIẾP AL-DIRIYAH (HẠNG 8, 11 ĐIỂM)" },
+            "ME SPORT — CỔ VŨ CR7 Ở KHUNG CHAT NHÉ! SIUUU!"
         ]
     },
 
@@ -238,18 +240,18 @@ window.CONFIG = {
             "lehoang.k", "fanbongda_hn", "cr7fan_vn", "gooner1886"
         ],
         fakeMessages: [
-            "Gracias Leo! 🐐", "Vamos Argentina 🇦🇷", "hello mọi người",
-            "Messi đá phạt đi anh ơi", "Thủ môn Benin bắt hay quá", "Cảm ơn Messi vì tất cả ❤️",
-            "Số 10 vĩ đại nhất", "Julián Álvarez nhanh ghê", "GOOOOOAL sắp tới rồi",
-            "Xem từ Đà Nẵng nè", "Benin chơi rát quá", "Ai dự đoán tỷ số đi",
-            "3-0 cho Argentina nhé", "#GraciasLeo", "Bình luận viên nhiệt quá 🔥"
+            "SIUUUUU! 🐐", "Vamos Al-Nassr 💛💙", "hello mọi người",
+            "Ronaldo đá phạt đi anh ơi", "Thủ môn Diriyah bắt hay quá", "CR7 mãi đỉnh ❤️",
+            "Số 7 vĩ đại nhất", "Mané nhanh ghê", "GOOOOOAL sắp tới rồi",
+            "Xem từ Đà Nẵng nè", "Diriyah chơi rát quá", "Ai dự đoán tỷ số đi",
+            "3-0 cho Al-Nassr nhé", "#SIUUU", "Bình luận viên nhiệt quá 🔥"
         ]
     },
 
     /* ---------------- LOWER THIRD -------------------------------------- */
     lowerThird: {
         duration: 5000,    // ms tự ẩn. 0 = giữ đến khi bấm Hide
-        default: { name: "LIONEL MESSI", role: "ĐỘI TRƯỞNG", team: "ARGENTINA" }
+        default: { name: "CRISTIANO RONALDO", role: "ĐỘI TRƯỞNG", team: "AL-NASSR" }
     },
 
     /* ---------------- POPUP (thời gian hiển thị, ms) -------------------- */
@@ -303,66 +305,69 @@ window.CONFIG = {
      * duration: ms tự ẩn mỗi lần hiện ảnh, 0 = giữ đến khi bấm Ẩn.          */
     photo: {
         title: "KHOẢNH KHẮC TRẬN ĐẤU",
-        defaultCaption: "ARGENTINA - BENIN • NEXT FOOTBALL",
+        defaultCaption: "AL-NASSR - AL-DIRIYAH • ME SPORT",
         duration: 15000
     },
 
-    /* ---------------- TRI ÂN HUYỀN THOẠI (banner Messi) ----------------
-     * Điều khiển trong control panel → mục "Tri ân Messi", phím tắt M = thẻ Messi.
-     * player.photo: ảnh PNG đã tách nền, đặt vào assets/messi.png.
-     *               Không có ảnh → tự vẽ lưng áo MESSI 10.
-     * matchName: tên cầu thủ khớp (regex) → bàn thắng dùng màn GOLAZO
+    /* ---------------- TRI ÂN HUYỀN THOẠI (banner CR7) ----------------
+     * Điều khiển trong control panel → mục "Đêm của CR7", phím tắt M = thẻ CR7.
+     * player.photo: ảnh PNG đã tách nền, đặt vào assets/cr7.png.
+     *               Không có ảnh → tự vẽ lưng áo vàng RONALDO 7.
+     * matchName: tên cầu thủ khớp (regex) → bàn thắng dùng màn goalWord
      *            (autoGoal), bị thay ra dùng màn standing ovation (autoOvation).
+     * rankLabel: nhãn thứ hạng ở màn hình trận đấu (homeRank / awayRank).
      * durations: ms tự ẩn mỗi cảnh, 0 = giữ đến khi bấm Ẩn.                  */
     tribute: {
         badge: true,
-        hashtag: "#GRACIASLEO",
-        badgeText: "ĐÊM TRI ÂN MESSI",
-        eventTitle: "ĐÊM TRI ÂN HUYỀN THOẠI",
-        legendKicker: "HUYỀN THOẠI SỐ 10",
-        matchName: "MESSI",
+        hashtag: "#SIUUU",
+        badgeText: "ĐÊM CỦA CR7",
+        eventTitle: "ĐÊM CỦA CR7",
+        legendKicker: "HUYỀN THOẠI SỐ 7",
+        goalWord: "SIUUU!",
+        rankLabel: "BXH SAUDI PRO LEAGUE",
+        matchName: "RONALDO|CR7",
         autoGoal: true,
         autoOvation: true,
         player: {
-            name: "LIONEL MESSI",
-            fullName: "LIONEL ANDRÉS MESSI",
-            shirtName: "MESSI",
-            number: 10,
-            nickname: "LA PULGA",
-            role: "ĐỘI TRƯỞNG ARGENTINA",
+            name: "CRISTIANO RONALDO",
+            fullName: "CRISTIANO RONALDO",
+            shirtName: "RONALDO",
+            number: 7,
+            nickname: "CR7",
+            role: "ĐỘI TRƯỞNG AL-NASSR",
             badge: "CAPTAIN",
-            photo: "./assets/messi.png"
+            photo: "./assets/cr7.png"
         },
         match: {
-            competition: "GIAO HỮU QUỐC TẾ",
-            date: "07.10.2026",
-            time: "06:00",
-            venue: "",
-            homeRank: 2,
-            awayRank: 93
+            competition: "SAUDI PRO LEAGUE • VÒNG 8",
+            date: "10.10.2026",
+            time: "01:00",
+            venue: "RIYADH",
+            homeRank: 3,
+            awayRank: 8
         },
         honours: [
-            { n: "8", label: "QUẢ BÓNG VÀNG", sub: "KỶ LỤC MỌI THỜI ĐẠI" },
-            { n: "1", label: "WORLD CUP", sub: "QATAR 2022" },
-            { n: "2", label: "COPA AMÉRICA", sub: "2021 • 2024" },
-            { n: "1", label: "FINALISSIMA", sub: "WEMBLEY 2022" },
-            { n: "1", label: "HCV OLYMPIC", sub: "BẮC KINH 2008" },
-            { n: "6", label: "CHIẾC GIÀY VÀNG", sub: "CHÂU ÂU" }
+            { n: "5", label: "QUẢ BÓNG VÀNG", sub: "2008 • 13 • 14 • 16 • 17" },
+            { n: "5", label: "CHAMPIONS LEAGUE", sub: "MAN UTD • REAL MADRID" },
+            { n: "1", label: "EURO", sub: "PHÁP 2016" },
+            { n: "2", label: "NATIONS LEAGUE", sub: "2019 • 2025" },
+            { n: "4", label: "CHIẾC GIÀY VÀNG", sub: "CHÂU ÂU" },
+            { n: "900+", label: "BÀN THẮNG", sub: "KỶ LỤC SỰ NGHIỆP" }
         ],
         timeline: [
-            { year: "2005", text: "Vô địch U20 thế giới, ra mắt ĐT Argentina" },
-            { year: "2008", text: "Huy chương vàng Olympic Bắc Kinh" },
-            { year: "2021", text: "Copa América — danh hiệu đầu tiên cùng ĐT" },
-            { year: "2022", text: "Nâng cúp vàng World Cup tại Qatar" },
-            { year: "2024", text: "Bảo vệ thành công Copa América" }
+            { year: "2003", text: "Từ Sporting tới Man Utd, ra mắt ĐT Bồ Đào Nha" },
+            { year: "2008", text: "Champions League + Quả bóng vàng đầu tiên" },
+            { year: "2016", text: "Vô địch EURO cùng Bồ Đào Nha" },
+            { year: "2018", text: "Champions League thứ 5, rời Real Madrid" },
+            { year: "2023", text: "Gia nhập Al-Nassr" }
         ],
-        cardFacts: ["8× QUẢ BÓNG VÀNG", "VÔ ĐỊCH WORLD CUP 2022", "2× COPA AMÉRICA"],
-        ovationTitle: "CẢM ƠN, LEO!",
-        ovationText: "KHÁN GIẢ ĐỨNG DẬY TRI ÂN SỐ 10 HUYỀN THOẠI",
+        cardFacts: ["5× QUẢ BÓNG VÀNG", "5× CHAMPIONS LEAGUE", "VÔ ĐỊCH EURO 2016"],
+        ovationTitle: "CẢM ƠN, CR7!",
+        ovationText: "KHÁN GIẢ ĐỨNG DẬY TRI ÂN SỐ 7 HUYỀN THOẠI",
         thanks: {
-            script: "Gracias, Leo",
-            title: "CẢM ƠN VÌ NHỮNG KÝ ỨC ĐẸP NHẤT CỦA BÓNG ĐÁ",
-            sub: "MÃI MÃI LÀ SỐ 10"
+            script: "Obrigado, Cristiano",
+            title: "CẢM ƠN VÌ HƠN 20 NĂM CỐNG HIẾN CHO BÓNG ĐÁ",
+            sub: "MÃI MÃI LÀ SỐ 7"
         },
         durations: { matchday: 0, legend: 0, card: 9000, goal: 9000, ovation: 9000, thanks: 0 }
     },
@@ -374,54 +379,55 @@ window.CONFIG = {
      * chuỗi ở đúng vị trí đó. Thiếu bản dịch → giữ nguyên chữ gốc.
      * Nhãn giao diện cố định (THỐNG KÊ, ĐỘI HÌNH…) đã có sẵn trong js/i18n.js. */
     english: {
-        homeTeam: { name: "ARGENTINA" },
-        awayTeam: { name: "BENIN" },
+        homeTeam: { name: "AL-NASSR" },
+        awayTeam: { name: "AL-DIRIYAH" },
         periodLabels: {
             "1H": "1ST HALF", "HT": "HALF-TIME", "2H": "2ND HALF",
             "ET1": "EXTRA TIME 1", "ET2": "EXTRA TIME 2", "FT": "FULL-TIME", "PEN": "PENALTIES"
         },
-        watermark: { line1: "350K+", line2: "SUBSCRIBERS" },
+        watermark: { line1: "206K+", line2: "SUBSCRIBERS" },
         countdown: {
-            title: "ARGENTINA - BENIN • MESSI TRIBUTE NIGHT",
-            sub: "#GRACIASLEO — SUBSCRIBE & TURN ON NOTIFICATIONS"
+            title: "AL-NASSR - AL-DIRIYAH • CR7 NIGHT",
+            sub: "#SIUUU — SUBSCRIBE & TURN ON NOTIFICATIONS"
         },
         ticker: {
             messages: [
-                { text: "ARGENTINA - BENIN • INTERNATIONAL FRIENDLY • 07.10.2026" },
-                { text: "A TRIBUTE NIGHT FOR LIONEL MESSI — #GRACIASLEO" },
-                { text: "MESSI: 8 BALLON D'ORS • 2022 WORLD CUP WINNER • 2 COPA AMÉRICAS (2021, 2024)" },
-                { text: "ARGENTINA (FIFA #2) TAKE ON BENIN (FIFA #93)" },
-                "NEXT FOOTBALL — SEND YOUR TRIBUTE TO MESSI IN THE CHAT!"
+                { text: "AL-NASSR - AL-DIRIYAH • SAUDI PRO LEAGUE • MATCHDAY 8 • 09.10.2026, 21:00 RIYADH TIME" },
+                { text: "CRISTIANO RONALDO IS BACK IN THE AL-NASSR LINE-UP — #SIUUU" },
+                { text: "CR7: 5 BALLON D'ORS • 5 CHAMPIONS LEAGUES • EURO 2016 WINNER • 2 NATIONS LEAGUES" },
+                { text: "AL-NASSR (3RD, 16 PTS) HOST AL-DIRIYAH (8TH, 11 PTS)" },
+                "ME SPORT — CHEER FOR CR7 IN THE CHAT! SIUUU!"
             ]
         },
         lowerThird: { default: { role: "CAPTAIN" } },
         tribute: {
-            badgeText: "MESSI TRIBUTE NIGHT",
-            eventTitle: "A TRIBUTE TO A LEGEND",
-            legendKicker: "THE NUMBER 10 LEGEND",
-            player: { role: "ARGENTINA CAPTAIN" },
-            match: { competition: "INTERNATIONAL FRIENDLY" },
+            badgeText: "CR7 NIGHT",
+            eventTitle: "CR7 NIGHT",
+            legendKicker: "THE NUMBER 7 LEGEND",
+            rankLabel: "SAUDI PRO LEAGUE",
+            player: { role: "AL-NASSR CAPTAIN" },
+            match: { competition: "SAUDI PRO LEAGUE • MATCHDAY 8", date: "09.10.2026", time: "21:00 (RIYADH)" },
             honours: [
-                { label: "BALLON D'OR", sub: "ALL-TIME RECORD" },
-                { label: "WORLD CUP", sub: "QATAR 2022" },
-                { label: "COPA AMÉRICA", sub: "2021 • 2024" },
-                { label: "FINALISSIMA", sub: "WEMBLEY 2022" },
-                { label: "OLYMPIC GOLD", sub: "BEIJING 2008" },
-                { label: "GOLDEN SHOES", sub: "EUROPEAN" }
+                { label: "BALLON D'OR", sub: "2008 • 13 • 14 • 16 • 17" },
+                { label: "CHAMPIONS LEAGUE", sub: "MAN UTD • REAL MADRID" },
+                { label: "EURO", sub: "FRANCE 2016" },
+                { label: "NATIONS LEAGUE", sub: "2019 • 2025" },
+                { label: "GOLDEN SHOES", sub: "EUROPEAN" },
+                { label: "CAREER GOALS", sub: "ALL-TIME RECORD" }
             ],
             timeline: [
-                { text: "U-20 World Cup winner, senior Argentina debut" },
-                { text: "Olympic gold medal in Beijing" },
-                { text: "Copa América — first major title with Argentina" },
-                { text: "Lifts the World Cup in Qatar" },
-                { text: "Retains the Copa América" }
+                { text: "Sporting to Man Utd, senior Portugal debut" },
+                { text: "Champions League + first Ballon d'Or" },
+                { text: "Wins EURO with Portugal" },
+                { text: "Fifth Champions League, leaves Real Madrid" },
+                { text: "Joins Al-Nassr" }
             ],
-            cardFacts: ["8× BALLON D'OR", "2022 WORLD CUP WINNER", "2× COPA AMÉRICA"],
-            ovationTitle: "THANK YOU, LEO!",
-            ovationText: "THE CROWD RISES FOR THE NUMBER 10 LEGEND",
+            cardFacts: ["5× BALLON D'OR", "5× CHAMPIONS LEAGUE", "EURO 2016 WINNER"],
+            ovationTitle: "THANK YOU, CR7!",
+            ovationText: "THE CROWD RISES FOR THE NUMBER 7 LEGEND",
             thanks: {
-                title: "THANK YOU FOR FOOTBALL'S MOST BEAUTIFUL MEMORIES",
-                sub: "FOREVER NUMBER 10"
+                title: "THANK YOU FOR OVER 20 YEARS OF FOOTBALL GREATNESS",
+                sub: "FOREVER NUMBER 7"
             }
         }
     },
@@ -433,9 +439,9 @@ window.CONFIG = {
     demo: {
         autoStart: false,
         players: {
-            home: ["LIONEL MESSI", "JULIÁN ÁLVAREZ", "ALEXIS MAC ALLISTER", "NICO PAZ"],
-            away: ["TOSIN AIYEGUN", "HASSANE IMOURANE", "SESSI D'ALMEIDA", "YOHAN ROCHE"]
+            home: ["CRISTIANO RONALDO", "SADIO MANÉ", "JOÃO FÉLIX", "MARCELO BROZOVIĆ"],
+            away: ["DARWIN NÚÑEZ", "ENZO MILLOT", "IDRISSA GUEYE", "ADIL BOULBINA"]
         },
-        commentator: { name: "NEXT FOOTBALL", role: "BÌNH LUẬN VIÊN", team: "NEXT FOOTBALL" }
+        commentator: { name: "ME SPORT", role: "BÌNH LUẬN VIÊN", team: "ME SPORT" }
     }
 };

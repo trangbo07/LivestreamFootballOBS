@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trợ lý AI — trả lời bình luận</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Roboto+Condensed:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/assistant.css">
+</head>
+<body>
+<header class="top">
+    <h1>🤖 Trợ lý AI <small>dịch bình luận · gợi ý trả lời tiếng Anh</small></h1>
+    <span class="pill" id="st">…</span>
+    <div class="grow"></div>
+    <button class="tgl" id="btn-on" title="Bật / tắt tự trả lời bình luận YouTube">TẮT</button>
+    <button class="tgl" id="btn-q" title="Chỉ hiện câu hỏi (Super Chat luôn hiện)">Chỉ câu hỏi</button>
+    <div class="seg" id="filter">
+        <button data-f="all" class="on">Tất cả</button>
+        <button data-f="question">❓ Câu hỏi</button>
+    </div>
+    <button class="ic" id="font-dn" title="Chữ nhỏ hơn">A−</button>
+    <button class="ic" id="font-up" title="Chữ to hơn">A+</button>
+    <button class="ic" id="btn-set" title="Cài đặt">⚙</button>
+</header>
+
+<section class="settings" id="settings" hidden>
+    <label>OpenAI API key
+        <input id="key" type="password" autocomplete="off" placeholder="sk-... (dán vào đây)">
+    </label>
+    <label class="w-model">Model
+        <input id="model" placeholder="gpt-4o-mini">
+    </label>
+    <button class="btn primary" id="btn-save">Lưu &amp; bật</button>
+    <button class="btn" id="btn-clear">Xoá key</button>
+    <p class="muted">Key chỉ lưu trên máy này (file <code>.ai-assistant.json</code>), không hiện lại trên trình duyệt. Tạo key tại platform.openai.com → API keys.</p>
+</section>
+
+<section class="test">
+    <input id="test" placeholder="Thử: gõ một bình luận rồi Enter (vd. Who is the best player today?)">
+    <button class="btn" id="btn-test">Thử</button>
+</section>
+
+<main id="feed">
+    <div class="empty" id="empty">
+        Chưa có bình luận nào.<br>
+        Kết nối YouTube Live chat trong <a href="control.html" target="_blank">control panel</a>, bật trợ lý ở trên, rồi bình luận sẽ hiện ở đây.
+    </div>
+</main>
+
+<script src="js/assistant.js"></script>
+</body>
+</html>

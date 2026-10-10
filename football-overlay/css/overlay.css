@@ -297,3 +297,9 @@ html.preview-bg #stage::after {
 }
 .devbar button.on { background: #e8226f; }
 .devbar-keys { opacity: .6; padding: 0 6px; }
+
+/* Logo lấy từ Live Football API là huy hiệu (không phải cờ chữ nhật) → hiện trọn, không cắt */
+img[src*="live-football-api.com"] { object-fit: contain !important; }
+
+/* Huy hiệu CLB (ảnh gần vuông) — hiện đủ thay vì cắt kiểu cờ */
+#stage img.is-crest { object-fit: contain !important; border-radius: 0 !important; box-shadow: none !important; background: none !important; filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .45)); }

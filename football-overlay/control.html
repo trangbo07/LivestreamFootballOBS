@@ -136,31 +136,32 @@
             <button class="theme-sw" data-theme="gold"><i style="background:linear-gradient(135deg,#141416 40%,#f6c453 40% 70%,#fff1c2 70%)"></i>Gold</button>
             <button class="theme-sw" data-theme="classic"><i style="background:linear-gradient(135deg,#0b1f61 40%,#ec1c3a 40% 70%,#ffffff 70%)"></i>Classic</button>
             <button class="theme-sw" data-theme="albiceleste"><i style="background:linear-gradient(135deg,#0a1f44 40%,#75aadb 40% 70%,#f6b40e 70%)"></i>Albiceleste</button>
+            <button class="theme-sw" data-theme="alnassr"><i style="background:linear-gradient(135deg,#0b2a5c 40%,#ffc80a 40% 70%,#2f6fe0 70%)"></i>Al-Nassr</button>
         </div>
         <p class="muted">Đổi ngay trên overlay, không cần refresh OBS.</p>
     </section>
 
-    <!-- ============ TRI ÂN MESSI ============ -->
+    <!-- ============ ĐÊM CỦA CR7 ============ -->
     <section class="card span-2">
-        <h2>💙 Tri ân Messi <span class="kbd">M</span></h2>
+        <h2>💛 Đêm của CR7 <span class="kbd">M</span></h2>
         <h3>Trước trận / kết thúc (toàn màn hình — giữ đến khi bấm Ẩn)</h3>
         <div class="row">
             <button class="btn primary" data-cmd="showTribute" data-args='["matchday"]'>🏟️ Màn hình trận đấu</button>
             <button class="btn primary" data-cmd="showTribute" data-args='["legend"]'>🏆 Hồ sơ huyền thoại</button>
-            <button class="btn primary" data-cmd="showTribute" data-args='["thanks"]'>💙 Gracias, Leo</button>
+            <button class="btn primary" data-cmd="showTribute" data-args='["thanks"]'>💛 Obrigado, Cristiano</button>
         </div>
         <h3>Trong trận (tự ẩn sau 9 giây)</h3>
         <div class="row">
-            <button class="btn" data-cmd="toggleTribute" data-args='["card"]'>🪪 Thẻ Messi <span class="kbd">M</span></button>
-            <button class="btn goal" data-cmd="goal" data-args='[{"team":"home","player":"LIONEL MESSI"}]'>⚽ Messi ghi bàn (+1 tỷ số)</button>
-            <button class="btn" data-cmd="showTribute" data-args='["goal",{"player":"LIONEL MESSI"}]'>✨ Chỉ hiện GOLAZO</button>
+            <button class="btn" data-cmd="toggleTribute" data-args='["card"]'>🪪 Thẻ CR7 <span class="kbd">M</span></button>
+            <button class="btn goal" data-cmd="goal" data-args='[{"team":"home","player":"CRISTIANO RONALDO"}]'>⚽ Ronaldo ghi bàn (+1 tỷ số)</button>
+            <button class="btn" data-cmd="showTribute" data-args='["goal",{"player":"CRISTIANO RONALDO"}]'>✨ Chỉ hiện SIUUU!</button>
             <button class="btn" data-cmd="showTribute" data-args='["ovation"]'>👏 Standing ovation</button>
         </div>
         <div class="row">
-            <button class="btn tgl" data-cmd="toggleTributeBadge" data-state="tributeBadge">Badge #GRACIASLEO</button>
+            <button class="btn tgl" data-cmd="toggleTributeBadge" data-state="tributeBadge">Badge #SIUUU</button>
             <button class="btn amber" data-cmd="hideTribute">Ẩn banner</button>
         </div>
-        <p class="muted">Ở mục Popup: bàn thắng có tên cầu thủ chứa "MESSI" tự dùng màn GOLAZO; thay người với OUT là Messi tự hiện standing ovation. Muốn có ảnh Messi trong "Hồ sơ huyền thoại": chép ảnh PNG đã tách nền vào <code>assets/messi.png</code>.</p>
+        <p class="muted">Ở mục Popup: bàn thắng có tên cầu thủ chứa "RONALDO" hoặc "CR7" tự dùng màn SIUUU!; thay người với OUT là Ronaldo tự hiện standing ovation. Muốn có ảnh Ronaldo trong "Hồ sơ huyền thoại": chép ảnh PNG đã tách nền vào <code>assets/cr7.png</code>.</p>
     </section>
 
     <!-- ============ KHUNG ẢNH ============ -->
@@ -173,7 +174,7 @@
                     <span>hoặc bấm để chọn file · hoặc <span class="kbd">Ctrl</span>+<span class="kbd">V</span> dán ảnh vừa chụp</span>
                     <input type="file" id="ph-file" accept="image/*" multiple>
                 </div>
-                <label>Chú thích (tuỳ chọn) <input id="ph-caption" placeholder="MESSI ĐI BÓNG QUA 3 CẦU THỦ BENIN"></label>
+                <label>Chú thích (tuỳ chọn) <input id="ph-caption" placeholder="RONALDO ĐÁNH ĐẦU TUNG LƯỚI DIRIYAH"></label>
                 <div class="row">
                     <label class="check"><input type="checkbox" id="ph-show" checked> Hiện ngay sau khi đăng</label>
                     <label class="inline">Tự ẩn sau (giây, 0 = giữ) <input type="number" id="ph-dur" min="0" class="w60" value="15"></label>
@@ -229,6 +230,45 @@
         </details>
     </section>
 
+    <!-- ============ DỮ LIỆU TRẬN TỰ ĐỘNG ============ -->
+    <section class="card">
+        <h2>⚡ Dữ liệu trận tự động (Live Football API)</h2>
+        <label>Key live-football-api.com <input id="live-key" type="password" placeholder="Đã lưu key thì để trống"></label>
+        <div class="row">
+            <label class="grow">Tìm trận — tên đội / giải <input id="live-q" placeholder="Al Nassr"></label>
+            <label>Ngày (UTC) <input id="live-date" type="date"></label>
+            <button class="btn" id="btn-live-search">Tìm</button>
+        </div>
+        <div class="scene-list" id="live-results"></div>
+        <div class="row">
+            <span class="muted">Trận đã chọn: <b id="live-picked">chưa chọn</b></span>
+        </div>
+        <div class="row">
+            <label>Cập nhật mỗi
+                <select id="live-interval">
+                    <option value="10">10 giây</option>
+                    <option value="15" selected>15 giây</option>
+                    <option value="30">30 giây</option>
+                    <option value="60">60 giây</option>
+                </select>
+            </label>
+            <label>Đội nhà
+                <select id="live-swap">
+                    <option value="auto">Tự nhận theo tên</option>
+                    <option value="false">Giữ như API</option>
+                    <option value="true">Đảo 2 đội</option>
+                </select>
+            </label>
+        </div>
+        <label class="check"><input type="checkbox" id="live-popups" checked> Tự hiện popup bàn thắng / thẻ / thay người / nghỉ / hết trận</label>
+        <div class="row">
+            <button class="btn green" id="btn-live-start">Bắt đầu tự cập nhật</button>
+            <button class="btn" id="btn-live-stop">Dừng</button>
+            <span class="pill" id="live-pill">TẮT</span>
+        </div>
+        <div class="yt-info" id="live-info">Tự cập nhật: tên đội, logo, tỷ số, đồng hồ, hiệp, thống kê, bàn thắng, thẻ, thay người, đội hình, sân, trọng tài và sa bàn trực tiếp. Mỗi lần cập nhật tốn 1 lượt (15 giây/lần ≈ 500 lượt/trận).</div>
+    </section>
+
     <!-- ============ LINEUP ============ -->
     <section class="card span-2">
         <h2>👥 Đội hình ra sân <span class="kbd">U</span></h2>
@@ -269,6 +309,11 @@
         <h2>📊 Phân tích &amp; thống kê <span class="kbd">A</span></h2>
         <div class="row">
             <button class="btn tgl big" id="btn-analysis" data-cmd="toggleAnalysis" data-state-eq="layout:analysis">Chế độ phân tích (camera nhỏ + heatmap)</button>
+            <button class="btn tgl big" id="btn-heatbig" data-cmd="toggleHeatBig" data-state-eq="layout:heatbig">Heatmap lớn (camera nhỏ góc phải) <span class="kbd">Shift+A</span></button>
+            <button class="btn tgl big" id="btn-trackbig" data-cmd="toggleTrackBig" data-state-eq="layout:trackbig">Sa bàn trực tiếp lớn (camera nhỏ góc phải) <span class="kbd">Shift+B</span></button>
+        </div>
+        <p class="muted">Sa bàn: <b id="tracker-cur">chưa có</b> — tự lấy từ trận đang chọn ở mục ⚡ Dữ liệu trận tự động.</p>
+        <div class="row">
             <button class="btn primary" data-cmd="showStats">Popup thống kê <span class="kbd">K</span></button>
             <button class="btn danger" id="btn-stats-reset">Reset thống kê</button>
         </div>
@@ -515,7 +560,7 @@
         </div>
         <label>Tên kênh (khi không có logo) <input id="wm-title"></label>
         <div class="row two">
-            <label>Dòng 1 <input id="wm-line1" placeholder="HƠN 350K"></label>
+            <label>Dòng 1 <input id="wm-line1" placeholder="HƠN 206K"></label>
             <label>Dòng 2 <input id="wm-line2" placeholder="NGƯỜI ĐĂNG KÝ"></label>
         </div>
         <label class="inline">Opacity <input type="range" id="wm-opacity" min="0.1" max="1" step="0.05" value="0.95"> <b id="wm-opacity-v">0.95</b></label>
@@ -573,6 +618,7 @@
         <div class="row">
             <a class="btn" href="index.html" target="_blank">Mở overlay ↗</a>
             <a class="btn" href="index.html?lang=en" target="_blank" title="OBS: http://localhost:3000/?demo=0&amp;lang=en">Overlay English ↗</a>
+            <a class="btn" href="assistant.html" target="_blank" title="Dịch bình luận YouTube + gợi ý trả lời tiếng Anh (OpenAI)">🤖 Trợ lý AI ↗</a>
             <button class="btn danger" id="btn-reset-all">Reset về config.js</button>
         </div>
     </section>
@@ -596,7 +642,7 @@
             <div><span class="kbd">A</span> Chế độ phân tích</div>
             <div><span class="kbd">U</span> Đội hình (<span class="kbd">Shift</span> = đội khách)</div>
             <div><span class="kbd">K</span> Popup thống kê</div>
-            <div><span class="kbd">M</span> Thẻ Messi (tri ân)</div>
+            <div><span class="kbd">M</span> Thẻ CR7 (tri ân)</div>
             <div><span class="kbd">P</span> Hiện / ẩn khung ảnh</div>
             <div><span class="kbd">X</span> Chia đôi cam cận + ảnh (<span class="kbd">Shift</span> = toàn cảnh)</div>
             <div><span class="kbd">1</span> <span class="kbd">2</span> <span class="kbd">0</span> Bóng: nhà / khách / dừng</div>

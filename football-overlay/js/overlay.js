@@ -40,7 +40,7 @@
         return { name: t.name || '', short: t.short || t.name || '', logo: t.logo || '', color: t.color || '' };
     }
 
-    const THEMES = ['neon', 'premier', 'gold', 'classic', 'albiceleste'];
+    const THEMES = ['neon', 'premier', 'gold', 'classic', 'albiceleste', 'alnassr'];
     const STAT_KEYS = ['shots', 'onTarget', 'corners', 'fouls', 'offsides', 'yellow', 'red', 'saves'];
     const STAT_LABELS = {
         possession: 'KIỂM SOÁT BÓNG', shots: 'SỐ CÚ SÚT', onTarget: 'SÚT TRÚNG ĐÍCH', corners: 'PHẠT GÓC',
@@ -118,7 +118,9 @@
             chat: { visible: ch.enabled !== false, max: ch.maxMessages || 5, fake: !!ch.fakeChat },
             donation: Object.assign({}, C.donation || {}),
             theme: THEMES.includes(C.theme) ? C.theme : 'neon',
-            layout: 'normal',                        // normal | analysis
+            layout: 'normal',                        // normal | analysis | heatbig | trackbig
+            tracker: { url: '', label: '' },         // sa bàn trực tiếp live-football-api.com (kiểu trackbig)
+            matchInfo: null,                         // { competition, round, venue, referee, date, time } — từ Live Football API
             stats: { home: zeroStats(), away: zeroStats() },
             possession: { side: null, home: 0, away: 0, anchor: null },
             heat: { home: [], away: [], view: 'auto', rev: 0 },
@@ -128,6 +130,7 @@
             camAuto: Object.assign({ enabled: true, lineup: 'wide', goal: 'close', goalHold: 8, halfTime: 'close', fullTime: 'close', matchStart: 'wide', sceneAnalysis: '', sceneNormal: '' }, (C.cameras || {}).auto || {}),
             tributeBadge: !!(C.tribute && C.tribute.badge),
             photos: [],                              // [{ src, caption, minute }] — ảnh trận đấu đã đăng
+            timeline: { api: null, manual: [] },     // tình huống trận: api = danh sách từ Live Football API (ưu tiên), manual = bấm tay
             splitPhoto: null,                        // ảnh đang hiện ở bố cục cam + ảnh
             demo: !!(C.demo && C.demo.autoStart),
             savedAt: 0
@@ -299,8 +302,9 @@
         renderDate();
         if (document.documentElement.dataset.theme !== state.theme) document.documentElement.dataset.theme = state.theme;
         renderAnalysis();
-        window.CamFx.apply(state.cam.layout, state.layout === 'analysis', state.splitPhoto);
+        window.CamFx.apply(state.cam.layout, state.layout !== 'normal', state.splitPhoto);
         window.Tribute.setBadge(state.tributeBadge);
+        window.Tribute.updateTeams(view().home, view().away);   // logo / tên đội mới từ API → cập nhật màn hình trận đấu đang hiện
         window.Countdown.set(state.countdown ? Object.assign({}, state.countdown, { home: view().home, away: view().away, title: L(state.countdown.title), sub: L(state.countdown.sub) }) : null);
         const demoBtn = $('dev-demo');
         if (demoBtn) {
@@ -325,9 +329,17 @@
 
     function ctx(extra) {
         const v = view();
-        const out = Object.assign({ home: v.home, away: v.away, score: Object.assign({}, state.score) }, extra || {});
+        const out = Object.assign({ home: v.home, away: v.away, score: Object.assign({}, state.score), matchInfo: state.matchInfo }, extra || {});
         if (out.team && typeof out.team === 'object') out.team = window.I18N.team(out.team);
         return out;
+    }
+
+    /** Ghi 1 tình huống bấm tay vào timeline (có dữ liệu API thì timeline hiện danh sách API). */
+    function logEvent(type, team, data) {
+        const side = team === 'away' || team === state.away ? 'away' : 'home';
+        const t = String((data && data.t) || '').replace(/'$/, '');
+        state.timeline.manual = state.timeline.manual.concat([Object.assign({ type, side }, data, { t })]).slice(-60);
+        commit();
     }
 
     /** Thẻ phạt tự cộng vào thống kê khi biết đội (home/away). */
@@ -363,6 +375,8 @@
             if (data.name !== undefined && data.short === undefined) state[s].short = data.name;
             commit();
         },
+        /** Thông tin trận (giải, vòng, sân, trọng tài, ngày, giờ) — dùng ở màn hình matchday. */
+        setMatchInfo(info) { state.matchInfo = info && typeof info === 'object' ? info : null; commit(); },
         setTeams(data) {
             data = data || {};
             if (data.home) API.setTeam('home', data.home);
@@ -415,6 +429,31 @@
             if (opts.start) API.startClock();
         },
         setAddedTime(minutes) { state.addedTime = Math.max(0, int(minutes, 0)); commit(); },
+        /**
+         * Dữ liệu tự động từ server (Live Football API) — ghi đè tuyệt đối, không cộng dồn.
+         * d: { score:{home,away}, period, minute, running, addedTime, stats:{home:{},away:{}}, possession:{home,away} }
+         */
+        applyLive(d) {
+            d = d || {};
+            if (d.score) state.score = { home: Math.max(0, int(d.score.home, 0)), away: Math.max(0, int(d.score.away, 0)) };
+            if (d.stats) ['home', 'away'].forEach((s) => STAT_KEYS.forEach((k) => {
+                if (d.stats[s] && d.stats[s][k] != null) state.stats[s][k] = Math.max(0, int(d.stats[s][k], 0));
+            }));
+            if (Array.isArray(d.events)) state.timeline = { api: d.events.slice(-60), manual: state.timeline.manual };
+            if (d.possession) state.possession = { side: null, home: Math.max(0, +d.possession.home || 0), away: Math.max(0, +d.possession.away || 0), anchor: null };
+            if (d.period && PERIODS.includes(d.period) && d.period !== state.period) { state.period = d.period; state.addedTime = 0; }
+            if (d.addedTime != null) state.addedTime = Math.max(0, int(d.addedTime, 0));   // phút bù giờ trên scoreboard
+            const cur = clockSeconds();
+            if (d.minute != null) {
+                // API chỉ cho số phút → chỉ chỉnh đồng hồ khi lệch hơn 75 giây
+                const target = Math.max(0, int(d.minute, 0)) * 60;
+                const base = Math.abs(cur - target) > 75 ? target : cur;
+                state.clock = { running: true, base, anchor: Date.now() };
+            } else if (d.running === false && state.clock.running) {
+                state.clock = { running: false, base: cur, anchor: null };
+            }
+            commit();
+        },
         resetMatch() {
             const d = defaultState();
             state.score = { home: 0, away: 0 };
@@ -423,6 +462,7 @@
             state.clock = { running: false, base: 0, anchor: null };
             state.ticker.messages = d.ticker.messages;
             state.stats = { home: zeroStats(), away: zeroStats() };
+            state.timeline = { api: null, manual: [] };
             state.possession = { side: null, home: 0, away: 0, anchor: null };
             state.heat = { home: [], away: [], view: state.heat.view, rev: (state.heat.rev || 0) + 1 };
             window.Popup.clear();
@@ -448,6 +488,7 @@
                 state.stats[side].onTarget += 1;
             }
             const minute = opts.minute || currentMinute();
+            logEvent(/ \(OG\)$/.test(opts.player || '') ? 'own_goal' : 'goal', side, { player: opts.player, t: minute });
             if (C.ticker && C.ticker.autoGoalNews) {
                 const h = state.home, a = state.away;
                 const text = `${h.short || h.name} ${state.score.home} - ${state.score.away} ${a.short || a.name}` +
@@ -464,16 +505,19 @@
         },
         yellowCard(opts) {
             opts = opts || {};
-            countCard(opts.team, 'yellow');
+            if (opts.count !== false) countCard(opts.team, 'yellow');
+            logEvent('yellow_card', opts.team, { player: opts.player, t: opts.minute || currentMinute() });
             window.Popup.show('YELLOW_CARD', ctx({ player: opts.player, team: teamObj(opts.team), minute: opts.minute || currentMinute() }), opts.duration);
         },
         redCard(opts) {
             opts = opts || {};
-            countCard(opts.team, 'red');
+            if (opts.count !== false) countCard(opts.team, 'red');
+            logEvent('red_card', opts.team, { player: opts.player, t: opts.minute || currentMinute() });
             window.Popup.show('RED_CARD', ctx({ player: opts.player, team: teamObj(opts.team), minute: opts.minute || currentMinute() }), opts.duration);
         },
         substitution(opts) {
             opts = opts || {};
+            logEvent('substitution', opts.team, { in: opts.in, out: opts.out, t: opts.minute || currentMinute() });
             if (tributeAuto('autoOvation', opts.out)) return API.showTribute('ovation', { in: opts.in });
             window.Popup.show('SUBSTITUTION', ctx({ out: opts.out, in: opts.in, team: teamObj(opts.team) }), opts.duration);
         },
@@ -604,8 +648,18 @@
         cycleTheme() { API.setTheme(THEMES[(THEMES.indexOf(state.theme) + 1) % THEMES.length]); },
 
         /* ---------- CHẾ ĐỘ PHÂN TÍCH (camera nhỏ + heatmap + thống kê) ---------- */
-        setLayout(layout) { state.layout = layout === 'analysis' ? 'analysis' : 'normal'; commit(); },
+        /** layout: normal | analysis (camera lớn + heatmap nhỏ) | heatbig (heatmap lớn + camera nhỏ góc phải) */
+        setLayout(layout) { state.layout = ['analysis', 'heatbig', 'trackbig'].includes(layout) ? layout : 'normal'; commit(); },
         toggleAnalysis() { API.setLayout(state.layout === 'analysis' ? 'normal' : 'analysis'); },
+        toggleHeatBig() { API.setLayout(state.layout === 'heatbig' ? 'normal' : 'heatbig'); },
+        /** Sa bàn trực tiếp lớn + camera nhỏ góc phải. */
+        toggleTrackBig() { API.setLayout(state.layout === 'trackbig' ? 'normal' : 'trackbig'); },
+        /** Sa bàn từ live-football-api.com: url = csb_url (đã có token). */
+        setTrackerUrl(url, label) {
+            if (!/^https:\/\/live-football-api\.com\//.test(String(url || ''))) return;
+            state.tracker = { url: String(url), label: String(label || '') };
+            commit();
+        },
 
         /* ---------- THỐNG KÊ ---------- */
         /** key: shots | onTarget | corners | fouls | offsides | yellow | red | saves */
@@ -923,7 +977,8 @@
         KeyC: () => API.toggleChat(),
         KeyL: () => API.toggleLowerThird(),
         KeyD: () => API.toggleDonation(),
-        KeyA: () => API.toggleAnalysis(),
+        KeyA: (e) => (e.shiftKey ? API.toggleHeatBig() : API.toggleAnalysis()),
+        KeyB: (e) => { if (e.shiftKey) API.toggleTrackBig(); },
         KeyU: (e) => API.toggleLineup(e.shiftKey ? 'away' : 'both'),
         KeyK: () => API.showStats(),
         KeyM: () => API.toggleTribute('card'),
@@ -1025,6 +1080,14 @@
         window.Countdown.init($('countdown'), () => API.stopCountdown());
         window.CamFx.init($('camfx'), window.I18N.deep(C.cameras));
         window.Tribute.init($('tribute'), $('tribute-badge'), window.I18N.deep(C.tribute));
+        // Logo gần vuông (huy hiệu CLB từ API) → hiện đủ, không cắt như cờ 3:2
+        document.addEventListener('load', (e) => {
+            const im = e.target;
+            if (!im || im.tagName !== 'IMG' || !im.naturalWidth) return;
+            const crest = im.naturalWidth / im.naturalHeight < 1.25;
+            im.classList.toggle('is-crest', crest);
+            if (im.parentNode && im.parentNode.classList) im.parentNode.classList.toggle('has-crest', crest);
+        }, true);
         window.Photo.init($('photo'), window.I18N.deep(C.photo));
         document.documentElement.dataset.theme = state.theme;
         booted = true;
@@ -1039,7 +1102,7 @@
         setInterval(tick, 200);
         setInterval(renderDate, 30000);
         // % kiểm soát bóng thay đổi theo thời gian → cập nhật bảng phân tích mỗi giây
-        setInterval(() => { if (state.layout === 'analysis') renderAnalysis(); }, 1000);
+        setInterval(() => { if (state.layout !== 'normal') renderAnalysis(); }, 1000);
 
         if (C.donation && C.donation.interval > 0) setInterval(() => API.showDonation(), C.donation.interval * 1000);
         if (C.social && C.social.interval > 0) setInterval(() => API.showSocial(), C.social.interval * 1000);

@@ -1,2 +1,4 @@
 uploads/
 .obs-connection.json
+.live-stats.json
+.ai-assistant.json

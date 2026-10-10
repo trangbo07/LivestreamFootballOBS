@@ -278,6 +278,67 @@
     }
 
     /* ------------------------------------------------------------------
+     * DỮ LIỆU TRẬN TỰ ĐỘNG (live-football-api.com)
+     * ------------------------------------------------------------------ */
+    let livePick = null;                     // { id, label, league }
+    $('live-date').value = new Date().toISOString().slice(0, 10);   // API dùng ngày UTC
+    $('live-q').value = store.get('live-q') || '';
+    $('btn-live-search').onclick = async () => {
+        if (needServer()) return;
+        store.set('live-q', val('live-q'));
+        const box = $('live-results');
+        box.innerHTML = '<span class="muted">Đang tìm…</span>';
+        const r = await api('/api/live/search', { apiKey: val('live-key'), q: val('live-q'), date: val('live-date') });
+        $('live-key').value = '';
+        if (!r) return (box.innerHTML = '');
+        if (!r.ok) return (box.innerHTML = `<span class="muted">${Util.esc(r.error)}</span>`);
+        if (!r.list.length) return (box.innerHTML = '<span class="muted">Không thấy trận nào khớp. Ngày tính theo UTC — trận sáng sớm giờ VN nằm ở ngày hôm trước.</span>');
+        box.innerHTML = r.list.map((m) => `<button class="btn sm" data-live="${Util.esc(JSON.stringify({ id: m.id, label: m.home + ' – ' + m.away, league: m.league || '' }))}">${Util.esc(m.home)} – ${Util.esc(m.away)} · ${Util.esc(m.kickoff || '')} UTC · ${Util.esc(m.status || '')} <small>${Util.esc(m.league || '')}</small></button>`).join('');
+    };
+    $('live-results').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-live]');
+        if (!b) return;
+        livePick = JSON.parse(b.dataset.live);
+        $('live-picked').textContent = livePick.label + (livePick.league ? ' · ' + livePick.league : '');
+    });
+    $('btn-live-start').onclick = () => {
+        if (needServer()) return;
+        if (!livePick) return toast('Bấm Tìm rồi chọn 1 trận trước');
+        const sw = val('live-swap');
+        api('/api/live/start', {
+            apiKey: val('live-key'), matchId: livePick.id, label: livePick.label, league: livePick.league,
+            interval: Number(val('live-interval')), swap: sw === 'auto' ? 'auto' : sw === 'true', popups: $('live-popups').checked
+        }).then((r) => { if (r && !r.ok) toast(r.error); });
+        $('live-key').value = '';
+    };
+    $('btn-live-stop').onclick = () => { if (!needServer()) api('/api/live/stop'); };
+
+    let liveSettingsShown = false;
+    function renderLive(s) {
+        const map = { live: ['ĐANG CẬP NHẬT', 'ok'], waiting: ['CHỜ TRẬN', 'warn'], done: ['HẾT TRẬN', ''], error: ['LỖI', 'bad'], off: ['TẮT', ''] };
+        const [txt, cls] = map[s.state] || map.off;
+        $('live-pill').textContent = txt;
+        $('live-pill').className = 'pill ' + cls;
+        const parts = [Util.esc(s.message || '')];
+        if (s.match && s.match.swapped) parts.push('(đã đảo đội nhà/khách)');
+        if (s.updatedAt) parts.push('<br>Cập nhật lúc ' + new Date(s.updatedAt).toLocaleTimeString('vi-VN'));
+        if (s.remaining != null) parts.push(' · Còn <b>' + s.remaining + '</b> lượt');
+        if (s.hasKey) $('live-key').placeholder = 'Đã lưu key — để trống nếu không đổi';
+        $('live-info').innerHTML = parts.join(' ');
+        if (s.settings && !liveSettingsShown) {
+            liveSettingsShown = true;
+            if (s.settings.matchId) {
+                livePick = { id: s.settings.matchId, label: s.settings.label || s.settings.matchId, league: s.settings.league };
+                $('live-picked').textContent = livePick.label + (livePick.league ? ' · ' + livePick.league : '');
+            }
+            $('live-interval').value = String(s.settings.interval);
+            $('live-swap').value = String(s.settings.swap);
+            $('live-popups').checked = s.settings.popups;
+        }
+    }
+    fetch('/api/live/status').then((r) => r.json()).then(renderLive).catch(() => {});
+
+    /* ------------------------------------------------------------------
      * ĐỘI HÌNH
      * ------------------------------------------------------------------ */
     function lineupToText(L) {
@@ -308,6 +369,7 @@
         return side('home') + `<div class="sg-label">${label}</div>` + side('away');
     }).join('');
     $('btn-stats-reset').onclick = () => { if (confirm('Đặt lại toàn bộ thống kê và kiểm soát bóng?')) cmd('resetStats'); };
+
 
     function possessionPct(s) {
         const p = s.possession || {};
@@ -605,6 +667,9 @@
         renderPossession();
         renderPhotos(s);
         applyCamAuto(s);
+        if (s.tracker) {
+            $('tracker-cur').textContent = s.tracker.url ? (s.tracker.label || 'đã nạp') : 'chưa có';
+        }
         if (s.heat) {
             if (document.activeElement !== $('heat-view')) $('heat-view').value = s.heat.view || 'auto';
             const sig = heatTeam + ':' + s.heat.rev + ':' + s.heat.home.length + ':' + s.heat.away.length;
@@ -616,7 +681,8 @@
      * PHÍM TẮT
      * ------------------------------------------------------------------ */
     const KEYS = {
-        KeyA: () => cmd('toggleAnalysis'),
+        KeyA: (e) => cmd(e.shiftKey ? 'toggleHeatBig' : 'toggleAnalysis'),
+        KeyB: (e) => { if (e.shiftKey) cmd('toggleTrackBig'); },
         KeyQ: () => cmd('setCamLayout', 'close'),
         KeyW: () => cmd('setCamLayout', 'wide'),
         KeyE: (e) => cmd('setCamLayout', e.shiftKey ? 'pip2' : 'pip'),
@@ -767,6 +833,7 @@
         if (!msg.payload) return;
         if (msg.type === 'yt-status') return renderYt(msg.payload);
         if (msg.type === 'obs-status') return renderObs(msg.payload);
+        if (msg.type === 'live-status') return renderLive(msg.payload);
         if (msg.type !== 'state') return;
         lastSeen = Math.max(lastSeen, msg.ts || 0);
         applyState(msg.payload);

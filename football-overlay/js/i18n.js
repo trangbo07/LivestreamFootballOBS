@@ -24,7 +24,7 @@
         'THẺ ĐỎ': 'RED CARDS', 'CỨU THUA': 'SAVES', 'BÓNG: ': 'BALL: ',
         'THỐNG KÊ TRẬN ĐẤU': 'MATCH STATS', 'THỐNG KÊ': 'STATS',
         // Phân tích
-        'ÍT': 'LOW', 'NHIỀU': 'HIGH', 'CẢ HAI ĐỘI': 'BOTH TEAMS', 'ĐỘI NHÀ': 'HOME',
+        'SA BÀN TRỰC TIẾP': 'LIVE MATCH TRACKER', 'DIỄN BIẾN': 'MATCH EVENTS', 'Chưa có tình huống nào': 'No events yet', 'Kiến tạo': 'Assist', 'PHẠT ĐỀN': 'PENALTY', 'PHẢN LƯỚI NHÀ': 'OWN GOAL', 'THAY NGƯỜI': 'SUBSTITUTION', 'HỎNG PHẠT ĐỀN': 'PENALTY MISSED', 'ÍT': 'LOW', 'NHIỀU': 'HIGH', 'CẢ HAI ĐỘI': 'BOTH TEAMS', 'ĐỘI NHÀ': 'HOME',
         '◀ HƯỚNG TẤN CÔNG': '◀ ATTACKING', 'HƯỚNG TẤN CÔNG ▶': 'ATTACKING ▶',
         // Đội hình
         'ĐỘI HÌNH RA SÂN': 'LINE-UPS', 'ĐÁ CHÍNH': 'STARTING', 'DỰ BỊ': 'SUBSTITUTES', 'DỰ BỊ: ': 'SUBS: ', 'HLV': 'COACH',
@@ -39,7 +39,8 @@
         'Chưa có ảnh — đăng ảnh ở mục 📸 Khung ảnh trận đấu': 'No photo yet',
         // Tri ân
         'GIAO HỮU QUỐC TẾ': 'INTERNATIONAL FRIENDLY', 'ĐÊM TRI ÂN': 'TRIBUTE NIGHT', 'HUYỀN THOẠI SỐ 10': 'THE NUMBER 10 LEGEND',
-        'CẢM ƠN, LEO!': 'THANK YOU, LEO!', 'TRỰC TIẾP TRÊN': 'LIVE ON', 'VÀO SÂN:': 'ON:', 'BXH FIFA': 'FIFA RANKING'
+        'CẢM ƠN, LEO!': 'THANK YOU, LEO!', 'TRỰC TIẾP TRÊN': 'LIVE ON', 'VÀO SÂN:': 'ON:', 'BXH FIFA': 'FIFA RANKING',
+        'HUYỀN THOẠI SỐ 7': 'THE NUMBER 7 LEGEND', 'CẢM ƠN, CR7!': 'THANK YOU, CR7!', 'ĐÊM CỦA CR7': 'CR7 NIGHT'
     };
     const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 

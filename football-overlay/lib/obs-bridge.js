@@ -159,7 +159,7 @@ class OBSBridge extends EventEmitter {
 
     /**
      * Áp bố cục camera.
-     * @param layout  close | wide | pip | pip2 | split | photo | photo2 | analysis
+     * @param layout  close | wide | pip | pip2 | split | photo | photo2 | analysis | heatbig
      * @param active  cam chính khi ở chế độ analysis ('close' | 'wide')
      * @param R       { pip, left, right, analysis } — các khung (x,y,w,h)
      */
@@ -208,14 +208,15 @@ class OBSBridge extends EventEmitter {
                 split: { close: R.left, wide: R.right },
                 photo: { close: R.left, wide: null },          // cam cận bên trái, ảnh (overlay) bên phải
                 photo2: { wide: R.left, close: null },         // toàn cảnh bên trái, ảnh bên phải
-                analysis: active === 'wide' ? { wide: R.analysis, close: null } : { close: R.analysis, wide: null }
+                analysis: active === 'wide' ? { wide: R.analysis, close: null } : { close: R.analysis, wide: null },
+                heatbig: active === 'wide' ? { wide: R.heatbig, close: null } : { close: R.heatbig, wide: null }   // heatmap lớn, cam nhỏ góc phải
             };
             let plan = Object.assign({}, plans[layout] || plans.close);
             // Chỉ có 1 cam → cam đó nhận khung lớn nhất trong bố cục
             if (roles.length === 1) {
                 const only = roles[0];
                 const rects = Object.values(plan).filter(Boolean).sort((a, b) => b.w * b.h - a.w * a.h);
-                plan = { [only]: layout === 'analysis' ? R.analysis : (rects[0] || F) };
+                plan = { [only]: layout === 'analysis' || layout === 'heatbig' ? R[layout] : (rects[0] || F) };
             }
 
             // Trạng thái hiện tại
@@ -256,7 +257,7 @@ class OBSBridge extends EventEmitter {
                     await this.request('SetSceneItemEnabled', Object.assign({}, items[role], { sceneItemEnabled: false }));
                 }
             }
-            const label = { close: 'Cam cận', wide: 'Cam toàn cảnh', pip: 'PiP (toàn cảnh + cam cận)', pip2: 'PiP (cam cận + toàn cảnh)', split: 'Chia đôi 2 cam', photo: 'Cam cận + ảnh', photo2: 'Toàn cảnh + ảnh', analysis: 'Chế độ phân tích' }[layout] || layout;
+            const label = { close: 'Cam cận', wide: 'Cam toàn cảnh', pip: 'PiP (toàn cảnh + cam cận)', pip2: 'PiP (cam cận + toàn cảnh)', split: 'Chia đôi 2 cam', photo: 'Cam cận + ảnh', photo2: 'Toàn cảnh + ảnh', analysis: 'Chế độ phân tích', heatbig: 'Heatmap lớn (cam nhỏ góc phải)' }[layout] || layout;
             this.note('Camera: ' + label);
         } catch (e) {
             this.note('Lỗi camera: ' + e.message);
